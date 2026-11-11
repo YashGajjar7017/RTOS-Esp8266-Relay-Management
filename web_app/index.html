@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b0f19">
+  <title>CYBER-RELAY RTOS // Smart Management Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <!-- Main Container -->
+  <div class="app-layout">
+    
+    <!-- Top Navigation Header -->
+    <header class="app-header glass-card">
+      <div class="header-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <h1>CYBER-RELAY <span class="badge-rtos">RTOS v2.4</span></h1>
+          <p class="subtitle">ESP8266 Real-Time Relay & Touch Controller</p>
+        </div>
+      </div>
+
+      <div class="header-meta">
+        <div id="connStatusPill" class="status-pill online">
+          <span class="pulsing-dot"></span>
+          <span id="connStatusText">ESP8266 CONNECTED</span>
+        </div>
+        
+        <!-- User Profile Pill -->
+        <div id="userProfilePill" class="user-pill glass-button" onclick="App.openAuthModal()">
+          <div class="avatar-ring">
+            <span id="userInitial">A</span>
+          </div>
+          <div class="user-info-text">
+            <span id="currentUserName">Admin</span>
+            <span id="currentUserRole" class="role-tag">MASTER</span>
+          </div>
+          <button id="logoutBtn" class="icon-btn-sm" title="Log Out" onclick="event.stopPropagation(); App.logout()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Grid Dashboard -->
+    <main class="dashboard-grid">
+
+      <!-- LEFT COLUMN: Live State & Circular Countdown Gauge -->
+      <section class="grid-card glass-card state-hero-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="eyebrow">SYSTEM MONITOR</span>
+            <h2>Live Operational State</h2>
+          </div>
+          <div id="sysStateBadge" class="state-badge badge-idle">
+            <span class="state-icon">●</span>
+            <span id="sysStateText">IDLE / READY</span>
+          </div>
+        </div>
+
+        <!-- Radial Countdown Visualizer -->
+        <div class="countdown-radial-container">
+          <svg class="radial-svg" viewBox="0 0 260 260">
+            <defs>
+              <linearGradient id="cyanGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#06b6d4" />
+                <stop offset="100%" stop-color="#3b82f6" />
+              </linearGradient>
+              <linearGradient id="amberGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#f59e0b" />
+                <stop offset="100%" stop-color="#ef4444" />
+              </linearGradient>
+              <linearGradient id="emeraldGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#10b981" />
+                <stop offset="100%" stop-color="#06b6d4" />
+              </linearGradient>
+            </defs>
+            <circle class="radial-bg" cx="130" cy="130" r="110"></circle>
+            <circle id="radialProgress" class="radial-progress" cx="130" cy="130" r="110"></circle>
+          </svg>
+
+          <!-- Inside Radial Gauge -->
+          <div class="radial-center-content">
+            <div class="relay-bulb-indicator" id="relayBulb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+              </svg>
+            </div>
+            <div class="countdown-label" id="countdownLabel">READY FOR TOUCH</div>
+            <div class="digital-clock" id="digitalClock">
+              <span id="clockDays">00</span><span class="unit">d</span> :
+              <span id="clockHours">00</span><span class="unit">h</span> :
+              <span id="clockMins">00</span><span class="unit">m</span> :
+              <span id="clockSecs">00</span><span class="unit">s</span>
+            </div>
+            <div class="sub-status" id="countdownSubtext">Tap touch sensor to engage 8.0h duty cycle</div>
+          </div>
+        </div>
+
+        <!-- Quick Hardware Status Tiles -->
+        <div class="hardware-tiles-row">
+          <div class="hw-tile">
+            <span class="hw-label">RELAY PIN 1</span>
+            <div class="hw-val-group">
+              <span id="relayStatusDot" class="status-dot dot-off"></span>
+              <strong id="relayStatusText">OFF</strong>
+            </div>
+            <span class="hw-sub" id="relayPinInfo">GPIO1 (TX) / D1 Config</span>
+          </div>
+
+          <div class="hw-tile">
+            <span class="hw-label">TOUCH SENSOR</span>
+            <div class="hw-val-group">
+              <span id="touchStatusDot" class="status-dot dot-active"></span>
+              <strong id="touchStatusText">READY</strong>
+            </div>
+            <span class="hw-sub" id="touchPinInfo">TTP223 Sensor Active</span>
+          </div>
+
+          <div class="hw-tile">
+            <span class="hw-label">LOCKOUT FILTER</span>
+            <div class="hw-val-group">
+              <span id="lockoutStatusDot" class="status-dot dot-disabled"></span>
+              <strong id="lockoutStatusText">UNLOCKED</strong>
+            </div>
+            <span class="hw-sub" id="lockoutDesc">Touch triggers allowed</span>
+          </div>
+        </div>
+
+        <!-- Direct Control Buttons (For authorized user/admin) -->
+        <div class="action-buttons-group">
+          <button id="btnManualTrigger" class="glass-button btn-accent" onclick="App.triggerRelayCycle()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span>Trigger Relay Cycle Now</span>
+          </button>
+          <button id="btnCancelCycle" class="glass-button btn-danger" onclick="App.cancelCycle()" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
+            <span>Emergency Cutoff</span>
+          </button>
+          <button id="btnResetLockout" class="glass-button btn-warning" onclick="App.resetLockout()" disabled title="Admin Only">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            <span>Bypass Lockout</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN: Configuration, User DB, Logs -->
+      <div class="right-stack">
+
+        <!-- Custom Timer Configurations Card -->
+        <section class="grid-card glass-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="eyebrow">CUSTOM PARAMETERS</span>
+              <h2>Timing Calibration</h2>
+            </div>
+            <span class="info-badge">RTOS Synced</span>
+          </div>
+
+          <div class="config-controls">
+            <!-- Relay ON Duration Setting -->
+            <div class="control-box">
+              <div class="control-header">
+                <div class="control-info">
+                  <label for="onHoursSlider">Relay Active Duration</label>
+                  <p class="control-desc">Time relay remains energized when triggered</p>
+                </div>
+                <div class="number-display">
+                  <span id="onHoursDisplay">8.0</span> <span class="unit">hours</span>
+                </div>
+              </div>
+              <div class="slider-wrapper">
+                <input type="range" id="onHoursSlider" min="1" max="24" step="0.5" value="8" oninput="App.onTimerInput('on')">
+                <div class="slider-ticks">
+                  <span>1h</span>
+                  <span>7h</span>
+                  <span class="highlight">8h (Default)</span>
+                  <span>16h</span>
+                  <span>24h</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Lockout Cooldown Duration Setting -->
+            <div class="control-box">
+              <div class="control-header">
+                <div class="control-info">
+                  <label for="lockoutDaysSlider">Lockout Cooldown Duration</label>
+                  <p class="control-desc">Touch sensor completely ignored until countdown expires</p>
+                </div>
+                <div class="number-display">
+                  <span id="lockoutDaysDisplay">6.0</span> <span class="unit">days</span>
+                </div>
+              </div>
+              <div class="slider-wrapper">
+                <input type="range" id="lockoutDaysSlider" min="1" max="30" step="0.5" value="6" oninput="App.onTimerInput('lockout')">
+                <div class="slider-ticks">
+                  <span>1d</span>
+                  <span>5d</span>
+                  <span class="highlight">6d - 7d (Target)</span>
+                  <span>14d</span>
+                  <span>30d</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Save Parameters Button -->
+            <button id="btnSaveConfig" class="glass-button btn-primary w-full" onclick="App.saveTimers()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              <span>Save & Flash to ESP8266 Memory</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Inbuilt User Database Card (3 to 5 users) -->
+        <section class="grid-card glass-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="eyebrow">INBUILT FLASH DATABASE</span>
+              <h2>User Access Management</h2>
+            </div>
+            <div class="user-quota-badge">
+              <span id="userCountText">1 / 5</span> Slots Used
+            </div>
+          </div>
+
+          <p class="card-subtext">Secure on-chip storage for 3–5 authorized operators with admin approval controls.</p>
+
+          <!-- User Slots Table -->
+          <div class="user-table-wrap">
+            <table class="user-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="userTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Add User Trigger Button -->
+          <div class="user-actions-footer">
+            <button class="glass-button btn-outline-cyan" onclick="App.openNewUserModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+              <span>+ Register New Operator</span>
+            </button>
+            <span class="security-note">Requires Admin Authorization</span>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- Activity Log & RTOS Telemetry Footer -->
+    <footer class="system-footer glass-card">
+      <div class="footer-item">
+        <span class="ft-label">RTOS KERNEL:</span>
+        <span class="ft-val">FreeRTOS Cooperative Tasks</span>
+      </div>
+      <div class="footer-item">
+        <span class="ft-label">STORAGE:</span>
+        <span class="ft-val">LittleFS NVRAM (Persistent State)</span>
+      </div>
+      <div class="footer-item">
+        <span class="ft-label">TOUCH FILTER:</span>
+        <span class="ft-val">Debounced Capacitive Lock</span>
+      </div>
+      <div class="footer-item">
+        <span class="ft-label">UPTIME:</span>
+        <span id="espUptime" class="ft-val">00:00:00</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- MODAL: Authentication / Switch User -->
+  <div id="authModal" class="modal-backdrop hidden">
+    <div class="modal-card glass-card">
+      <div class="modal-header">
+        <h3>Operator Sign In</h3>
+        <button class="close-btn" onclick="App.closeAuthModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="event.preventDefault(); App.submitLogin();">
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="loginUsername" placeholder="e.g. admin or operator" required autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label>Password / PIN</label>
+            <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="glass-button btn-secondary" onclick="App.closeAuthModal()">Cancel</button>
+            <button type="submit" class="glass-button btn-primary">Sign In</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Admin Password Approval Popup for New User Registration -->
+  <div id="adminApprovalModal" class="modal-backdrop hidden">
+    <div class="modal-card glass-card modal-highlight-gold">
+      <div class="modal-header">
+        <div class="auth-icon-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div>
+          <h3>Admin Authorization Required</h3>
+          <p class="modal-subtitle">A master admin password is required to enroll a new user.</p>
+        </div>
+        <button class="close-btn" onclick="App.closeNewUserModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <form onsubmit="event.preventDefault(); App.submitNewUserRegistration();">
+          <div class="form-box-bordered">
+            <span class="form-box-tag">1. NEW USER CREDENTIALS</span>
+            <div class="form-group">
+              <label>New Operator Username</label>
+              <input type="text" id="newUsername" placeholder="e.g. operator2" required maxlength="16">
+            </div>
+            <div class="form-group">
+              <label>New Operator Password</label>
+              <input type="password" id="newUserPassword" placeholder="Minimum 4 characters" required minlength="4">
+            </div>
+            <div class="form-group">
+              <label>Role</label>
+              <select id="newUserRole">
+                <option value="operator">Operator (Trigger & View)</option>
+                <option value="admin">Administrator (Full Control)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-box-bordered box-admin-verify">
+            <span class="form-box-tag text-gold">2. ADMIN PASSWORD CONFIRMATION</span>
+            <div class="form-group">
+              <label class="text-gold">Master Admin Password</label>
+              <input type="password" id="adminAuthPassword" placeholder="Enter current Admin Password to approve" required>
+              <small class="hint-text">Only the administrator can authorize addition of new users into the ESP database (Max 5).</small>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="glass-button btn-secondary" onclick="App.closeNewUserModal()">Cancel</button>
+            <button type="submit" class="glass-button btn-gold">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>Authorize & Enroll User</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Floating Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
