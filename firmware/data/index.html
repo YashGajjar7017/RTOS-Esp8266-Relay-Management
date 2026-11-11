@@ -1,0 +1,2092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b0f19">
+  <title>CYBER-RELAY RTOS // Smart Management Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+/* CYBER-RELAY RTOS // Sexy Futuristic Glassmorphism Design System */
+:root {
+  --bg-deep: #07090e;
+  --bg-surface: #0e131f;
+  --bg-card: rgba(18, 24, 38, 0.72);
+  --bg-card-hover: rgba(26, 34, 54, 0.85);
+  
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-glow: rgba(56, 189, 248, 0.25);
+  
+  --accent-cyan: #06b6d4;
+  --accent-cyan-glow: rgba(6, 182, 212, 0.4);
+  --accent-blue: #3b82f6;
+  --accent-emerald: #10b981;
+  --accent-emerald-glow: rgba(16, 185, 129, 0.35);
+  --accent-amber: #f59e0b;
+  --accent-amber-glow: rgba(245, 158, 11, 0.35);
+  --accent-rose: #f43f5e;
+  --accent-rose-glow: rgba(244, 63, 94, 0.35);
+  --accent-gold: #fbbf24;
+  
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+  
+  --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Ambient glow orbs */
+.ambient-glow {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(140px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.28;
+}
+.glow-1 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, #0284c7 0%, rgba(2, 132, 199, 0) 70%);
+  top: -120px;
+  left: -120px;
+}
+.glow-2 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, #8b5cf6 0%, rgba(139, 92, 246, 0) 70%);
+  bottom: -150px;
+  right: -150px;
+}
+.glow-3 {
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, #059669 0%, rgba(5, 150, 105, 0) 70%);
+  top: 40%;
+  left: 35%;
+  opacity: 0.15;
+}
+
+/* Base Glass Card */
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.03);
+  transition: all 0.25s ease;
+}
+
+/* App Layout */
+.app-layout {
+  position: relative;
+  z-index: 1;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Header */
+.app-header {
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #0284c7, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 0 24px rgba(37, 99, 235, 0.5);
+}
+.brand-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.brand-info h1 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.badge-rtos {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(6, 182, 212, 0.15);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  text-shadow: 0 0 8px var(--accent-cyan-glow);
+}
+.subtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  border: 1px solid var(--border-subtle);
+  background: rgba(15, 23, 42, 0.6);
+}
+.status-pill.online {
+  color: var(--accent-emerald);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+.status-pill.offline {
+  color: var(--accent-rose);
+  border-color: rgba(244, 63, 94, 0.3);
+}
+
+.pulsing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: currentColor;
+  box-shadow: 0 0 10px currentColor;
+  animation: pulseDot 1.8s infinite ease-in-out;
+}
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.user-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px 6px 6px;
+  cursor: pointer;
+}
+.avatar-ring {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: white;
+}
+.user-info-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  text-align: left;
+}
+#currentUserName {
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+.role-tag {
+  font-size: 0.62rem;
+  font-family: var(--font-mono);
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 24px;
+}
+@media (max-width: 960px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.grid-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.eyebrow {
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 2px;
+}
+.card-title-group h2 {
+  font-size: 1.22rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* State Badge */
+.state-badge {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+.badge-idle {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+.badge-active {
+  background: rgba(6, 182, 212, 0.18);
+  color: #22d3ee;
+  border-color: rgba(6, 182, 212, 0.45);
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+}
+.badge-lockout {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.4);
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.25);
+}
+
+/* Radial Countdown Container */
+.countdown-radial-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px auto;
+  width: 270px;
+  height: 270px;
+}
+.radial-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.radial-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-width: 14;
+}
+.radial-progress {
+  fill: none;
+  stroke: url(#cyanGlow);
+  stroke-width: 14;
+  stroke-linecap: round;
+  stroke-dasharray: 691; /* 2 * PI * 110 */
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.8s ease, stroke 0.5s ease;
+  filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.5));
+}
+
+.radial-center-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+}
+
+.relay-bulb-indicator {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  transition: all 0.3s ease;
+}
+.relay-bulb-indicator.bulb-on {
+  background: rgba(6, 182, 212, 0.2);
+  color: var(--accent-cyan);
+  box-shadow: 0 0 25px var(--accent-cyan-glow);
+  transform: scale(1.05);
+}
+.relay-bulb-indicator svg {
+  width: 26px;
+  height: 26px;
+}
+
+.countdown-label {
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.digital-clock {
+  font-family: var(--font-mono);
+  font-size: 1.55rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  text-shadow: 0 0 14px rgba(255, 255, 255, 0.2);
+}
+.digital-clock .unit {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-right: 2px;
+}
+.sub-status {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+  max-width: 190px;
+  line-height: 1.3;
+}
+
+/* Hardware Status Tiles */
+.hardware-tiles-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+@media (max-width: 580px) {
+  .hardware-tiles-row {
+    grid-template-columns: 1fr;
+  }
+}
+.hw-tile {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.hw-label {
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.hw-val-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hw-val-group strong {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.hw-sub {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+}
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.dot-off { background: var(--text-muted); }
+.dot-active {
+  background: var(--accent-cyan);
+  box-shadow: 0 0 10px var(--accent-cyan);
+}
+.dot-disabled { background: var(--text-muted); }
+.dot-warning {
+  background: var(--accent-amber);
+  box-shadow: 0 0 10px var(--accent-amber);
+}
+
+/* Buttons & Glass styling */
+.glass-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-main);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+.glass-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+.glass-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.glass-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-accent {
+  background: linear-gradient(135deg, #0284c7, #2563eb);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: white;
+  box-shadow: 0 4px 18px rgba(37, 99, 235, 0.35);
+}
+.btn-accent:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0369a1, #1d4ed8);
+  box-shadow: 0 6px 24px rgba(37, 99, 235, 0.55);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #0d9488, #0284c7);
+  border-color: rgba(20, 184, 166, 0.4);
+  color: white;
+  box-shadow: 0 4px 18px rgba(13, 148, 136, 0.35);
+}
+
+.btn-danger {
+  background: rgba(244, 63, 94, 0.12);
+  border-color: rgba(244, 63, 94, 0.35);
+  color: #fb7185;
+}
+.btn-danger:hover:not(:disabled) {
+  background: rgba(244, 63, 94, 0.25);
+  border-color: rgba(244, 63, 94, 0.6);
+  color: white;
+}
+
+.btn-warning {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  border-color: rgba(251, 191, 36, 0.5);
+  color: #ffffff;
+  box-shadow: 0 4px 18px rgba(217, 119, 6, 0.35);
+}
+
+.btn-outline-cyan {
+  border-color: rgba(6, 182, 212, 0.4);
+  color: var(--accent-cyan);
+  background: rgba(6, 182, 212, 0.08);
+}
+.btn-outline-cyan:hover:not(:disabled) {
+  background: rgba(6, 182, 212, 0.18);
+  border-color: rgba(6, 182, 212, 0.7);
+}
+
+.icon-btn-sm {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+}
+.icon-btn-sm:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.1);
+}
+.icon-btn-sm svg {
+  width: 16px;
+  height: 16px;
+}
+
+.action-buttons-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Right Stack Cards */
+.right-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.info-badge {
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+}
+
+/* Config Controls */
+.config-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.control-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+.control-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.control-info label {
+  font-size: 0.92rem;
+  font-weight: 700;
+  display: block;
+}
+.control-desc {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+}
+.number-display {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+.number-display .unit {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.slider-wrapper input[type="range"] {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  outline: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+.slider-wrapper input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 12px var(--accent-cyan-glow);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.slider-wrapper input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+.slider-ticks {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+.slider-ticks .highlight {
+  color: var(--accent-cyan);
+  font-weight: 700;
+}
+
+/* User Database Table */
+.user-quota-badge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  background: rgba(6, 182, 212, 0.12);
+  color: var(--accent-cyan);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+}
+.card-subtext {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: -10px;
+}
+.user-table-wrap {
+  overflow-x: auto;
+}
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.84rem;
+}
+.user-table th {
+  padding: 8px 12px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.user-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+.user-badge-role {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.role-admin {
+  background: rgba(251, 191, 36, 0.15);
+  color: var(--accent-gold);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+.role-operator {
+  background: rgba(56, 189, 248, 0.12);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.status-active-tag {
+  color: var(--accent-emerald);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.status-pending-tag {
+  color: var(--accent-amber);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.user-actions-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.security-note {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* Footer Telemetry */
+.system-footer {
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.footer-item {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+}
+.ft-label {
+  color: var(--text-muted);
+  margin-right: 6px;
+}
+.ft-val {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Modals */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+.modal-backdrop.hidden {
+  display: none;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 480px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: modalIn 0.25s ease-out;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modal-highlight-gold {
+  border-color: rgba(251, 191, 36, 0.4);
+  box-shadow: 0 0 35px rgba(217, 119, 6, 0.25);
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  justify-content: space-between;
+}
+.auth-icon-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: rgba(251, 191, 36, 0.15);
+  color: var(--accent-gold);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.auth-icon-badge svg {
+  width: 20px;
+  height: 20px;
+}
+
+.modal-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px;
+}
+.close-btn:hover {
+  color: var(--text-primary);
+}
+
+/* Form Styles */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.form-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.form-group input, .form-group select {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-family: var(--font-main);
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  outline: none;
+  transition: all 0.2s;
+}
+.form-group input:focus, .form-group select:focus {
+  border-color: var(--accent-cyan);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 12px var(--accent-cyan-glow);
+}
+.form-group select option {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.form-box-bordered {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+  position: relative;
+}
+.box-admin-verify {
+  border-color: rgba(251, 191, 36, 0.35);
+  background: rgba(251, 191, 36, 0.04);
+}
+.form-box-tag {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 12px;
+  letter-spacing: 0.06em;
+}
+.text-gold {
+  color: var(--accent-gold) !important;
+}
+.hint-text {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Toast System */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 2000;
+}
+.toast {
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  animation: toastIn 0.3s ease;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.toast-success {
+  border-color: rgba(16, 185, 129, 0.5);
+  color: #34d399;
+}
+.toast-error {
+  border-color: rgba(244, 63, 94, 0.5);
+  color: #fb7185;
+}
+.toast-info {
+  border-color: rgba(6, 182, 212, 0.5);
+  color: #22d3ee;
+}
+
+.w-full { width: 100%; }
+.text-right { text-align: right; }
+
+</style>
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <!-- Main Container -->
+  <div class="app-layout">
+    
+    <!-- Top Navigation Header -->
+    <header class="app-header glass-card">
+      <div class="header-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <h1>CYBER-RELAY <span class="badge-rtos">RTOS v2.4</span></h1>
+          <p class="subtitle">ESP8266 Real-Time Relay & Touch Controller</p>
+        </div>
+      </div>
+
+      <div class="header-meta">
+        <div id="connStatusPill" class="status-pill online">
+          <span class="pulsing-dot"></span>
+          <span id="connStatusText">ESP8266 CONNECTED</span>
+        </div>
+        
+        <!-- User Profile Pill -->
+        <div id="userProfilePill" class="user-pill glass-button" onclick="App.openAuthModal()">
+          <div class="avatar-ring">
+            <span id="userInitial">A</span>
+          </div>
+          <div class="user-info-text">
+            <span id="currentUserName">Admin</span>
+            <span id="currentUserRole" class="role-tag">MASTER</span>
+          </div>
+          <button id="logoutBtn" class="icon-btn-sm" title="Log Out" onclick="event.stopPropagation(); App.logout()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Grid Dashboard -->
+    <main class="dashboard-grid">
+
+      <!-- LEFT COLUMN: Live State & Circular Countdown Gauge -->
+      <section class="grid-card glass-card state-hero-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="eyebrow">SYSTEM MONITOR</span>
+            <h2>Live Operational State</h2>
+          </div>
+          <div id="sysStateBadge" class="state-badge badge-idle">
+            <span class="state-icon">●</span>
+            <span id="sysStateText">IDLE / READY</span>
+          </div>
+        </div>
+
+        <!-- Radial Countdown Visualizer -->
+        <div class="countdown-radial-container">
+          <svg class="radial-svg" viewBox="0 0 260 260">
+            <defs>
+              <linearGradient id="cyanGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#06b6d4" />
+                <stop offset="100%" stop-color="#3b82f6" />
+              </linearGradient>
+              <linearGradient id="amberGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#f59e0b" />
+                <stop offset="100%" stop-color="#ef4444" />
+              </linearGradient>
+              <linearGradient id="emeraldGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#10b981" />
+                <stop offset="100%" stop-color="#06b6d4" />
+              </linearGradient>
+            </defs>
+            <circle class="radial-bg" cx="130" cy="130" r="110"></circle>
+            <circle id="radialProgress" class="radial-progress" cx="130" cy="130" r="110"></circle>
+          </svg>
+
+          <!-- Inside Radial Gauge -->
+          <div class="radial-center-content">
+            <div class="relay-bulb-indicator" id="relayBulb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+              </svg>
+            </div>
+            <div class="countdown-label" id="countdownLabel">READY FOR TOUCH</div>
+            <div class="digital-clock" id="digitalClock">
+              <span id="clockDays">00</span><span class="unit">d</span> :
+              <span id="clockHours">00</span><span class="unit">h</span> :
+              <span id="clockMins">00</span><span class="unit">m</span> :
+              <span id="clockSecs">00</span><span class="unit">s</span>
+            </div>
+            <div class="sub-status" id="countdownSubtext">Tap touch sensor to engage 8.0h duty cycle</div>
+          </div>
+        </div>
+
+        <!-- Quick Hardware Status Tiles -->
+        <div class="hardware-tiles-row">
+          <div class="hw-tile">
+            <span class="hw-label">RELAY PIN 1</span>
+            <div class="hw-val-group">
+              <span id="relayStatusDot" class="status-dot dot-off"></span>
+              <strong id="relayStatusText">OFF</strong>
+            </div>
+            <span class="hw-sub" id="relayPinInfo">GPIO1 (TX) / D1 Config</span>
+          </div>
+
+          <div class="hw-tile">
+            <span class="hw-label">TOUCH SENSOR</span>
+            <div class="hw-val-group">
+              <span id="touchStatusDot" class="status-dot dot-active"></span>
+              <strong id="touchStatusText">READY</strong>
+            </div>
+            <span class="hw-sub" id="touchPinInfo">TTP223 Sensor Active</span>
+          </div>
+
+          <div class="hw-tile">
+            <span class="hw-label">LOCKOUT FILTER</span>
+            <div class="hw-val-group">
+              <span id="lockoutStatusDot" class="status-dot dot-disabled"></span>
+              <strong id="lockoutStatusText">UNLOCKED</strong>
+            </div>
+            <span class="hw-sub" id="lockoutDesc">Touch triggers allowed</span>
+          </div>
+        </div>
+
+        <!-- Direct Control Buttons (For authorized user/admin) -->
+        <div class="action-buttons-group">
+          <button id="btnManualTrigger" class="glass-button btn-accent" onclick="App.triggerRelayCycle()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span>Trigger Relay Cycle Now</span>
+          </button>
+          <button id="btnCancelCycle" class="glass-button btn-danger" onclick="App.cancelCycle()" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
+            <span>Emergency Cutoff</span>
+          </button>
+          <button id="btnResetLockout" class="glass-button btn-warning" onclick="App.resetLockout()" disabled title="Admin Only">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            <span>Bypass Lockout</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN: Configuration, User DB, Logs -->
+      <div class="right-stack">
+
+        <!-- Custom Timer Configurations Card -->
+        <section class="grid-card glass-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="eyebrow">CUSTOM PARAMETERS</span>
+              <h2>Timing Calibration</h2>
+            </div>
+            <span class="info-badge">RTOS Synced</span>
+          </div>
+
+          <div class="config-controls">
+            <!-- Relay ON Duration Setting -->
+            <div class="control-box">
+              <div class="control-header">
+                <div class="control-info">
+                  <label for="onHoursSlider">Relay Active Duration</label>
+                  <p class="control-desc">Time relay remains energized when triggered</p>
+                </div>
+                <div class="number-display">
+                  <span id="onHoursDisplay">8.0</span> <span class="unit">hours</span>
+                </div>
+              </div>
+              <div class="slider-wrapper">
+                <input type="range" id="onHoursSlider" min="1" max="24" step="0.5" value="8" oninput="App.onTimerInput('on')">
+                <div class="slider-ticks">
+                  <span>1h</span>
+                  <span>7h</span>
+                  <span class="highlight">8h (Default)</span>
+                  <span>16h</span>
+                  <span>24h</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Lockout Cooldown Duration Setting -->
+            <div class="control-box">
+              <div class="control-header">
+                <div class="control-info">
+                  <label for="lockoutDaysSlider">Lockout Cooldown Duration</label>
+                  <p class="control-desc">Touch sensor completely ignored until countdown expires</p>
+                </div>
+                <div class="number-display">
+                  <span id="lockoutDaysDisplay">6.0</span> <span class="unit">days</span>
+                </div>
+              </div>
+              <div class="slider-wrapper">
+                <input type="range" id="lockoutDaysSlider" min="1" max="30" step="0.5" value="6" oninput="App.onTimerInput('lockout')">
+                <div class="slider-ticks">
+                  <span>1d</span>
+                  <span>5d</span>
+                  <span class="highlight">6d - 7d (Target)</span>
+                  <span>14d</span>
+                  <span>30d</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Save Parameters Button -->
+            <button id="btnSaveConfig" class="glass-button btn-primary w-full" onclick="App.saveTimers()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              <span>Save & Flash to ESP8266 Memory</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Inbuilt User Database Card (3 to 5 users) -->
+        <section class="grid-card glass-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="eyebrow">INBUILT FLASH DATABASE</span>
+              <h2>User Access Management</h2>
+            </div>
+            <div class="user-quota-badge">
+              <span id="userCountText">1 / 5</span> Slots Used
+            </div>
+          </div>
+
+          <p class="card-subtext">Secure on-chip storage for 3–5 authorized operators with admin approval controls.</p>
+
+          <!-- User Slots Table -->
+          <div class="user-table-wrap">
+            <table class="user-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="userTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Add User Trigger Button -->
+          <div class="user-actions-footer">
+            <button class="glass-button btn-outline-cyan" onclick="App.openNewUserModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+              <span>+ Register New Operator</span>
+            </button>
+            <span class="security-note">Requires Admin Authorization</span>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- Activity Log & RTOS Telemetry Footer -->
+    <footer class="system-footer glass-card">
+      <div class="footer-item">
+        <span class="ft-label">RTOS KERNEL:</span>
+        <span class="ft-val">FreeRTOS Cooperative Tasks</span>
+      </div>
+      <div class="footer-item">
+        <span class="ft-label">STORAGE:</span>
+        <span class="ft-val">LittleFS NVRAM (Persistent State)</span>
+      </div>
+      <div class="footer-item">
+        <span class="ft-label">TOUCH FILTER:</span>
+        <span class="ft-val">Debounced Capacitive Lock</span>
+      </div>
+      <div class="footer-item">
+        <span class="ft-label">UPTIME:</span>
+        <span id="espUptime" class="ft-val">00:00:00</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- MODAL: Authentication / Switch User -->
+  <div id="authModal" class="modal-backdrop hidden">
+    <div class="modal-card glass-card">
+      <div class="modal-header">
+        <h3>Operator Sign In</h3>
+        <button class="close-btn" onclick="App.closeAuthModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="event.preventDefault(); App.submitLogin();">
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="loginUsername" placeholder="e.g. admin or operator" required autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label>Password / PIN</label>
+            <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="glass-button btn-secondary" onclick="App.closeAuthModal()">Cancel</button>
+            <button type="submit" class="glass-button btn-primary">Sign In</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Admin Password Approval Popup for New User Registration -->
+  <div id="adminApprovalModal" class="modal-backdrop hidden">
+    <div class="modal-card glass-card modal-highlight-gold">
+      <div class="modal-header">
+        <div class="auth-icon-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div>
+          <h3>Admin Authorization Required</h3>
+          <p class="modal-subtitle">A master admin password is required to enroll a new user.</p>
+        </div>
+        <button class="close-btn" onclick="App.closeNewUserModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <form onsubmit="event.preventDefault(); App.submitNewUserRegistration();">
+          <div class="form-box-bordered">
+            <span class="form-box-tag">1. NEW USER CREDENTIALS</span>
+            <div class="form-group">
+              <label>New Operator Username</label>
+              <input type="text" id="newUsername" placeholder="e.g. operator2" required maxlength="16">
+            </div>
+            <div class="form-group">
+              <label>New Operator Password</label>
+              <input type="password" id="newUserPassword" placeholder="Minimum 4 characters" required minlength="4">
+            </div>
+            <div class="form-group">
+              <label>Role</label>
+              <select id="newUserRole">
+                <option value="operator">Operator (Trigger & View)</option>
+                <option value="admin">Administrator (Full Control)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-box-bordered box-admin-verify">
+            <span class="form-box-tag text-gold">2. ADMIN PASSWORD CONFIRMATION</span>
+            <div class="form-group">
+              <label class="text-gold">Master Admin Password</label>
+              <input type="password" id="adminAuthPassword" placeholder="Enter current Admin Password to approve" required>
+              <small class="hint-text">Only the administrator can authorize addition of new users into the ESP database (Max 5).</small>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="glass-button btn-secondary" onclick="App.closeNewUserModal()">Cancel</button>
+            <button type="submit" class="glass-button btn-gold">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>Authorize & Enroll User</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Floating Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script>
+/**
+ * CYBER-RELAY RTOS // Frontend Application Controller
+ * Handles real-time telemetry, timer calibration, user DB, and Admin Authorization Modal
+ */
+
+const App = (() => {
+  // State definition
+  const state = {
+    connected: false,
+    pollInterval: null,
+    uptimeTimer: null,
+    simulated: false,
+    
+    // Live Hardware & RTOS State
+    system: {
+      mode: 'IDLE', // 'IDLE', 'RELAY_ON', 'LOCKOUT'
+      relayActive: false,
+      touchActive: true,
+      lockoutActive: false,
+      onRemainingSec: 0,
+      totalOnSec: 8 * 3600,
+      lockoutRemainingSec: 0,
+      totalLockoutSec: 6 * 86400,
+      uptimeSeconds: 0
+    },
+
+    // Timer Calibration Config
+    config: {
+      onHours: 8.0,
+      lockoutDays: 6.0
+    },
+
+    // Inbuilt User Database (Max 5 users)
+    currentUser: {
+      username: 'admin',
+      role: 'admin',
+      token: 'demo-token'
+    },
+    users: [
+      { id: 1, username: 'admin', role: 'admin', status: 'active', created: '2026-11-10' }
+    ]
+  };
+
+  // SVG Gauge constant (Circumference of r=110: 2 * PI * 110 = 691.15)
+  const GAUGE_CIRCUMFERENCE = 691.15;
+
+  // Initialize
+  function init() {
+    setupEventListeners();
+    updateUI();
+    startPolling();
+    startLocalUptime();
+
+    // Check if running on ESP8266 directly or local development file
+    if (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      console.log('Running in Browser Preview / Simulation Mode');
+      toast('Preview Mode: Standalone Simulation Active', 'info');
+      state.connected = true;
+      state.simulated = true;
+      updateUI();
+    }
+  }
+
+  function setupEventListeners() {
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeAuthModal();
+        closeNewUserModal();
+      }
+    });
+  }
+
+  // Polling Real-time Status from ESP8266 REST API
+  function startPolling() {
+    fetchStatus();
+    if (state.pollInterval) clearInterval(state.pollInterval);
+    state.pollInterval = setInterval(fetchStatus, 1000);
+  }
+
+  async function fetchStatus() {
+    if (state.simulated) {
+      // Run local simulated countdown logic
+      tickSimulation();
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/status', {
+        headers: {
+          'Authorization': state.currentUser ? `Bearer ${state.currentUser.token}` : ''
+        }
+      });
+
+      if (!response.ok) throw new Error('ESP API Error');
+
+      const data = await response.json();
+      state.connected = true;
+      state.system.mode = data.mode || 'IDLE';
+      state.system.relayActive = data.relayActive || false;
+      state.system.touchActive = data.touchActive !== false;
+      state.system.lockoutActive = data.lockoutActive || false;
+      state.system.onRemainingSec = data.onRemainingSec || 0;
+      state.system.totalOnSec = data.totalOnSec || (data.config?.onHours || 8) * 3600;
+      state.system.lockoutRemainingSec = data.lockoutRemainingSec || 0;
+      state.system.totalLockoutSec = data.totalLockoutSec || (data.config?.lockoutDays || 6) * 86400;
+      state.system.uptimeSeconds = data.uptimeSeconds || 0;
+
+      if (data.config) {
+        state.config.onHours = data.config.onHours;
+        state.config.lockoutDays = data.config.lockoutDays;
+      }
+
+      if (data.users) {
+        state.users = data.users;
+      }
+
+      updateUI();
+    } catch (err) {
+      if (state.connected && !state.simulated) {
+        state.connected = false;
+        toast('Connection to ESP8266 lost', 'error');
+        updateUI();
+      }
+    }
+  }
+
+  // Simulation tick for testing UI when not flashed to hardware
+  function tickSimulation() {
+    state.system.uptimeSeconds++;
+    
+    if (state.system.mode === 'RELAY_ON') {
+      if (state.system.onRemainingSec > 0) {
+        state.system.onRemainingSec--;
+      } else {
+        // Transition to Lockout
+        state.system.mode = 'LOCKOUT';
+        state.system.relayActive = false;
+        state.system.touchActive = false;
+        state.system.lockoutActive = true;
+        state.system.lockoutRemainingSec = Math.round(state.config.lockoutDays * 86400);
+        state.system.totalLockoutSec = state.system.lockoutRemainingSec;
+        toast('Relay cycle complete. Lockout period initiated.', 'info');
+      }
+    } else if (state.system.mode === 'LOCKOUT') {
+      if (state.system.lockoutRemainingSec > 0) {
+        state.system.lockoutRemainingSec--;
+      } else {
+        // Transition back to Idle
+        state.system.mode = 'IDLE';
+        state.system.relayActive = false;
+        state.system.touchActive = true;
+        state.system.lockoutActive = false;
+        toast('Lockout timer expired! Touch sensor re-enabled.', 'success');
+      }
+    }
+    updateUI();
+  }
+
+  function startLocalUptime() {
+    if (state.uptimeTimer) clearInterval(state.uptimeTimer);
+    state.uptimeTimer = setInterval(() => {
+      document.getElementById('espUptime').textContent = formatSecondsToUptime(state.system.uptimeSeconds);
+    }, 1000);
+  }
+
+  // Update all UI elements
+  function updateUI() {
+    updateConnectionStatus();
+    updateStateHero();
+    updateHardwareTiles();
+    updateActionButtons();
+    updateUserPill();
+    updateConfigSliders();
+    renderUserTable();
+  }
+
+  function updateConnectionStatus() {
+    const pill = document.getElementById('connStatusPill');
+    const text = document.getElementById('connStatusText');
+    if (state.connected) {
+      pill.className = 'status-pill online';
+      text.textContent = state.simulated ? 'SIMULATOR MODE (ONLINE)' : 'ESP8266 CONNECTED (AP: 192.168.4.1)';
+    } else {
+      pill.className = 'status-pill offline';
+      text.textContent = 'DISCONNECTED (CHECK WIFI)';
+    }
+  }
+
+  function updateStateHero() {
+    const badge = document.getElementById('sysStateBadge');
+    const badgeText = document.getElementById('sysStateText');
+    const bulb = document.getElementById('relayBulb');
+    const label = document.getElementById('countdownLabel');
+    const subtext = document.getElementById('countdownSubtext');
+    const radial = document.getElementById('radialProgress');
+
+    let remaining = 0;
+    let total = 1;
+    let progressRatio = 0;
+
+    if (state.system.mode === 'IDLE') {
+      badge.className = 'state-badge badge-idle';
+      badgeText.textContent = 'IDLE / READY';
+      bulb.className = 'relay-bulb-indicator';
+      label.textContent = 'READY FOR TOUCH';
+      subtext.textContent = `Tap touch sensor or click button to run ${state.config.onHours}h duty cycle`;
+      radial.style.stroke = 'url(#emeraldGlow)';
+      radial.style.strokeDashoffset = '0';
+      setDigitalClock(0, 0, 0, 0);
+    } 
+    else if (state.system.mode === 'RELAY_ON') {
+      badge.className = 'state-badge badge-active';
+      badgeText.textContent = 'RELAY ACTIVE (ON)';
+      bulb.className = 'relay-bulb-indicator bulb-on';
+      label.textContent = 'RELAY ON COUNTDOWN';
+      subtext.textContent = 'Relay energized. Running custom duty cycle.';
+      radial.style.stroke = 'url(#cyanGlow)';
+      
+      remaining = state.system.onRemainingSec;
+      total = state.system.totalOnSec || (state.config.onHours * 3600);
+      progressRatio = total > 0 ? (remaining / total) : 0;
+      radial.style.strokeDashoffset = (GAUGE_CIRCUMFERENCE * (1 - progressRatio)).toString();
+      
+      const { d, h, m, s } = splitSeconds(remaining);
+      setDigitalClock(d, h, m, s);
+    } 
+    else if (state.system.mode === 'LOCKOUT') {
+      badge.className = 'state-badge badge-lockout';
+      badgeText.textContent = 'LOCKOUT COOLDOWN';
+      bulb.className = 'relay-bulb-indicator';
+      label.textContent = 'LOCKED COUNTDOWN';
+      subtext.textContent = 'Touch sensor locked. Responses blocked until timer finishes.';
+      radial.style.stroke = 'url(#amberGlow)';
+      
+      remaining = state.system.lockoutRemainingSec;
+      total = state.system.totalLockoutSec || (state.config.lockoutDays * 86400);
+      progressRatio = total > 0 ? (remaining / total) : 0;
+      radial.style.strokeDashoffset = (GAUGE_CIRCUMFERENCE * (1 - progressRatio)).toString();
+      
+      const { d, h, m, s } = splitSeconds(remaining);
+      setDigitalClock(d, h, m, s);
+    }
+  }
+
+  function setDigitalClock(d, h, m, s) {
+    document.getElementById('clockDays').textContent = String(d).padStart(2, '0');
+    document.getElementById('clockHours').textContent = String(h).padStart(2, '0');
+    document.getElementById('clockMins').textContent = String(m).padStart(2, '0');
+    document.getElementById('clockSecs').textContent = String(s).padStart(2, '0');
+  }
+
+  function updateHardwareTiles() {
+    // Relay tile
+    const relayDot = document.getElementById('relayStatusDot');
+    const relayText = document.getElementById('relayStatusText');
+    if (state.system.relayActive) {
+      relayDot.className = 'status-dot dot-active';
+      relayText.textContent = 'ENERGIZED (ON)';
+      relayText.style.color = 'var(--accent-cyan)';
+    } else {
+      relayDot.className = 'status-dot dot-off';
+      relayText.textContent = 'OFF';
+      relayText.style.color = 'var(--text-muted)';
+    }
+
+    // Touch module tile
+    const touchDot = document.getElementById('touchStatusDot');
+    const touchText = document.getElementById('touchStatusText');
+    const touchSub = document.getElementById('touchPinInfo');
+    if (state.system.mode === 'LOCKOUT') {
+      touchDot.className = 'status-dot dot-disabled';
+      touchText.textContent = 'BLOCKED / LOCKED';
+      touchText.style.color = 'var(--accent-amber)';
+      touchSub.textContent = 'Lockout filter active';
+    } else {
+      touchDot.className = 'status-dot dot-active';
+      touchText.textContent = 'ACTIVE / READY';
+      touchText.style.color = 'var(--accent-emerald)';
+      touchSub.textContent = 'TTP223 Sensor Listening';
+    }
+
+    // Lockout tile
+    const lockDot = document.getElementById('lockoutStatusDot');
+    const lockText = document.getElementById('lockoutStatusText');
+    const lockDesc = document.getElementById('lockoutDesc');
+    if (state.system.mode === 'LOCKOUT') {
+      lockDot.className = 'status-dot dot-warning';
+      lockText.textContent = 'ENGAGED';
+      lockText.style.color = 'var(--accent-amber)';
+      lockDesc.textContent = 'Ignoring all touch triggers';
+    } else {
+      lockDot.className = 'status-dot dot-disabled';
+      lockText.textContent = 'UNLOCKED';
+      lockText.style.color = 'var(--text-secondary)';
+      lockDesc.textContent = 'Touch triggers allowed';
+    }
+  }
+
+  function updateActionButtons() {
+    const btnTrigger = document.getElementById('btnManualTrigger');
+    const btnCancel = document.getElementById('btnCancelCycle');
+    const btnResetLock = document.getElementById('btnResetLockout');
+    const isAdmin = state.currentUser && state.currentUser.role === 'admin';
+
+    if (state.system.mode === 'IDLE') {
+      btnTrigger.disabled = false;
+      btnCancel.disabled = true;
+      btnResetLock.disabled = true;
+    } else if (state.system.mode === 'RELAY_ON') {
+      btnTrigger.disabled = true;
+      btnCancel.disabled = !state.currentUser; // Operator or Admin can cutoff
+      btnResetLock.disabled = true;
+    } else if (state.system.mode === 'LOCKOUT') {
+      btnTrigger.disabled = true;
+      btnCancel.disabled = true;
+      btnResetLock.disabled = !isAdmin; // Admin only can bypass lockout
+    }
+  }
+
+  function updateUserPill() {
+    const nameEl = document.getElementById('currentUserName');
+    const roleEl = document.getElementById('currentUserRole');
+    const initialEl = document.getElementById('userInitial');
+
+    if (state.currentUser) {
+      nameEl.textContent = state.currentUser.username;
+      roleEl.textContent = state.currentUser.role.toUpperCase();
+      initialEl.textContent = state.currentUser.username.charAt(0).toUpperCase();
+      document.getElementById('logoutBtn').style.display = 'flex';
+    } else {
+      nameEl.textContent = 'Guest';
+      roleEl.textContent = 'SIGN IN';
+      initialEl.textContent = '?';
+      document.getElementById('logoutBtn').style.display = 'none';
+    }
+  }
+
+  function updateConfigSliders() {
+    document.getElementById('onHoursDisplay').textContent = Number(state.config.onHours).toFixed(1);
+    document.getElementById('onHoursSlider').value = state.config.onHours;
+
+    document.getElementById('lockoutDaysDisplay').textContent = Number(state.config.lockoutDays).toFixed(1);
+    document.getElementById('lockoutDaysSlider').value = state.config.lockoutDays;
+  }
+
+  function onTimerInput(type) {
+    if (type === 'on') {
+      const val = parseFloat(document.getElementById('onHoursSlider').value);
+      state.config.onHours = val;
+      document.getElementById('onHoursDisplay').textContent = val.toFixed(1);
+    } else if (type === 'lockout') {
+      const val = parseFloat(document.getElementById('lockoutDaysSlider').value);
+      state.config.lockoutDays = val;
+      document.getElementById('lockoutDaysDisplay').textContent = val.toFixed(1);
+    }
+  }
+
+  // Save updated timer values to ESP Flash
+  async function saveTimers() {
+    if (!state.currentUser) {
+      toast('Please sign in to modify settings', 'error');
+      openAuthModal();
+      return;
+    }
+
+    if (state.simulated) {
+      toast(`Saved: Relay ON = ${state.config.onHours}h, Lockout = ${state.config.lockoutDays}d`, 'success');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${state.currentUser.token}`
+        },
+        body: JSON.stringify({
+          onHours: state.config.onHours,
+          lockoutDays: state.config.lockoutDays
+        })
+      });
+
+      if (!res.ok) throw new Error('Failed to update config');
+      toast('Parameters successfully written to ESP8266 flash!', 'success');
+      fetchStatus();
+    } catch (e) {
+      toast('Error saving configuration to ESP8266', 'error');
+    }
+  }
+
+  // Trigger cycle manually
+  async function triggerRelayCycle() {
+    if (state.system.mode !== 'IDLE') {
+      toast('Cannot trigger: system is currently ' + state.system.mode, 'error');
+      return;
+    }
+
+    if (state.simulated) {
+      state.system.mode = 'RELAY_ON';
+      state.system.relayActive = true;
+      state.system.touchActive = false;
+      state.system.lockoutActive = false;
+      state.system.totalOnSec = Math.round(state.config.onHours * 3600);
+      state.system.onRemainingSec = state.system.totalOnSec;
+      toast(`Relay activated for ${state.config.onHours} hours!`, 'success');
+      updateUI();
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'trigger' })
+      });
+      if (!res.ok) throw new Error();
+      toast('Relay triggered via RTOS command', 'success');
+      fetchStatus();
+    } catch (e) {
+      toast('Failed to trigger relay', 'error');
+    }
+  }
+
+  // Cancel cycle
+  async function cancelCycle() {
+    if (state.simulated) {
+      state.system.mode = 'IDLE';
+      state.system.relayActive = false;
+      state.system.touchActive = true;
+      state.system.lockoutActive = false;
+      state.system.onRemainingSec = 0;
+      toast('Emergency Cutoff Executed', 'info');
+      updateUI();
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'cancel' })
+      });
+      if (!res.ok) throw new Error();
+      toast('Cycle cancelled', 'info');
+      fetchStatus();
+    } catch (e) {
+      toast('Cutoff command failed', 'error');
+    }
+  }
+
+  // Reset Lockout (Admin bypass)
+  async function resetLockout() {
+    if (!state.currentUser || state.currentUser.role !== 'admin') {
+      toast('Admin privileges required to bypass lockout', 'error');
+      return;
+    }
+
+    if (state.simulated) {
+      state.system.mode = 'IDLE';
+      state.system.lockoutRemainingSec = 0;
+      state.system.touchActive = true;
+      state.system.lockoutActive = false;
+      toast('Lockout bypassed by Admin', 'success');
+      updateUI();
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/control', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${state.currentUser.token}`
+        },
+        body: JSON.stringify({ action: 'reset_lockout' })
+      });
+      if (!res.ok) throw new Error();
+      toast('Lockout bypassed by Admin', 'success');
+      fetchStatus();
+    } catch (e) {
+      toast('Lockout reset failed', 'error');
+    }
+  }
+
+  // Render User Database Table (3 to 5 users)
+  function renderUserTable() {
+    const tbody = document.getElementById('userTableBody');
+    const countBadge = document.getElementById('userCountText');
+    countBadge.textContent = `${state.users.length} / 5`;
+
+    tbody.innerHTML = '';
+    state.users.forEach(user => {
+      const tr = document.createElement('tr');
+      const isAdmin = user.role === 'admin';
+      const isCurrent = state.currentUser && state.currentUser.username === user.username;
+
+      tr.innerHTML = `
+        <td>
+          <strong>${escapeHtml(user.username)}</strong>
+          ${isCurrent ? '<span style="color:var(--accent-cyan); font-size:0.7rem; margin-left:4px;">(You)</span>' : ''}
+        </td>
+        <td>
+          <span class="user-badge-role ${isAdmin ? 'role-admin' : 'role-operator'}">${user.role}</span>
+        </td>
+        <td>
+          <span class="${user.status === 'active' ? 'status-active-tag' : 'status-pending-tag'}">
+            ● ${user.status.toUpperCase()}
+          </span>
+        </td>
+        <td class="text-right">
+          ${!isAdmin ? `
+            <button class="icon-btn-sm" title="Remove User" onclick="App.deleteUser(${user.id})">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          ` : '<span style="font-size:0.7rem; color:var(--text-muted);">Master</span>'}
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Admin approval modal for adding new user
+  function openNewUserModal() {
+    if (state.users.length >= 5) {
+      toast('Maximum capacity reached (5 users max in ESP DB)', 'error');
+      return;
+    }
+    document.getElementById('newUsername').value = '';
+    document.getElementById('newUserPassword').value = '';
+    document.getElementById('adminAuthPassword').value = '';
+    document.getElementById('adminApprovalModal').classList.remove('hidden');
+  }
+
+  function closeNewUserModal() {
+    document.getElementById('adminApprovalModal').classList.add('hidden');
+  }
+
+  // Submit New User Registration (With Admin Password Approval)
+  async function submitNewUserRegistration() {
+    const newUsername = document.getElementById('newUsername').value.trim();
+    const newUserPassword = document.getElementById('newUserPassword').value;
+    const newUserRole = document.getElementById('newUserRole').value;
+    const adminPassword = document.getElementById('adminAuthPassword').value;
+
+    if (!newUsername || !newUserPassword || !adminPassword) {
+      toast('All fields including Master Admin Password are required', 'error');
+      return;
+    }
+
+    if (state.users.some(u => u.username.toLowerCase() === newUsername.toLowerCase())) {
+      toast('Username already exists in database', 'error');
+      return;
+    }
+
+    if (state.simulated) {
+      // In simulation mode, verify if admin password is 'admin' or 'admin123'
+      if (adminPassword !== 'admin' && adminPassword !== 'admin123') {
+        toast('Invalid Admin Password. Authorization Denied!', 'error');
+        return;
+      }
+
+      state.users.push({
+        id: Date.now(),
+        username: newUsername,
+        role: newUserRole,
+        status: 'active',
+        created: new Date().toISOString().split('T')[0]
+      });
+
+      closeNewUserModal();
+      toast(`User ${newUsername} authorized and added by Admin!`, 'success');
+      updateUI();
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: newUsername,
+          password: newUserPassword,
+          role: newUserRole,
+          adminPassword: adminPassword
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Authorization failed');
+      }
+
+      closeNewUserModal();
+      toast(`User "${newUsername}" approved & registered!`, 'success');
+      fetchStatus();
+    } catch (err) {
+      toast(err.message || 'Admin authentication failed', 'error');
+    }
+  }
+
+  // Delete User from DB
+  async function deleteUser(id) {
+    if (!state.currentUser || state.currentUser.role !== 'admin') {
+      toast('Admin privileges required to remove users', 'error');
+      return;
+    }
+
+    if (!confirm('Are you sure you want to remove this user from ESP8266 database?')) {
+      return;
+    }
+
+    if (state.simulated) {
+      state.users = state.users.filter(u => u.id !== id);
+      toast('User deleted from local DB', 'info');
+      updateUI();
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/users/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${state.currentUser.token}`
+        }
+      });
+      if (!res.ok) throw new Error();
+      toast('User deleted from ESP database', 'info');
+      fetchStatus();
+    } catch (e) {
+      toast('Failed to delete user', 'error');
+    }
+  }
+
+  // Auth Modal (Sign in)
+  function openAuthModal() {
+    document.getElementById('loginUsername').value = '';
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('authModal').classList.remove('hidden');
+  }
+
+  function closeAuthModal() {
+    document.getElementById('authModal').classList.add('hidden');
+  }
+
+  async function submitLogin() {
+    const user = document.getElementById('loginUsername').value.trim();
+    const pass = document.getElementById('loginPassword').value;
+
+    if (state.simulated) {
+      const matched = state.users.find(u => u.username.toLowerCase() === user.toLowerCase());
+      if (matched && (pass === 'admin' || pass === 'admin123' || pass.length >= 4)) {
+        state.currentUser = {
+          username: matched.username,
+          role: matched.role,
+          token: 'sim-token-' + Date.now()
+        };
+        closeAuthModal();
+        toast(`Signed in as ${matched.username} (${matched.role})`, 'success');
+        updateUI();
+      } else {
+        toast('Invalid credentials in simulation mode', 'error');
+      }
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: user, password: pass })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Login failed');
+
+      state.currentUser = {
+        username: data.username,
+        role: data.role,
+        token: data.token
+      };
+
+      closeAuthModal();
+      toast(`Welcome back, ${data.username}!`, 'success');
+      updateUI();
+    } catch (e) {
+      toast(e.message || 'Login failed', 'error');
+    }
+  }
+
+  function logout() {
+    state.currentUser = null;
+    toast('Logged out successfully', 'info');
+    updateUI();
+  }
+
+  // Helper utilities
+  function splitSeconds(totalSec) {
+    const sec = Math.max(0, Math.floor(totalSec));
+    const d = Math.floor(sec / 86400);
+    const h = Math.floor((sec % 86400) / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    return { d, h, m, s };
+  }
+
+  function formatSecondsToUptime(totalSec) {
+    const { d, h, m, s } = splitSeconds(totalSec);
+    if (d > 0) return `${d}d ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+
+  function toast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    const toastEl = document.createElement('div');
+    toastEl.className = `toast toast-${type}`;
+    toastEl.textContent = message;
+    container.appendChild(toastEl);
+    setTimeout(() => {
+      toastEl.style.opacity = '0';
+      toastEl.style.transform = 'translateY(10px)';
+      toastEl.style.transition = 'all 0.3s ease';
+      setTimeout(() => toastEl.remove(), 300);
+    }, 3500);
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Auto-init on DOM Ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  // Public API
+  return {
+    onTimerInput,
+    saveTimers,
+    triggerRelayCycle,
+    cancelCycle,
+    resetLockout,
+    openAuthModal,
+    closeAuthModal,
+    submitLogin,
+    logout,
+    openNewUserModal,
+    closeNewUserModal,
+    submitNewUserRegistration,
+    deleteUser
+  };
+})();
+
+</script>
+</body>
+</html>
