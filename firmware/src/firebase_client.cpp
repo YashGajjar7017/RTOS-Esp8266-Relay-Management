@@ -167,3 +167,4 @@ void FirebaseClient::pollFirebaseCommands() {
     http.end();
   }
 }
+

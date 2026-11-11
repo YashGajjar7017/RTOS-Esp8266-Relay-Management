@@ -32,3 +32,4 @@ class WebAppInterface(private val context: Context) {
         return "ANDROID_NATIVE"
     }
 }
+

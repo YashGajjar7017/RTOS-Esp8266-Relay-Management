@@ -80,3 +80,4 @@ Open [`firmware/include/config.h`](../firmware/include/config.h) or [`arduino_sk
 
 - When you are **near the ESP8266**: The app can talk directly to the SoftAP at `192.168.4.1`.
 - When you are **away from home**: The app connects through Firebase Cloud, letting you monitor live countdowns, view monthly switch statistics, and approve 1-time requests from anywhere in the world!
+
