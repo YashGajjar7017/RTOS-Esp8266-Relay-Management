@@ -12,7 +12,7 @@ public:
   void handleTouchSensor();
 
   // Control Actions
-  bool triggerCycle(const char* source = "MANUAL");
+  bool triggerCycle(const char* source = "MANUAL", const char* oneTimeToken = nullptr);
   bool cancelCycle(const char* source = "MANUAL");
   bool resetLockout(const char* source = "ADMIN");
 
@@ -35,7 +35,7 @@ public:
   float getLockoutDays() const { return _settings.lockoutDays; }
   uint32_t getUptime() const { return _uptimeSeconds; }
 
-  // JSON summary for API
+  // JSON summary for API and Firebase
   String getStatusJson(const char* currentUsername = nullptr, const char* userRole = nullptr);
 
 private:

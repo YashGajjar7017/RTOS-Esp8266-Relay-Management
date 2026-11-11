@@ -10,19 +10,30 @@ enum SystemMode : uint8_t {
 
 struct UserRecord {
   uint8_t id;
-  char username[20];
+  char username[24];
   char password[34];
-  char role[12];     // "admin" or "operator"
+  char role[20];     // "admin", "guarded_operator", "guest_analytics"
   char status[12];   // "active" or "pending"
   char created[16];
 };
 
-struct PendingLoginRequest {
-  char username[20];
-  char password[34];
-  char role[12];
-  unsigned long timestamp;
+struct OneTimeAccessRequest {
+  char requestId[20];
+  char username[24];
+  char requestedAction[32]; // e.g. "TRIGGER_RELAY", "SAVE_CONFIG"
+  unsigned long requestTime;
   bool active;
+  bool approved;
+  char oneTimeToken[32];
+};
+
+struct MonthlyAnalytics {
+  char currentMonthYear[16];  // e.g. "November 2026"
+  uint32_t totalOnSeconds;    // Total seconds relay was active this month
+  uint32_t totalOffSeconds;   // Total seconds relay was inactive/locked this month
+  uint32_t totalCyclesCount;  // Total times relay was turned on this month
+  uint32_t lastMonthOnSeconds;
+  uint32_t lastMonthOffSeconds;
 };
 
 struct SystemSettings {
@@ -47,40 +58,49 @@ public:
   bool loadSettings(SystemSettings& settings);
   bool saveSettings(const SystemSettings& settings);
 
-  // Operational State Persistence (Crash & Power-Cut Protection)
+  // Operational State Persistence
   bool loadState(PersistentState& state);
   bool saveState(const PersistentState& state);
 
-  // User Database Operations (Max 5 users)
+  // Monthly Analytics
+  bool loadAnalytics(MonthlyAnalytics& analytics);
+  bool saveAnalytics(const MonthlyAnalytics& analytics);
+  void recordStateSecond(bool relayOn);
+  void recordCycleTriggered();
+  const MonthlyAnalytics& getAnalytics() const { return _analytics; }
+
+  // User Database Operations (3 Predefined Users + Slots)
   int getUserCount();
   bool getUser(int index, UserRecord& user);
   bool findUser(const char* username, UserRecord& user);
   bool verifyCredentials(const char* username, const char* password, UserRecord& matchedUser);
   bool verifyAdminPassword(const char* adminPassword);
   
-  // Registration with Admin Approval
+  // Registration & User Management
   bool registerUserWithAdminApproval(const char* username, const char* password, const char* role, const char* adminPassword, String& errorMsg);
   bool deleteUser(uint8_t id, String& errorMsg);
 
-  // Pending User Login Request Queue (Real-Time Admin Approval Flow)
-  bool submitLoginRequest(const char* username, const char* password, const char* role, String& errorMsg);
-  bool hasPendingRequest() const { return _pendingRequest.active; }
-  const PendingLoginRequest& getPendingRequest() const { return _pendingRequest; }
-  bool approvePendingRequest(const char* adminPassword, String& errorMsg);
-  void rejectPendingRequest();
-  bool isUserActive(const char* username);
+  // Level 2: One-Time Access Grant for Mahi_Gajjar
+  bool createOneTimeRequest(const char* username, const char* action, String& requestId, String& errorMsg);
+  bool hasActiveOneTimeRequest() const { return _oneTimeReq.active && !_oneTimeReq.approved; }
+  const OneTimeAccessRequest& getOneTimeRequest() const { return _oneTimeReq; }
+  bool approveOneTimeRequest(const char* adminPassword, String& oneTimeToken, String& errorMsg);
+  bool consumeOneTimeToken(const char* token);
+  void rejectOneTimeRequest();
 
-  // JSON Export helper
+  // JSON Export helpers
   String getUsersJson();
-  String getSettingsJson(const SystemSettings& settings);
+  String getAnalyticsJson();
+  String getPendingRequestJson();
 
 private:
   UserRecord _users[MAX_USERS];
   int _userCount;
   bool _fsMounted;
-  PendingLoginRequest _pendingRequest;
+  MonthlyAnalytics _analytics;
+  OneTimeAccessRequest _oneTimeReq;
 
-  void seedDefaultAdmin();
+  void seedPredefinedUsers();
   bool loadUsersFromFile();
   bool saveUsersToFile();
 };

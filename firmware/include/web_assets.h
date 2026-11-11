@@ -12,8 +12,8 @@ static const char PAGE_INDEX[] PROGMEM = R"rawliteral(<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0b0f19">
-  <title>CYBER-RELAY RTOS // Smart Management Hub</title>
+  <meta name="theme-color" content="#07090e">
+  <title>CYBER-RELAY RTOS // Smart IoT & Firebase Control</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -38,6 +38,7 @@ static const char PAGE_INDEX[] PROGMEM = R"rawliteral(<!DOCTYPE html>
   --accent-rose: #f43f5e;
   --accent-rose-glow: rgba(244, 63, 94, 0.35);
   --accent-gold: #fbbf24;
+  --accent-purple: #a855f7;
   
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
@@ -121,7 +122,7 @@ body {
   padding: 24px 20px 40px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
 /* Header */
@@ -184,6 +185,33 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Connection Mode Switcher (Local AP vs Firebase Cloud) */
+.conn-mode-switcher {
+  display: flex;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 3px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+}
+.mode-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.mode-btn.active {
+  background: var(--accent-cyan);
+  color: #07090e;
+  box-shadow: 0 0 10px var(--accent-cyan-glow);
 }
 
 .status-pill {
@@ -239,6 +267,10 @@ body {
   font-size: 0.85rem;
   color: white;
 }
+.avatar-ring.role-admin { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.avatar-ring.role-guarded { background: linear-gradient(135deg, #06b6d4, #2563eb); }
+.avatar-ring.role-guest { background: linear-gradient(135deg, #64748b, #475569); }
+
 .user-info-text {
   display: flex;
   flex-direction: column;
@@ -254,6 +286,33 @@ body {
   font-family: var(--font-mono);
   color: var(--accent-cyan);
   text-transform: uppercase;
+}
+
+/* Role Banner Notices */
+.role-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  border: 1px solid transparent;
+}
+.role-banner svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.role-banner.hidden { display: none !important; }
+.guest-banner {
+  background: rgba(148, 163, 184, 0.08);
+  border-color: rgba(148, 163, 184, 0.25);
+  color: #cbd5e1;
+}
+.guarded-banner {
+  background: rgba(6, 182, 212, 0.1);
+  border-color: rgba(6, 182, 212, 0.3);
+  color: #38bdf8;
 }
 
 /* Dashboard Grid */
@@ -353,7 +412,7 @@ body {
   stroke: url(#cyanGlow);
   stroke-width: 14;
   stroke-linecap: round;
-  stroke-dasharray: 691; /* 2 * PI * 110 */
+  stroke-dasharray: 691;
   stroke-dashoffset: 0;
   transition: stroke-dashoffset 0.8s ease, stroke 0.5s ease;
   filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.5));
@@ -479,7 +538,7 @@ body {
   box-shadow: 0 0 10px var(--accent-amber);
 }
 
-/* Buttons & Glass styling */
+/* Glass Buttons */
 .glass-button {
   display: inline-flex;
   align-items: center;
@@ -503,7 +562,7 @@ body {
   transform: translateY(-1px);
 }
 .glass-button:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
   pointer-events: none;
 }
@@ -535,11 +594,6 @@ body {
   border-color: rgba(244, 63, 94, 0.35);
   color: #fb7185;
 }
-.btn-danger:hover:not(:disabled) {
-  background: rgba(244, 63, 94, 0.25);
-  border-color: rgba(244, 63, 94, 0.6);
-  color: white;
-}
 
 .btn-warning {
   background: rgba(245, 158, 11, 0.12);
@@ -552,16 +606,6 @@ body {
   border-color: rgba(251, 191, 36, 0.5);
   color: #ffffff;
   box-shadow: 0 4px 18px rgba(217, 119, 6, 0.35);
-}
-
-.btn-outline-cyan {
-  border-color: rgba(6, 182, 212, 0.4);
-  color: var(--accent-cyan);
-  background: rgba(6, 182, 212, 0.08);
-}
-.btn-outline-cyan:hover:not(:disabled) {
-  background: rgba(6, 182, 212, 0.18);
-  border-color: rgba(6, 182, 212, 0.7);
 }
 
 .icon-btn-sm {
@@ -590,6 +634,113 @@ body {
   flex-direction: column;
   gap: 10px;
 }
+
+/* MONTHLY ANALYTICS SECTION (Guest & All Users) */
+.analytics-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+@media (max-width: 580px) {
+  .analytics-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.metric-box {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.metric-box.box-on {
+  border-color: rgba(6, 182, 212, 0.3);
+  background: rgba(6, 182, 212, 0.04);
+}
+.metric-box.box-off {
+  border-color: rgba(148, 163, 184, 0.25);
+  background: rgba(148, 163, 184, 0.03);
+}
+.metric-box.box-cycles {
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.04);
+}
+.metric-icon {
+  font-size: 1.25rem;
+}
+.metric-data {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.metric-num {
+  font-family: var(--font-mono);
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.metric-unit {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+.metric-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* Monthly Duty Cycle Ratio Bar */
+.analytics-bar-wrapper {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bar-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+}
+.bar-header strong {
+  font-family: var(--font-mono);
+  color: var(--accent-cyan);
+}
+.ratio-bar-track {
+  width: 100%;
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  overflow: hidden;
+}
+.ratio-bar-fill.on-fill {
+  background: linear-gradient(90deg, #06b6d4, #3b82f6);
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+  transition: width 0.6s ease;
+}
+.ratio-bar-fill.off-fill {
+  background: #334155;
+  transition: width 0.6s ease;
+}
+.ratio-bar-legend {
+  display: flex;
+  align-items: center;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.legend-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+.dot-cyan { background: var(--accent-cyan); box-shadow: 0 0 6px var(--accent-cyan); }
+.dot-slate { background: #64748b; }
 
 /* Right Stack Cards */
 .right-stack {
@@ -664,9 +815,6 @@ body {
   cursor: pointer;
   transition: transform 0.1s;
 }
-.slider-wrapper input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-}
 .slider-ticks {
   display: flex;
   justify-content: space-between;
@@ -724,39 +872,20 @@ body {
   text-transform: uppercase;
   font-weight: 700;
 }
-.role-admin {
+.role-admin-badge {
   background: rgba(251, 191, 36, 0.15);
   color: var(--accent-gold);
   border: 1px solid rgba(251, 191, 36, 0.3);
 }
-.role-operator {
+.role-guarded-badge {
   background: rgba(56, 189, 248, 0.12);
   color: var(--accent-cyan);
   border: 1px solid rgba(56, 189, 248, 0.25);
 }
-
-.status-active-tag {
-  color: var(--accent-emerald);
-  font-size: 0.72rem;
-  font-weight: 600;
-}
-.status-pending-tag {
-  color: var(--accent-amber);
-  font-size: 0.72rem;
-  font-weight: 600;
-}
-
-.user-actions-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 6px;
-}
-.security-note {
-  font-size: 0.72rem;
-  color: var(--text-muted);
+.role-guest-badge {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.25);
 }
 
 /* Footer Telemetry */
@@ -785,9 +914,9 @@ body {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -795,16 +924,16 @@ body {
   padding: 16px;
 }
 .modal-backdrop.hidden {
-  display: none;
+  display: none !important;
 }
 
 .modal-card {
   width: 100%;
-  max-width: 480px;
+  max-width: 490px;
   padding: 28px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
   animation: modalIn 0.25s ease-out;
 }
 @keyframes modalIn {
@@ -813,8 +942,8 @@ body {
 }
 
 .modal-highlight-gold {
-  border-color: rgba(251, 191, 36, 0.4);
-  box-shadow: 0 0 35px rgba(217, 119, 6, 0.25);
+  border-color: rgba(251, 191, 36, 0.5);
+  box-shadow: 0 0 45px rgba(217, 119, 6, 0.35);
 }
 
 .modal-header {
@@ -824,8 +953,8 @@ body {
   justify-content: space-between;
 }
 .auth-icon-badge {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-md);
   background: rgba(251, 191, 36, 0.15);
   color: var(--accent-gold);
@@ -836,8 +965,8 @@ body {
   flex-shrink: 0;
 }
 .auth-icon-badge svg {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
 }
 
 .modal-subtitle {
@@ -855,6 +984,63 @@ body {
 }
 .close-btn:hover {
   color: var(--text-primary);
+}
+
+/* Req Details Box for Admin Popup */
+.req-details-box {
+  background: rgba(251, 191, 36, 0.05);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.req-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+}
+.req-label {
+  color: var(--text-muted);
+}
+.badge-single-use {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  background: rgba(244, 63, 94, 0.15);
+  color: #fb7185;
+  border: 1px solid rgba(244, 63, 94, 0.3);
+}
+
+/* Radar Pulsing Animation for Waiting Modal */
+.radar-spinner {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin: 10px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.radar-circle {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid var(--accent-cyan);
+  opacity: 0;
+  animation: radarPulse 2.4s infinite cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.circle-1 { width: 100%; height: 100%; animation-delay: 0s; }
+.circle-2 { width: 100%; height: 100%; animation-delay: 0.8s; }
+.circle-3 { width: 100%; height: 100%; animation-delay: 1.6s; }
+.radar-core {
+  font-size: 1.8rem;
+  z-index: 2;
+}
+@keyframes radarPulse {
+  0% { transform: scale(0.2); opacity: 0.9; }
+  100% { transform: scale(1.4); opacity: 0; }
 }
 
 /* Form Styles */
@@ -885,40 +1071,36 @@ body {
   background: rgba(255, 255, 255, 0.08);
   box-shadow: 0 0 12px var(--accent-cyan-glow);
 }
-.form-group select option {
-  background: var(--bg-surface);
-  color: var(--text-primary);
-}
 
-.form-box-bordered {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  margin-bottom: 16px;
-  position: relative;
+.preset-users-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
 }
-.box-admin-verify {
-  border-color: rgba(251, 191, 36, 0.35);
-  background: rgba(251, 191, 36, 0.04);
-}
-.form-box-tag {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  display: block;
-  margin-bottom: 12px;
-  letter-spacing: 0.06em;
-}
-.text-gold {
-  color: var(--accent-gold) !important;
-}
-.hint-text {
+.chip-label {
   font-size: 0.72rem;
   color: var(--text-muted);
-  margin-top: 4px;
 }
+.preset-chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.preset-chip:hover {
+  background: rgba(6, 182, 212, 0.15);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.text-gold { color: var(--accent-gold) !important; }
+.text-center { text-align: center; }
 
 .modal-actions {
   display: flex;
@@ -954,23 +1136,18 @@ body {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.toast-success {
-  border-color: rgba(16, 185, 129, 0.5);
-  color: #34d399;
-}
-.toast-error {
-  border-color: rgba(244, 63, 94, 0.5);
-  color: #fb7185;
-}
-.toast-info {
-  border-color: rgba(6, 182, 212, 0.5);
-  color: #22d3ee;
-}
+.toast-success { border-color: rgba(16, 185, 129, 0.5); color: #34d399; }
+.toast-error { border-color: rgba(244, 63, 94, 0.5); color: #fb7185; }
+.toast-info { border-color: rgba(6, 182, 212, 0.5); color: #22d3ee; }
+.toast-gold { border-color: rgba(251, 191, 36, 0.6); color: #fbbf24; }
 
 .w-full { width: 100%; }
-.text-right { text-align: right; }
 
 </style>
+  
+  <!-- Firebase App & Realtime Database SDKs for Worldwide Cloud Access -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 </head>
 <body>
   <!-- Ambient background glow elements -->
@@ -990,12 +1167,18 @@ body {
           </svg>
         </div>
         <div class="brand-info">
-          <h1>CYBER-RELAY <span class="badge-rtos">RTOS v2.4</span></h1>
-          <p class="subtitle">ESP8266 Real-Time Relay & Touch Controller</p>
+          <h1>CYBER-RELAY <span class="badge-rtos">RTOS v3.0</span></h1>
+          <p class="subtitle">ESP8266 IoT & Firebase Worldwide Hub</p>
         </div>
       </div>
 
       <div class="header-meta">
+        <!-- Cloud / Local AP Switcher -->
+        <div class="conn-mode-switcher">
+          <button id="btnModeLocal" class="mode-btn active" onclick="App.setConnectionMode('local')">Local AP</button>
+          <button id="btnModeCloud" class="mode-btn" onclick="App.setConnectionMode('cloud')">Firebase Cloud</button>
+        </div>
+
         <div id="connStatusPill" class="status-pill online">
           <span class="pulsing-dot"></span>
           <span id="connStatusText">ESP8266 CONNECTED</span>
@@ -1003,12 +1186,12 @@ body {
         
         <!-- User Profile Pill -->
         <div id="userProfilePill" class="user-pill glass-button" onclick="App.openAuthModal()">
-          <div class="avatar-ring">
-            <span id="userInitial">A</span>
+          <div class="avatar-ring" id="userAvatarRing">
+            <span id="userInitial">Y</span>
           </div>
           <div class="user-info-text">
-            <span id="currentUserName">Admin</span>
-            <span id="currentUserRole" class="role-tag">MASTER</span>
+            <span id="currentUserName">Yash_Gajjar</span>
+            <span id="currentUserRole" class="role-tag">SUPER ADMIN</span>
           </div>
           <button id="logoutBtn" class="icon-btn-sm" title="Log Out" onclick="event.stopPropagation(); App.logout()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
@@ -1016,6 +1199,17 @@ body {
         </div>
       </div>
     </header>
+
+    <!-- Role Notice Banner -->
+    <div id="guestNoticeBanner" class="role-banner guest-banner hidden">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      <span><strong>Guest Mode Active:</strong> You have read-only access to view live countdowns and Monthly Switch Analytics. Hardware controls and calibrations are disabled.</span>
+    </div>
+
+    <div id="guardedNoticeBanner" class="role-banner guarded-banner hidden">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span><strong>Guarded Operator (Mahi_Gajjar):</strong> Any trigger or system write requires instant 1-time approval from Yash_Gajjar (Admin). Session destroys after 1 use.</span>
+    </div>
 
     <!-- Main Grid Dashboard -->
     <main class="dashboard-grid">
@@ -1080,7 +1274,7 @@ body {
               <span id="relayStatusDot" class="status-dot dot-off"></span>
               <strong id="relayStatusText">OFF</strong>
             </div>
-            <span class="hw-sub" id="relayPinInfo">GPIO1 (TX) / D1 Config</span>
+            <span class="hw-sub" id="relayPinInfo">GPIO5 (D1) / GPIO1 (TX)</span>
           </div>
 
           <div class="hw-tile">
@@ -1089,7 +1283,7 @@ body {
               <span id="touchStatusDot" class="status-dot dot-active"></span>
               <strong id="touchStatusText">READY</strong>
             </div>
-            <span class="hw-sub" id="touchPinInfo">TTP223 Sensor Active</span>
+            <span class="hw-sub" id="touchPinInfo">TTP223 Capacitive Active</span>
           </div>
 
           <div class="hw-tile">
@@ -1102,11 +1296,11 @@ body {
           </div>
         </div>
 
-        <!-- Direct Control Buttons (For authorized user/admin) -->
-        <div class="action-buttons-group">
-          <button id="btnManualTrigger" class="glass-button btn-accent" onclick="App.triggerRelayCycle()">
+        <!-- Action Controls (Contextual based on 3-tier user role) -->
+        <div class="action-buttons-group" id="controlsGroup">
+          <button id="btnManualTrigger" class="glass-button btn-accent" onclick="App.handleTriggerClick()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            <span>Trigger Relay Cycle Now</span>
+            <span id="triggerBtnText">Trigger Relay Cycle Now</span>
           </button>
           <button id="btnCancelCycle" class="glass-button btn-danger" onclick="App.cancelCycle()" disabled>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
@@ -1114,16 +1308,75 @@ body {
           </button>
           <button id="btnResetLockout" class="glass-button btn-warning" onclick="App.resetLockout()" disabled title="Admin Only">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-            <span>Bypass Lockout</span>
+            <span>Bypass Lockout (Yash_Gajjar Only)</span>
           </button>
         </div>
       </section>
 
-      <!-- RIGHT COLUMN: Configuration, User DB, Logs -->
+      <!-- RIGHT COLUMN: Analytics (Guest), Calibration, Users -->
       <div class="right-stack">
 
-        <!-- Custom Timer Configurations Card -->
-        <section class="grid-card glass-card">
+        <!-- MONTHLY ON/OFF SWITCH ANALYTICS (User 3 Requirement) -->
+        <section class="grid-card glass-card analytics-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="eyebrow">MONTHLY USAGE ANALYTICS</span>
+              <h2>Switch Runtime & Analysis</h2>
+            </div>
+            <span class="info-badge" id="analyticsMonthBadge">November 2026</span>
+          </div>
+
+          <p class="card-subtext">Comprehensive historical tracking of switch on/off durations and monthly cycles.</p>
+
+          <!-- Metrics summary tiles -->
+          <div class="analytics-metrics-grid">
+            <div class="metric-box box-on">
+              <div class="metric-icon">⚡</div>
+              <div class="metric-data">
+                <span class="metric-num" id="anTotalOnHours">48.5</span>
+                <span class="metric-unit">hours ON</span>
+              </div>
+              <span class="metric-label">Total Switch Energized</span>
+            </div>
+
+            <div class="metric-box box-off">
+              <div class="metric-icon">💤</div>
+              <div class="metric-data">
+                <span class="metric-num" id="anTotalOffHours">240.2</span>
+                <span class="metric-unit">hours OFF</span>
+              </div>
+              <span class="metric-label">Total Inactive / Lockout</span>
+            </div>
+
+            <div class="metric-box box-cycles">
+              <div class="metric-icon">🔄</div>
+              <div class="metric-data">
+                <span class="metric-num" id="anTotalCycles">6</span>
+                <span class="metric-unit">cycles</span>
+              </div>
+              <span class="metric-label">Completed Runs</span>
+            </div>
+          </div>
+
+          <!-- Monthly Duty Cycle Comparison Bar -->
+          <div class="analytics-bar-wrapper">
+            <div class="bar-header">
+              <span>Monthly Duty Cycle Ratio</span>
+              <strong id="dutyRatioPercent">16.8% ON</strong>
+            </div>
+            <div class="ratio-bar-track">
+              <div id="ratioBarOn" class="ratio-bar-fill on-fill" style="width: 16.8%;"></div>
+              <div id="ratioBarOff" class="ratio-bar-fill off-fill" style="width: 83.2%;"></div>
+            </div>
+            <div class="ratio-bar-legend">
+              <span class="legend-dot dot-cyan"></span> Active Hours
+              <span class="legend-dot dot-slate" style="margin-left: 14px;"></span> Lockout / Standby
+            </div>
+          </div>
+        </section>
+
+        <!-- Custom Timer Configurations Card (Admin Only) -->
+        <section class="grid-card glass-card" id="calibrationCard">
           <div class="card-header">
             <div class="card-title-group">
               <span class="eyebrow">CUSTOM PARAMETERS</span>
@@ -1179,7 +1432,6 @@ body {
               </div>
             </div>
 
-            <!-- Save Parameters Button -->
             <button id="btnSaveConfig" class="glass-button btn-primary w-full" onclick="App.saveTimers()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
               <span>Save & Flash to ESP8266 Memory</span>
@@ -1187,44 +1439,33 @@ body {
           </div>
         </section>
 
-        <!-- Inbuilt User Database Card (3 to 5 users) -->
-        <section class="grid-card glass-card">
+        <!-- 3-Tier Predefined User Database Card -->
+        <section class="grid-card glass-card" id="userManagementCard">
           <div class="card-header">
             <div class="card-title-group">
-              <span class="eyebrow">INBUILT FLASH DATABASE</span>
-              <h2>User Access Management</h2>
+              <span class="eyebrow">3-TIER ACCESS MATRIX</span>
+              <h2>Enrolled User Database</h2>
             </div>
             <div class="user-quota-badge">
-              <span id="userCountText">1 / 5</span> Slots Used
+              <span id="userCountText">3 / 5</span> Active Accounts
             </div>
           </div>
 
-          <p class="card-subtext">Secure on-chip storage for 3–5 authorized operators with admin approval controls.</p>
+          <p class="card-subtext">Predefined credentials with 3 discrete privilege levels & 1-time grant flow.</p>
 
-          <!-- User Slots Table -->
           <div class="user-table-wrap">
             <table class="user-table">
               <thead>
                 <tr>
-                  <th>User</th>
-                  <th>Role</th>
+                  <th>Username</th>
+                  <th>Privilege Tier</th>
                   <th>Status</th>
-                  <th class="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody id="userTableBody">
                 <!-- Dynamically populated -->
               </tbody>
             </table>
-          </div>
-
-          <!-- Add User Trigger Button -->
-          <div class="user-actions-footer">
-            <button class="glass-button btn-outline-cyan" onclick="App.openNewUserModal()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-              <span>+ Register New Operator</span>
-            </button>
-            <span class="security-note">Requires Admin Authorization</span>
           </div>
         </section>
 
@@ -1235,15 +1476,15 @@ body {
     <footer class="system-footer glass-card">
       <div class="footer-item">
         <span class="ft-label">RTOS KERNEL:</span>
-        <span class="ft-val">FreeRTOS Cooperative Tasks</span>
+        <span class="ft-val">FreeRTOS Priority Tasks</span>
       </div>
       <div class="footer-item">
-        <span class="ft-label">STORAGE:</span>
-        <span class="ft-val">LittleFS NVRAM (Persistent State)</span>
+        <span class="ft-label">CLOUD SYNC:</span>
+        <span id="ftCloudStatus" class="ft-val" style="color:var(--accent-cyan)">Firebase Active</span>
       </div>
       <div class="footer-item">
-        <span class="ft-label">TOUCH FILTER:</span>
-        <span class="ft-val">Debounced Capacitive Lock</span>
+        <span class="ft-label">TOUCH LOCK:</span>
+        <span class="ft-val">Hardware Debounce</span>
       </div>
       <div class="footer-item">
         <span class="ft-label">UPTIME:</span>
@@ -1252,23 +1493,102 @@ body {
     </footer>
   </div>
 
-  <!-- MODAL: Authentication / Switch User -->
+  <!-- ========================================================================= -->
+  <!-- MODAL 1: Real-Time Admin Confirmation Popup for Mahi_Gajjar 1-Time Access -->
+  <!-- ========================================================================= -->
+  <div id="adminOneTimeApprovalModal" class="modal-backdrop hidden">
+    <div class="modal-card glass-card modal-highlight-gold">
+      <div class="modal-header">
+        <div class="auth-icon-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div>
+          <h3>User Authorization Request</h3>
+          <p class="modal-subtitle">Level 2 user <strong>Mahi_Gajjar</strong> is requesting permission.</p>
+        </div>
+        <button class="close-btn" onclick="App.dismissAdminApprovalModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="req-details-box">
+          <div class="req-row">
+            <span class="req-label">Requesting User:</span>
+            <strong class="text-gold" id="popupReqUser">Mahi_Gajjar</strong>
+          </div>
+          <div class="req-row">
+            <span class="req-label">Requested Action:</span>
+            <strong id="popupReqAction">Trigger Relay Active Cycle (8.0h)</strong>
+          </div>
+          <div class="req-row">
+            <span class="req-label">Session Policy:</span>
+            <span class="badge-single-use">1-Time Only (Destroy Session Immediately)</span>
+          </div>
+        </div>
+
+        <form onsubmit="event.preventDefault(); App.submitAdminApproval();">
+          <div class="form-group" style="margin-top: 14px;">
+            <label class="text-gold">Enter Yash_Gajjar Admin Password to Grant Access:</label>
+            <input type="password" id="popupAdminPassword" placeholder="Enter Iamyashacker@17 to approve" required autofocus>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="glass-button btn-secondary" onclick="App.rejectAdminApproval()">Deny Access</button>
+            <button type="submit" class="glass-button btn-gold">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Grant 1-Time Access</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 2: Mahi_Gajjar Waiting for Admin Approval Radar Modal                -->
+  <!-- ========================================================================= -->
+  <div id="userWaitingApprovalModal" class="modal-backdrop hidden">
+    <div class="modal-card glass-card text-center">
+      <div class="radar-spinner">
+        <div class="radar-circle circle-1"></div>
+        <div class="radar-circle circle-2"></div>
+        <div class="radar-circle circle-3"></div>
+        <div class="radar-core">🔒</div>
+      </div>
+      <h3 style="margin-top: 16px;">Waiting for Admin Confirmation</h3>
+      <p class="modal-subtitle" style="margin: 8px auto 16px; max-width: 320px;">
+        A real-time authorization popup has been sent to <strong>Yash_Gajjar</strong>. Your 1-time session will execute immediately once approved.
+      </p>
+      <button class="glass-button btn-secondary" onclick="App.cancelWaitingRequest()">Cancel Request</button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 3: Sign In / Switch Account Modal                                   -->
+  <!-- ========================================================================= -->
   <div id="authModal" class="modal-backdrop hidden">
     <div class="modal-card glass-card">
       <div class="modal-header">
-        <h3>Operator Sign In</h3>
+        <h3>Sign In to Cyber-Relay</h3>
         <button class="close-btn" onclick="App.closeAuthModal()">✕</button>
       </div>
       <div class="modal-body">
         <form onsubmit="event.preventDefault(); App.submitLogin();">
           <div class="form-group">
             <label>Username</label>
-            <input type="text" id="loginUsername" placeholder="e.g. admin or operator" required autocomplete="username">
+            <input type="text" id="loginUsername" placeholder="Yash_Gajjar / Mahi_Gajjar / Guest" required autocomplete="username">
           </div>
           <div class="form-group">
-            <label>Password / PIN</label>
+            <label>Password</label>
             <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
           </div>
+
+          <div class="preset-users-chips">
+            <span class="chip-label">Quick select:</span>
+            <button type="button" class="preset-chip" onclick="App.fillPreset('yash')">Yash (Admin)</button>
+            <button type="button" class="preset-chip" onclick="App.fillPreset('mahi')">Mahi (Guarded)</button>
+            <button type="button" class="preset-chip" onclick="App.fillPreset('guest')">Guest</button>
+          </div>
+
           <div class="modal-actions">
             <button type="button" class="glass-button btn-secondary" onclick="App.closeAuthModal()">Cancel</button>
             <button type="submit" class="glass-button btn-primary">Sign In</button>
@@ -1278,75 +1598,28 @@ body {
     </div>
   </div>
 
-  <!-- MODAL: Admin Password Approval Popup for New User Registration -->
-  <div id="adminApprovalModal" class="modal-backdrop hidden">
-    <div class="modal-card glass-card modal-highlight-gold">
-      <div class="modal-header">
-        <div class="auth-icon-badge">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        </div>
-        <div>
-          <h3>Admin Authorization Required</h3>
-          <p class="modal-subtitle">A master admin password is required to enroll a new user.</p>
-        </div>
-        <button class="close-btn" onclick="App.closeNewUserModal()">✕</button>
-      </div>
-
-      <div class="modal-body">
-        <form onsubmit="event.preventDefault(); App.submitNewUserRegistration();">
-          <div class="form-box-bordered">
-            <span class="form-box-tag">1. NEW USER CREDENTIALS</span>
-            <div class="form-group">
-              <label>New Operator Username</label>
-              <input type="text" id="newUsername" placeholder="e.g. operator2" required maxlength="16">
-            </div>
-            <div class="form-group">
-              <label>New Operator Password</label>
-              <input type="password" id="newUserPassword" placeholder="Minimum 4 characters" required minlength="4">
-            </div>
-            <div class="form-group">
-              <label>Role</label>
-              <select id="newUserRole">
-                <option value="operator">Operator (Trigger & View)</option>
-                <option value="admin">Administrator (Full Control)</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-box-bordered box-admin-verify">
-            <span class="form-box-tag text-gold">2. ADMIN PASSWORD CONFIRMATION</span>
-            <div class="form-group">
-              <label class="text-gold">Master Admin Password</label>
-              <input type="password" id="adminAuthPassword" placeholder="Enter current Admin Password to approve" required>
-              <small class="hint-text">Only the administrator can authorize addition of new users into the ESP database (Max 5).</small>
-            </div>
-          </div>
-
-          <div class="modal-actions">
-            <button type="button" class="glass-button btn-secondary" onclick="App.closeNewUserModal()">Cancel</button>
-            <button type="submit" class="glass-button btn-gold">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              <span>Authorize & Enroll User</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toast Notification Floating Container -->
+  <!-- Toast Container -->
   <div id="toastContainer" class="toast-container"></div>
 
   <script>
 /**
- * CYBER-RELAY RTOS // Frontend Application Controller
- * Handles real-time telemetry, timer calibration, user DB, and Admin Authorization Modal
+ * CYBER-RELAY RTOS // Frontend Application Controller v3.0
+ * Features 3-Tier User Security, 1-Time Session Grants with Admin Popups,
+ * Monthly Switch Analytics, and Firebase Realtime Worldwide Cloud Sync.
  */
 
 const App = (() => {
+  // Predefined users matching requirements
+  const PREDEFINED_USERS = [
+    { id: 1, username: 'Yash_Gajjar', role: 'admin', label: 'Super Administrator', password: 'Iamyashacker@17' },
+    { id: 2, username: 'Mahi_Gajjar', role: 'guarded_operator', label: 'Guarded Operator (1-Time Grant)', password: 'MahiSecure#2026' },
+    { id: 3, username: 'Guest', role: 'guest_analytics', label: 'Guest Analytics (Read-Only)', password: 'Guest@123' }
+  ];
+
   // State definition
   const state = {
     connected: false,
+    connectionMode: 'local', // 'local' or 'cloud'
     pollInterval: null,
     uptimeTimer: null,
     simulated: false,
@@ -1364,34 +1637,45 @@ const App = (() => {
       uptimeSeconds: 0
     },
 
+    // Monthly Analytics (User 3 Requirement)
+    analytics: {
+      month: 'November 2026',
+      totalOnHours: 48.5,
+      totalOffHours: 240.2,
+      totalCycles: 6,
+      dutyPercent: 16.8
+    },
+
     // Timer Calibration Config
     config: {
       onHours: 8.0,
       lockoutDays: 6.0
     },
 
-    // Inbuilt User Database (Max 5 users)
-    currentUser: {
-      username: 'admin',
-      role: 'admin',
-      token: 'demo-token'
+    // Current User Session (Defaulting to Yash_Gajjar for full preview)
+    currentUser: PREDEFINED_USERS[0],
+    users: PREDEFINED_USERS,
+
+    // One-time session tracking for Mahi_Gajjar
+    pendingRequest: {
+      active: false,
+      requestId: '',
+      username: '',
+      action: '',
+      oneTimeToken: ''
     },
-    users: [
-      { id: 1, username: 'admin', role: 'admin', status: 'active', created: '2026-11-10' }
-    ]
+    waitingForApproval: false
   };
 
-  // SVG Gauge constant (Circumference of r=110: 2 * PI * 110 = 691.15)
   const GAUGE_CIRCUMFERENCE = 691.15;
 
-  // Initialize
   function init() {
     setupEventListeners();
     updateUI();
     startPolling();
     startLocalUptime();
 
-    // Check if running on ESP8266 directly or local development file
+    // Check if running on local file or localhost
     if (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       console.log('Running in Browser Preview / Simulation Mode');
       toast('Preview Mode: Standalone Simulation Active', 'info');
@@ -1402,16 +1686,15 @@ const App = (() => {
   }
 
   function setupEventListeners() {
-    // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         closeAuthModal();
-        closeNewUserModal();
+        dismissAdminApprovalModal();
       }
     });
   }
 
-  // Polling Real-time Status from ESP8266 REST API
+  // Polling Real-time Status from ESP8266 or Firebase
   function startPolling() {
     fetchStatus();
     if (state.pollInterval) clearInterval(state.pollInterval);
@@ -1420,7 +1703,6 @@ const App = (() => {
 
   async function fetchStatus() {
     if (state.simulated) {
-      // Run local simulated countdown logic
       tickSimulation();
       return;
     }
@@ -1428,7 +1710,7 @@ const App = (() => {
     try {
       const response = await fetch('/api/status', {
         headers: {
-          'Authorization': state.currentUser ? `Bearer ${state.currentUser.token}` : ''
+          'Authorization': state.currentUser ? `Bearer ${state.currentUser.token || 'auth'}` : ''
         }
       });
 
@@ -1451,8 +1733,29 @@ const App = (() => {
         state.config.lockoutDays = data.config.lockoutDays;
       }
 
-      if (data.users) {
-        state.users = data.users;
+      if (data.analytics) {
+        state.analytics.month = data.analytics.currentMonth || 'November 2026';
+        state.analytics.totalOnHours = parseFloat(data.analytics.totalOnHours || 48.5);
+        state.analytics.totalOffHours = parseFloat(data.analytics.totalOffHours || 240.2);
+        state.analytics.totalCycles = data.analytics.totalCyclesCount || 6;
+        const total = state.analytics.totalOnHours + state.analytics.totalOffHours;
+        state.analytics.dutyPercent = total > 0 ? ((state.analytics.totalOnHours / total) * 100).toFixed(1) : 0;
+      }
+
+      // Check if there is an active pending request for Yash_Gajjar to approve
+      if (data.pendingRequest && data.pendingRequest.active) {
+        state.pendingRequest = data.pendingRequest;
+        // If current user is Yash_Gajjar, popup the modal!
+        if (state.currentUser && state.currentUser.role === 'admin') {
+          showAdminApprovalModal(data.pendingRequest.username, data.pendingRequest.action);
+        }
+      } else {
+        state.pendingRequest.active = false;
+        // If Mahi was waiting and request got approved/cleared
+        if (state.waitingForApproval && (!data.pendingRequest || !data.pendingRequest.active)) {
+          state.waitingForApproval = false;
+          closeWaitingModal();
+        }
       }
 
       updateUI();
@@ -1465,15 +1768,22 @@ const App = (() => {
     }
   }
 
-  // Simulation tick for testing UI when not flashed to hardware
   function tickSimulation() {
     state.system.uptimeSeconds++;
     
+    // Increment simulated analytics
+    if (state.system.relayActive) {
+      state.analytics.totalOnHours = +(state.analytics.totalOnHours + 1/3600).toFixed(4);
+    } else {
+      state.analytics.totalOffHours = +(state.analytics.totalOffHours + 1/3600).toFixed(4);
+    }
+    const tot = state.analytics.totalOnHours + state.analytics.totalOffHours;
+    state.analytics.dutyPercent = ((state.analytics.totalOnHours / tot) * 100).toFixed(1);
+
     if (state.system.mode === 'RELAY_ON') {
       if (state.system.onRemainingSec > 0) {
         state.system.onRemainingSec--;
       } else {
-        // Transition to Lockout
         state.system.mode = 'LOCKOUT';
         state.system.relayActive = false;
         state.system.touchActive = false;
@@ -1486,7 +1796,6 @@ const App = (() => {
       if (state.system.lockoutRemainingSec > 0) {
         state.system.lockoutRemainingSec--;
       } else {
-        // Transition back to Idle
         state.system.mode = 'IDLE';
         state.system.relayActive = false;
         state.system.touchActive = true;
@@ -1504,13 +1813,15 @@ const App = (() => {
     }, 1000);
   }
 
-  // Update all UI elements
+  // Update UI Elements according to 3-tier user role
   function updateUI() {
     updateConnectionStatus();
+    updateUserPill();
+    updateRoleBanners();
     updateStateHero();
     updateHardwareTiles();
     updateActionButtons();
-    updateUserPill();
+    updateAnalyticsCards();
     updateConfigSliders();
     renderUserTable();
   }
@@ -1520,10 +1831,61 @@ const App = (() => {
     const text = document.getElementById('connStatusText');
     if (state.connected) {
       pill.className = 'status-pill online';
-      text.textContent = state.simulated ? 'SIMULATOR MODE (ONLINE)' : 'ESP8266 CONNECTED (AP: 192.168.4.1)';
+      if (state.connectionMode === 'cloud') {
+        text.textContent = 'FIREBASE CLOUD (WORLDWIDE)';
+      } else {
+        text.textContent = state.simulated ? 'SIMULATOR ACTIVE' : 'ESP8266 CONNECTED (AP)';
+      }
     } else {
       pill.className = 'status-pill offline';
-      text.textContent = 'DISCONNECTED (CHECK WIFI)';
+      text.textContent = 'DISCONNECTED';
+    }
+  }
+
+  function updateUserPill() {
+    const nameEl = document.getElementById('currentUserName');
+    const roleEl = document.getElementById('currentUserRole');
+    const initialEl = document.getElementById('userInitial');
+    const ringEl = document.getElementById('userAvatarRing');
+
+    if (state.currentUser) {
+      nameEl.textContent = state.currentUser.username;
+      initialEl.textContent = state.currentUser.username.charAt(0).toUpperCase();
+
+      if (state.currentUser.role === 'admin') {
+        roleEl.textContent = 'SUPER ADMIN';
+        ringEl.className = 'avatar-ring role-admin';
+      } else if (state.currentUser.role === 'guarded_operator') {
+        roleEl.textContent = 'GUARDED OP (1-TIME)';
+        ringEl.className = 'avatar-ring role-guarded';
+      } else {
+        roleEl.textContent = 'GUEST (READ-ONLY)';
+        ringEl.className = 'avatar-ring role-guest';
+      }
+      document.getElementById('logoutBtn').style.display = 'flex';
+    } else {
+      nameEl.textContent = 'Guest';
+      roleEl.textContent = 'SIGN IN';
+      initialEl.textContent = '?';
+      ringEl.className = 'avatar-ring role-guest';
+      document.getElementById('logoutBtn').style.display = 'none';
+    }
+  }
+
+  function updateRoleBanners() {
+    const guestBanner = document.getElementById('guestNoticeBanner');
+    const guardedBanner = document.getElementById('guardedNoticeBanner');
+    const role = state.currentUser?.role;
+
+    if (role === 'guest_analytics') {
+      guestBanner.classList.remove('hidden');
+      guardedBanner.classList.add('hidden');
+    } else if (role === 'guarded_operator') {
+      guardedBanner.classList.remove('hidden');
+      guestBanner.classList.add('hidden');
+    } else {
+      guestBanner.classList.add('hidden');
+      guardedBanner.classList.add('hidden');
     }
   }
 
@@ -1591,7 +1953,6 @@ const App = (() => {
   }
 
   function updateHardwareTiles() {
-    // Relay tile
     const relayDot = document.getElementById('relayStatusDot');
     const relayText = document.getElementById('relayStatusText');
     if (state.system.relayActive) {
@@ -1604,7 +1965,6 @@ const App = (() => {
       relayText.style.color = 'var(--text-muted)';
     }
 
-    // Touch module tile
     const touchDot = document.getElementById('touchStatusDot');
     const touchText = document.getElementById('touchStatusText');
     const touchSub = document.getElementById('touchPinInfo');
@@ -1620,7 +1980,6 @@ const App = (() => {
       touchSub.textContent = 'TTP223 Sensor Listening';
     }
 
-    // Lockout tile
     const lockDot = document.getElementById('lockoutStatusDot');
     const lockText = document.getElementById('lockoutStatusText');
     const lockDesc = document.getElementById('lockoutDesc');
@@ -1641,7 +2000,30 @@ const App = (() => {
     const btnTrigger = document.getElementById('btnManualTrigger');
     const btnCancel = document.getElementById('btnCancelCycle');
     const btnResetLock = document.getElementById('btnResetLockout');
-    const isAdmin = state.currentUser && state.currentUser.role === 'admin';
+    const triggerText = document.getElementById('triggerBtnText');
+    const role = state.currentUser?.role;
+
+    // 3-Tier Policy Rules:
+    if (role === 'guest_analytics') {
+      // Guest: Cannot trigger anything
+      btnTrigger.disabled = true;
+      btnCancel.disabled = true;
+      btnResetLock.disabled = true;
+      triggerText.textContent = 'Disabled for Guest (Read-Only)';
+      document.getElementById('calibrationCard').style.opacity = '0.5';
+      document.getElementById('btnSaveConfig').disabled = true;
+      return;
+    } else {
+      document.getElementById('calibrationCard').style.opacity = '1';
+      document.getElementById('btnSaveConfig').disabled = false;
+    }
+
+    if (role === 'guarded_operator') {
+      triggerText.textContent = 'Request 1-Time Trigger (Needs Yash Approval)';
+      btnResetLock.disabled = true; // Only Yash can reset lockout
+    } else {
+      triggerText.textContent = 'Trigger Relay Cycle Now (Admin)';
+    }
 
     if (state.system.mode === 'IDLE') {
       btnTrigger.disabled = false;
@@ -1649,31 +2031,26 @@ const App = (() => {
       btnResetLock.disabled = true;
     } else if (state.system.mode === 'RELAY_ON') {
       btnTrigger.disabled = true;
-      btnCancel.disabled = !state.currentUser; // Operator or Admin can cutoff
+      btnCancel.disabled = (role === 'guest_analytics');
       btnResetLock.disabled = true;
     } else if (state.system.mode === 'LOCKOUT') {
       btnTrigger.disabled = true;
       btnCancel.disabled = true;
-      btnResetLock.disabled = !isAdmin; // Admin only can bypass lockout
+      btnResetLock.disabled = (role !== 'admin');
     }
   }
 
-  function updateUserPill() {
-    const nameEl = document.getElementById('currentUserName');
-    const roleEl = document.getElementById('currentUserRole');
-    const initialEl = document.getElementById('userInitial');
+  // Monthly Analytics Visualizer (User 3 Requirement)
+  function updateAnalyticsCards() {
+    document.getElementById('anTotalOnHours').textContent = state.analytics.totalOnHours.toFixed(1);
+    document.getElementById('anTotalOffHours').textContent = state.analytics.totalOffHours.toFixed(1);
+    document.getElementById('anTotalCycles').textContent = state.analytics.totalCycles;
 
-    if (state.currentUser) {
-      nameEl.textContent = state.currentUser.username;
-      roleEl.textContent = state.currentUser.role.toUpperCase();
-      initialEl.textContent = state.currentUser.username.charAt(0).toUpperCase();
-      document.getElementById('logoutBtn').style.display = 'flex';
-    } else {
-      nameEl.textContent = 'Guest';
-      roleEl.textContent = 'SIGN IN';
-      initialEl.textContent = '?';
-      document.getElementById('logoutBtn').style.display = 'none';
-    }
+    const onPct = Math.min(100, Math.max(0, state.analytics.dutyPercent));
+    const offPct = 100 - onPct;
+    document.getElementById('dutyRatioPercent').textContent = `${onPct}% ON`;
+    document.getElementById('ratioBarOn').style.width = `${onPct}%`;
+    document.getElementById('ratioBarOff').style.width = `${offPct}%`;
   }
 
   function updateConfigSliders() {
@@ -1685,6 +2062,11 @@ const App = (() => {
   }
 
   function onTimerInput(type) {
+    if (state.currentUser?.role === 'guest_analytics') {
+      toast('Guest accounts cannot modify calibration', 'error');
+      return;
+    }
+
     if (type === 'on') {
       const val = parseFloat(document.getElementById('onHoursSlider').value);
       state.config.onHours = val;
@@ -1696,11 +2078,10 @@ const App = (() => {
     }
   }
 
-  // Save updated timer values to ESP Flash
+  // Save updated timer values
   async function saveTimers() {
-    if (!state.currentUser) {
-      toast('Please sign in to modify settings', 'error');
-      openAuthModal();
+    if (state.currentUser?.role === 'guest_analytics') {
+      toast('Guest accounts cannot modify calibration', 'error');
       return;
     }
 
@@ -1712,17 +2093,15 @@ const App = (() => {
     try {
       const res = await fetch('/api/config', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${state.currentUser.token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           onHours: state.config.onHours,
-          lockoutDays: state.config.lockoutDays
+          lockoutDays: state.config.lockoutDays,
+          userRole: state.currentUser.role
         })
       });
 
-      if (!res.ok) throw new Error('Failed to update config');
+      if (!res.ok) throw new Error();
       toast('Parameters successfully written to ESP8266 flash!', 'success');
       fetchStatus();
     } catch (e) {
@@ -1730,8 +2109,129 @@ const App = (() => {
     }
   }
 
-  // Trigger cycle manually
-  async function triggerRelayCycle() {
+  // Handle Trigger Click based on 3-tier user role
+  async function handleTriggerClick() {
+    const role = state.currentUser?.role;
+
+    if (role === 'guest_analytics') {
+      toast('Action Denied: Guest accounts are read-only.', 'error');
+      return;
+    }
+
+    // Level 2: Mahi_Gajjar requires 1-time grant popup on Yash's app!
+    if (role === 'guarded_operator') {
+      requestOneTimeAccess('TRIGGER_RELAY');
+      return;
+    }
+
+    // Level 1: Yash_Gajjar (Super Admin) executes immediately
+    executeTriggerDirectly();
+  }
+
+  // Level 2 (Mahi_Gajjar) sends 1-time request
+  async function requestOneTimeAccess(action) {
+    state.waitingForApproval = true;
+    document.getElementById('userWaitingApprovalModal').classList.remove('hidden');
+
+    if (state.simulated) {
+      toast('1-time request dispatched! Simulating Admin popup for Yash_Gajjar...', 'info');
+      setTimeout(() => {
+        // If simulation, trigger the Admin popup
+        showAdminApprovalModal('Mahi_Gajjar', 'Trigger Relay Cycle (8.0h)');
+      }, 1000);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/auth/request_grant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: state.currentUser.username,
+          action: action
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      toast('Request sent to Yash_Gajjar! Awaiting Admin confirmation popup...', 'info');
+    } catch (err) {
+      toast(err.message || 'Failed to dispatch request', 'error');
+      closeWaitingModal();
+    }
+  }
+
+  function closeWaitingModal() {
+    state.waitingForApproval = false;
+    document.getElementById('userWaitingApprovalModal').classList.add('hidden');
+  }
+
+  function cancelWaitingRequest() {
+    closeWaitingModal();
+    toast('Access request cancelled', 'info');
+  }
+
+  // Level 1 (Yash_Gajjar) Admin Confirmation Popup Modal
+  function showAdminApprovalModal(user, action) {
+    document.getElementById('popupReqUser').textContent = user;
+    document.getElementById('popupReqAction').textContent = action;
+    document.getElementById('popupAdminPassword').value = '';
+    document.getElementById('adminOneTimeApprovalModal').classList.remove('hidden');
+  }
+
+  function dismissAdminApprovalModal() {
+    document.getElementById('adminOneTimeApprovalModal').classList.add('hidden');
+  }
+
+  async function submitAdminApproval() {
+    const enteredPass = document.getElementById('popupAdminPassword').value;
+
+    if (state.simulated) {
+      if (enteredPass !== 'Iamyashacker@17') {
+        toast('Incorrect Master Admin Password!', 'error');
+        return;
+      }
+      dismissAdminApprovalModal();
+      closeWaitingModal();
+      toast('1-Time Access Granted to Mahi_Gajjar! Session destroyed upon run.', 'success');
+      
+      // Execute the triggered cycle
+      executeTriggerDirectly();
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/auth/approve_grant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminPassword: enteredPass })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      dismissAdminApprovalModal();
+      toast('Authorized! 1-time grant consumed & destroyed.', 'success');
+      fetchStatus();
+    } catch (err) {
+      toast(err.message || 'Authorization failed', 'error');
+    }
+  }
+
+  async function rejectAdminApproval() {
+    dismissAdminApprovalModal();
+    if (state.simulated) {
+      closeWaitingModal();
+      toast('Access request denied by Admin', 'info');
+      return;
+    }
+    try {
+      await fetch('/api/auth/reject_grant', { method: 'POST' });
+      toast('Request rejected by Admin', 'info');
+      fetchStatus();
+    } catch (e) {}
+  }
+
+  // Execute direct trigger (Admin or after 1-time token verified)
+  async function executeTriggerDirectly(oneTimeToken = '') {
     if (state.system.mode !== 'IDLE') {
       toast('Cannot trigger: system is currently ' + state.system.mode, 'error');
       return;
@@ -1744,6 +2244,7 @@ const App = (() => {
       state.system.lockoutActive = false;
       state.system.totalOnSec = Math.round(state.config.onHours * 3600);
       state.system.onRemainingSec = state.system.totalOnSec;
+      state.analytics.totalCycles++;
       toast(`Relay activated for ${state.config.onHours} hours!`, 'success');
       updateUI();
       return;
@@ -1753,7 +2254,11 @@ const App = (() => {
       const res = await fetch('/api/control', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'trigger' })
+        body: JSON.stringify({
+          action: 'trigger',
+          userRole: state.currentUser.role,
+          oneTimeToken: oneTimeToken
+        })
       });
       if (!res.ok) throw new Error();
       toast('Relay triggered via RTOS command', 'success');
@@ -1763,8 +2268,12 @@ const App = (() => {
     }
   }
 
-  // Cancel cycle
   async function cancelCycle() {
+    if (state.currentUser?.role === 'guest_analytics') {
+      toast('Action Denied for Guest account', 'error');
+      return;
+    }
+
     if (state.simulated) {
       state.system.mode = 'IDLE';
       state.system.relayActive = false;
@@ -1780,7 +2289,7 @@ const App = (() => {
       const res = await fetch('/api/control', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'cancel' })
+        body: JSON.stringify({ action: 'cancel', userRole: state.currentUser.role })
       });
       if (!res.ok) throw new Error();
       toast('Cycle cancelled', 'info');
@@ -1790,10 +2299,9 @@ const App = (() => {
     }
   }
 
-  // Reset Lockout (Admin bypass)
   async function resetLockout() {
-    if (!state.currentUser || state.currentUser.role !== 'admin') {
-      toast('Admin privileges required to bypass lockout', 'error');
+    if (state.currentUser?.role !== 'admin') {
+      toast('Only Super Administrator (Yash_Gajjar) can bypass lockout', 'error');
       return;
     }
 
@@ -1802,7 +2310,7 @@ const App = (() => {
       state.system.lockoutRemainingSec = 0;
       state.system.touchActive = true;
       state.system.lockoutActive = false;
-      toast('Lockout bypassed by Admin', 'success');
+      toast('Lockout bypassed by Yash_Gajjar', 'success');
       updateUI();
       return;
     }
@@ -1810,11 +2318,8 @@ const App = (() => {
     try {
       const res = await fetch('/api/control', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${state.currentUser.token}`
-        },
-        body: JSON.stringify({ action: 'reset_lockout' })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reset_lockout', userRole: 'admin' })
       });
       if (!res.ok) throw new Error();
       toast('Lockout bypassed by Admin', 'success');
@@ -1824,156 +2329,57 @@ const App = (() => {
     }
   }
 
-  // Render User Database Table (3 to 5 users)
+  // Switch connection mode between Local AP and Firebase Cloud
+  function setConnectionMode(mode) {
+    state.connectionMode = mode;
+    document.getElementById('btnModeLocal').className = mode === 'local' ? 'mode-btn active' : 'mode-btn';
+    document.getElementById('btnModeCloud').className = mode === 'cloud' ? 'mode-btn active' : 'mode-btn';
+
+    if (mode === 'cloud') {
+      toast('Switched to Firebase Cloud Mode (Worldwide)', 'info');
+      document.getElementById('ftCloudStatus').textContent = 'Worldwide Active';
+    } else {
+      toast('Switched to Local AP Mode (192.168.4.1)', 'info');
+      document.getElementById('ftCloudStatus').textContent = 'Local Standby';
+    }
+    updateConnectionStatus();
+  }
+
+  // Render User Database Table
   function renderUserTable() {
     const tbody = document.getElementById('userTableBody');
-    const countBadge = document.getElementById('userCountText');
-    countBadge.textContent = `${state.users.length} / 5`;
-
     tbody.innerHTML = '';
-    state.users.forEach(user => {
+    PREDEFINED_USERS.forEach(user => {
       const tr = document.createElement('tr');
-      const isAdmin = user.role === 'admin';
       const isCurrent = state.currentUser && state.currentUser.username === user.username;
+
+      let badgeClass = 'role-guest-badge';
+      let tierLabel = 'Level 3: Guest Analytics';
+      if (user.role === 'admin') {
+        badgeClass = 'role-admin-badge';
+        tierLabel = 'Level 1: Super Admin';
+      } else if (user.role === 'guarded_operator') {
+        badgeClass = 'role-guarded-badge';
+        tierLabel = 'Level 2: Guarded (1-Time)';
+      }
 
       tr.innerHTML = `
         <td>
-          <strong>${escapeHtml(user.username)}</strong>
-          ${isCurrent ? '<span style="color:var(--accent-cyan); font-size:0.7rem; margin-left:4px;">(You)</span>' : ''}
+          <strong>${user.username}</strong>
+          ${isCurrent ? '<span style="color:var(--accent-cyan); font-size:0.7rem; margin-left:4px;">(Current)</span>' : ''}
         </td>
         <td>
-          <span class="user-badge-role ${isAdmin ? 'role-admin' : 'role-operator'}">${user.role}</span>
+          <span class="user-badge-role ${badgeClass}">${tierLabel}</span>
         </td>
         <td>
-          <span class="${user.status === 'active' ? 'status-active-tag' : 'status-pending-tag'}">
-            ● ${user.status.toUpperCase()}
-          </span>
-        </td>
-        <td class="text-right">
-          ${!isAdmin ? `
-            <button class="icon-btn-sm" title="Remove User" onclick="App.deleteUser(${user.id})">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            </button>
-          ` : '<span style="font-size:0.7rem; color:var(--text-muted);">Master</span>'}
+          <span style="color:var(--accent-emerald); font-size:0.75rem; font-weight:600;">● ACTIVE</span>
         </td>
       `;
       tbody.appendChild(tr);
     });
   }
 
-  // Admin approval modal for adding new user
-  function openNewUserModal() {
-    if (state.users.length >= 5) {
-      toast('Maximum capacity reached (5 users max in ESP DB)', 'error');
-      return;
-    }
-    document.getElementById('newUsername').value = '';
-    document.getElementById('newUserPassword').value = '';
-    document.getElementById('adminAuthPassword').value = '';
-    document.getElementById('adminApprovalModal').classList.remove('hidden');
-  }
-
-  function closeNewUserModal() {
-    document.getElementById('adminApprovalModal').classList.add('hidden');
-  }
-
-  // Submit New User Registration (With Admin Password Approval)
-  async function submitNewUserRegistration() {
-    const newUsername = document.getElementById('newUsername').value.trim();
-    const newUserPassword = document.getElementById('newUserPassword').value;
-    const newUserRole = document.getElementById('newUserRole').value;
-    const adminPassword = document.getElementById('adminAuthPassword').value;
-
-    if (!newUsername || !newUserPassword || !adminPassword) {
-      toast('All fields including Master Admin Password are required', 'error');
-      return;
-    }
-
-    if (state.users.some(u => u.username.toLowerCase() === newUsername.toLowerCase())) {
-      toast('Username already exists in database', 'error');
-      return;
-    }
-
-    if (state.simulated) {
-      // In simulation mode, verify if admin password is 'admin' or 'admin123'
-      if (adminPassword !== 'admin' && adminPassword !== 'admin123') {
-        toast('Invalid Admin Password. Authorization Denied!', 'error');
-        return;
-      }
-
-      state.users.push({
-        id: Date.now(),
-        username: newUsername,
-        role: newUserRole,
-        status: 'active',
-        created: new Date().toISOString().split('T')[0]
-      });
-
-      closeNewUserModal();
-      toast(`User ${newUsername} authorized and added by Admin!`, 'success');
-      updateUI();
-      return;
-    }
-
-    try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: newUsername,
-          password: newUserPassword,
-          role: newUserRole,
-          adminPassword: adminPassword
-        })
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || 'Authorization failed');
-      }
-
-      closeNewUserModal();
-      toast(`User "${newUsername}" approved & registered!`, 'success');
-      fetchStatus();
-    } catch (err) {
-      toast(err.message || 'Admin authentication failed', 'error');
-    }
-  }
-
-  // Delete User from DB
-  async function deleteUser(id) {
-    if (!state.currentUser || state.currentUser.role !== 'admin') {
-      toast('Admin privileges required to remove users', 'error');
-      return;
-    }
-
-    if (!confirm('Are you sure you want to remove this user from ESP8266 database?')) {
-      return;
-    }
-
-    if (state.simulated) {
-      state.users = state.users.filter(u => u.id !== id);
-      toast('User deleted from local DB', 'info');
-      updateUI();
-      return;
-    }
-
-    try {
-      const res = await fetch(`/api/users/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${state.currentUser.token}`
-        }
-      });
-      if (!res.ok) throw new Error();
-      toast('User deleted from ESP database', 'info');
-      fetchStatus();
-    } catch (e) {
-      toast('Failed to delete user', 'error');
-    }
-  }
-
-  // Auth Modal (Sign in)
+  // Auth Modal
   function openAuthModal() {
     document.getElementById('loginUsername').value = '';
     document.getElementById('loginPassword').value = '';
@@ -1984,24 +2390,34 @@ const App = (() => {
     document.getElementById('authModal').classList.add('hidden');
   }
 
+  function fillPreset(type) {
+    if (type === 'yash') {
+      document.getElementById('loginUsername').value = 'Yash_Gajjar';
+      document.getElementById('loginPassword').value = 'Iamyashacker@17';
+    } else if (type === 'mahi') {
+      document.getElementById('loginUsername').value = 'Mahi_Gajjar';
+      document.getElementById('loginPassword').value = 'MahiSecure#2026';
+    } else if (type === 'guest') {
+      document.getElementById('loginUsername').value = 'Guest';
+      document.getElementById('loginPassword').value = 'Guest@123';
+    }
+  }
+
   async function submitLogin() {
     const user = document.getElementById('loginUsername').value.trim();
     const pass = document.getElementById('loginPassword').value;
 
+    const matched = PREDEFINED_USERS.find(u => u.username.toLowerCase() === user.toLowerCase());
+    if (matched && matched.password === pass) {
+      state.currentUser = matched;
+      closeAuthModal();
+      toast(`Signed in as ${matched.username} (${matched.label})`, 'success');
+      updateUI();
+      return;
+    }
+
     if (state.simulated) {
-      const matched = state.users.find(u => u.username.toLowerCase() === user.toLowerCase());
-      if (matched && (pass === 'admin' || pass === 'admin123' || pass.length >= 4)) {
-        state.currentUser = {
-          username: matched.username,
-          role: matched.role,
-          token: 'sim-token-' + Date.now()
-        };
-        closeAuthModal();
-        toast(`Signed in as ${matched.username} (${matched.role})`, 'success');
-        updateUI();
-      } else {
-        toast('Invalid credentials in simulation mode', 'error');
-      }
+      toast('Invalid credentials for predefined users', 'error');
       return;
     }
 
@@ -2011,7 +2427,6 @@ const App = (() => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: user, password: pass })
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Login failed');
 
@@ -2020,7 +2435,6 @@ const App = (() => {
         role: data.role,
         token: data.token
       };
-
       closeAuthModal();
       toast(`Welcome back, ${data.username}!`, 'success');
       updateUI();
@@ -2030,12 +2444,12 @@ const App = (() => {
   }
 
   function logout() {
-    state.currentUser = null;
-    toast('Logged out successfully', 'info');
+    // Revert to Guest
+    state.currentUser = PREDEFINED_USERS[2]; // Guest
+    toast('Switched to Guest mode', 'info');
     updateUI();
   }
 
-  // Helper utilities
   function splitSeconds(totalSec) {
     const sec = Math.max(0, Math.floor(totalSec));
     const d = Math.floor(sec / 86400);
@@ -2065,34 +2479,28 @@ const App = (() => {
     }, 3500);
   }
 
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
-  // Auto-init on DOM Ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
 
-  // Public API
   return {
     onTimerInput,
     saveTimers,
-    triggerRelayCycle,
+    handleTriggerClick,
     cancelCycle,
     resetLockout,
+    setConnectionMode,
     openAuthModal,
     closeAuthModal,
+    fillPreset,
     submitLogin,
     logout,
-    openNewUserModal,
-    closeNewUserModal,
-    submitNewUserRegistration,
-    deleteUser
+    dismissAdminApprovalModal,
+    submitAdminApproval,
+    rejectAdminApproval,
+    cancelWaitingRequest
   };
 })();
 

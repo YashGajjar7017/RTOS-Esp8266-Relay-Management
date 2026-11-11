@@ -10,79 +10,77 @@
 // -------------------------------------------------------------------------
 // 1. HARDWARE PIN DEFINITIONS
 // -------------------------------------------------------------------------
-/**
- * User Requirement: Single relay on "p1" & touch module.
- *
- * NOTE ON ESP8266 PIN MAPPING:
- * - On ESP8266 / NodeMCU:
- *   - Pin GPIO1 is TXD0 (UART Serial TX). If using GPIO1 as relay output,
- *     Serial.begin() must either not be used or pins remapped.
- *   - Alternatively, GPIO5 (NodeMCU Pin D1) is the standard relay pin.
- *
- * Here we define default pins and provide a macro flag to switch between
- * physical GPIO1 (TX) and NodeMCU D1 (GPIO5).
- */
-
 #define USE_PHYSICAL_GPIO1_FOR_RELAY false // Set to true if physically wired to ESP-01 / TX (GPIO1)
 
 #if USE_PHYSICAL_GPIO1_FOR_RELAY
   #define PIN_RELAY          1    // GPIO1 (TXD0)
 #else
-  #define PIN_RELAY          5    // GPIO5 (NodeMCU D1) - recommended for safety & serial logs
+  #define PIN_RELAY          5    // GPIO5 (NodeMCU D1) - standard safe pin
 #endif
 
 // Touch Sensor Pin (TTP223 Capacitive Touch Module)
-// Active HIGH by default on touch detection
 #define PIN_TOUCH            4    // GPIO4 (NodeMCU D2)
 
-// Relay Logic (Active LOW or Active HIGH relay board)
-// Most 5V optocoupler relay boards are Active LOW (0 = Relay ON, 1 = Relay OFF)
+// Relay Logic (Active LOW or Active HIGH)
 #define RELAY_ACTIVE_LEVEL   LOW
 #define RELAY_INACTIVE_LEVEL HIGH
 
 // Touch Module Trigger Logic (TTP223 default output is HIGH when touched)
 #define TOUCH_ACTIVE_LEVEL   HIGH
-
-// Debounce delay for touch sensor in milliseconds
 #define TOUCH_DEBOUNCE_MS    80
 
 // -------------------------------------------------------------------------
 // 2. TIMING CALIBRATION DEFAULTS
 // -------------------------------------------------------------------------
-// Relay ON Duration (e.g. 7.0 to 8.0 hours)
-#define DEFAULT_ON_HOURS          8.0f     // Default: 8.0 hours
-#define MIN_ON_HOURS              0.5f     // Minimum 30 minutes
+#define DEFAULT_ON_HOURS          8.0f     // Default: 8.0 hours (configurable 7 to 8h)
+#define MIN_ON_HOURS              0.5f     // Minimum 30 mins
 #define MAX_ON_HOURS              24.0f    // Maximum 24 hours
 
-// Lockout Cooldown Duration (e.g. 5 to 7 days)
-#define DEFAULT_LOCKOUT_DAYS      6.0f     // Default: 6.0 days
-#define MIN_LOCKOUT_DAYS          0.5f     // Minimum 12 hours (for rapid testing)
+#define DEFAULT_LOCKOUT_DAYS      6.0f     // Default: 6.0 days (configurable 5 to 7d)
+#define MIN_LOCKOUT_DAYS          0.5f     // Minimum 12 hours
 #define MAX_LOCKOUT_DAYS          30.0f    // Maximum 30 days
 
-// State Persistence Interval (Save remaining seconds to Flash NVRAM)
-#define PERSIST_INTERVAL_MS       30000    // Every 30 seconds
+#define PERSIST_INTERVAL_MS       30000    // Commit state to Flash every 30s
 
 // -------------------------------------------------------------------------
-// 3. WI-FI & NETWORK ACCESS POINT CONFIGURATION
+// 3. WI-FI ACCESS POINT & INTERNET STATION CONFIGURATION
 // -------------------------------------------------------------------------
-// ESP8266 will broadcast its own SoftAP network
 #define WIFI_AP_SSID              "CYBER-RELAY-HUB"
-#define WIFI_AP_PASSWORD          "cyber8266"      // Min 8 chars (empty for open network)
+#define WIFI_AP_PASSWORD          "cyber8266"      // SoftAP password
 #define WIFI_AP_CHANNEL           1
 #define WIFI_AP_MAX_CONN          8
 #define HTTP_SERVER_PORT          80
 
-// Optional: Connect to your Home/Office Wi-Fi Router as Station (STA)
-#define ENABLE_WIFI_STA           false
-#define WIFI_STA_SSID             "Your_Home_WiFi"
-#define WIFI_STA_PASSWORD         "Your_WiFi_Password"
+// Station mode to connect ESP8266 to Home/Internet Wi-Fi for Firebase Cloud Control
+#define ENABLE_INTERNET_WIFI      true
+#define WIFI_STA_SSID             "Home_WiFi_Name"  // Set your local router SSID
+#define WIFI_STA_PASSWORD         "Home_WiFi_Pass"  // Set your local router Password
 
 // -------------------------------------------------------------------------
-// 4. USER DATABASE CAPACITY
+// 4. FIREBASE CLOUD REALTIME DATABASE CONFIGURATION
 // -------------------------------------------------------------------------
-#define MAX_USERS                 5        // Small inbuilt DB: 3 to 5 users
-#define DEFAULT_ADMIN_USERNAME    "admin"
-#define DEFAULT_ADMIN_PASSWORD    "admin123"
+// Allows controlling and viewing the ESP8266 from anywhere in the world!
+#define FIREBASE_HOST             "cyber-relay-rtos-default-rtdb.firebaseio.com"
+#define FIREBASE_AUTH             "YOUR_FIREBASE_DATABASE_SECRET" // Or Firebase Auth Token
+#define FIREBASE_SYNC_INTERVAL_MS 2000 // Cloud sync frequency (every 2s)
 
-// System Version
-#define FIRMWARE_VERSION          "2.4.0-RTOS"
+// -------------------------------------------------------------------------
+// 5. PREDEFINED USER CREDENTIALS & 3-TIER ARCHITECTURE
+// -------------------------------------------------------------------------
+// Tier 1: Master Admin (Full Read/Write, System configs, Permission grants)
+#define USER1_NAME                "Yash_Gajjar"
+#define USER1_PASS                "Iamyashacker@17"
+#define USER1_ROLE                "admin"
+
+// Tier 2: Guarded Operator (System access requiring Admin confirmation popup; 1-time session)
+#define USER2_NAME                "Mahi_Gajjar"
+#define USER2_PASS                "MahiSecure#2026"
+#define USER2_ROLE                "guarded_operator"
+
+// Tier 3: Guest Analytics (Read-only, can only view Monthly On/Off Switch Analytics)
+#define USER3_NAME                "Guest"
+#define USER3_PASS                "Guest@123"
+#define USER3_ROLE                "guest_analytics"
+
+#define MAX_USERS                 5
+#define FIRMWARE_VERSION          "3.0.0-FIREBASE-RTOS"

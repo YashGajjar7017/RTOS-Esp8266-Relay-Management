@@ -1,57 +1,67 @@
-# CYBER-RELAY RTOS // ESP8266 Relay & Touch Management Hub
+# CYBER-RELAY RTOS // ESP8266 Relay Management & Firebase Cloud Hub
 
-[![ESP8266](https://img.shields.io/badge/Platform-ESP8266-red.svg)](https://espressif.com/)
-[![RTOS](https://img.shields.io/badge/Architecture-RTOS%20Multitasking-blue.svg)](https://freertos.org/)
-[![GUI](https://img.shields.io/badge/UI-Cyberpunk%20Glassmorphism-cyan.svg)](#app--ui-features)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Platform: ESP8266](https://img.shields.io/badge/Platform-ESP8266-red.svg)](https://espressif.com/)
+[![Android App](https://img.shields.io/badge/Android-Native%20Studio%20Project-green.svg)](#android-application)
+[![Cloud: Firebase](https://img.shields.io/badge/Cloud-Firebase%20RTDB%20Worldwide-orange.svg)](#firebase-cloud-control)
+[![Architecture: 3-Tier Security](https://img.shields.io/badge/Security-3--Tier%20RBAC%20%2B%201--Time%20Popups-purple.svg)](#3-tier-user-architecture)
+[![UI: Cyberpunk Glassmorphism](https://img.shields.io/badge/UI-Cyberpunk%20Glassmorphism-cyan.svg)](#features)
 
-An intelligent, secure **RTOS-based relay management system** for ESP8266 featuring capacitive touch activation, high-duty duration timers (7–8 hours), an unskippable countdown lockout cooldown (5–7 days), an inbuilt flash user database (up to 5 users), and an embedded cyberpunk-glassmorphic responsive Web Application.
-
----
-
-## ⚡ Highlights & Key Features
-
-| Requirement | Implementation Details |
-|---|---|
-| **1. RTOS on ESP8266** | Priority task scheduling (15ms touch debounce task, 1Hz countdown manager, 10ms network API server, flash persistence task) with non-blocking cooperative execution. |
-| **2. Relay on Pin 1 & Touch Module** | Configured for Relay on GPIO5/D1 (or physical GPIO1/TX) and TTP223 capacitive touch sensor on GPIO4/D2 with hardware debouncing. |
-| **3. Custom ON & Lockout Timers** | When triggered, the relay turns ON for **7 to 8 hours** (customizable). When expired, the system enters an **unskippable Lockout for 5 to 7 days**, during which **any press on the touch sensor is completely locked out and ignored**. |
-| **4. Inbuilt Flash Database** | Micro-database stored in LittleFS NVRAM for **3 to 5 users** with role-based access control (`admin` vs `operator`). |
-| **5. High-End "Sexy" App GUI** | Ultra-modern dark-mode glassmorphic single-page application with neon glows, circular SVG countdown gauges, digital clocks, tactile hardware pills, and real-time auto-polling. |
-| **6. Admin Approval Popup** | Registration of new operators requires entering the Master Admin password in a confirmation modal before the account is activated. |
-| **7. Power-Loss Persistence** | Remaining ON and Lockout countdown seconds are saved to NVRAM so power cuts or reboots will not reset or bypass the lockout cooldown! |
+An industrial-grade **RTOS-based IoT relay controller** for ESP8266 featuring capacitive touch activation, high-duty duration timers (7–8 hours), an unskippable countdown lockout cooldown (5–7 days), an inbuilt **3-tier user architecture**, real-time **Admin confirmation popups**, **monthly on/off switch analytics**, **Firebase Realtime Database worldwide cloud control**, and a dedicated **Android Application**.
 
 ---
 
-## 📐 Circuit & Hardware Connections
+## ⚡ 3-Tier User Security Matrix
+
+| User | Credentials | Privilege Level | Action Policy |
+|---|---|---|---|
+| **Tier 1: Super Admin** | `Yash_Gajjar`<br>`Iamyashacker@17` | **Master Control** | Full system read/write, change timer calibration (7–8h ON, 5–7d Lockout), manual triggers, emergency cutoff, lockout bypass, and receives instant popups to grant/deny 1-time requests. |
+| **Tier 2: Guarded Operator** | `Mahi_Gajjar`<br>`MahiSecure#2026` | **Guarded 1-Time Session** | Can request triggers or calibrations, but **every action requires instant Admin approval**. An interactive popup appears on `Yash_Gajjar`'s app. Once approved, the action executes **one time only** and the session/token is destroyed immediately. |
+| **Tier 3: Guest Analytics** | `Guest`<br>`Guest@123` | **Strict Read-Only** | Hardware controls and calibration sliders are locked. Accesses the **Monthly Switch Runtime & Analysis Dashboard** showing total switch ON hours, OFF hours, duty cycle %, and completed cycles. |
+
+---
+
+## 📱 Android Application
+
+The project includes a complete native Android Studio project in [`android_app/`](android_app/):
+- **Full Offline & Local Control**: Connects directly to the ESP8266 Access Point (`CYBER-RELAY-HUB` at `http://192.168.4.1/`).
+- **Worldwide Firebase Cloud Mode**: When away from home on mobile data (4G/5G), switches automatically to Firebase Realtime Database for worldwide monitoring and control!
+- **Haptic Vibration & Popups**: Triggers vibration alerts whenever Admin approval is requested.
+- **How to Build**: Open `android_app/` in Android Studio and click **Run** or **Build APK**.
+
+---
+
+## ☁️ Firebase Cloud Worldwide Integration
+
+Control and view your ESP8266 from anywhere in the world!
+- Bidirectional real-time telemetry sync with **Firebase Realtime Database**.
+- Low-latency command execution (`/esp8266_relay/commands`).
+- Real-time authorization queue (`/esp8266_relay/pendingRequest`).
+- See [docs/FIREBASE_SETUP_GUIDE.md](docs/FIREBASE_SETUP_GUIDE.md) for complete 5-minute setup steps.
+
+---
+
+## 🔄 Core Cycle & Lockout Behavior
 
 ```
-                +---------------------------------+
-                |        5V 2A POWER SUPPLY       |
-                +----------------+----------------+
-                                 |  +5V
-                                 +---------> Relay Module VCC
-                                 |  GND
-                                 +---------> Common Ground (All devices)
-                                 |
-                          [ 3.3V Regulator ]
-                                 |
-                                 +---------> ESP8266 3V3 Pin
-                                 +---------> TTP223 Touch VCC
-
-    +-------------------------------------------------------------+
-    |                        ESP8266 NodeMCU                      |
-    |                                                             |
-    |   [GPIO5 / D1] -------------------> Relay Module [IN]       |
-    |   [GPIO4 / D2] <------------------- TTP223 Touch [SIG]      |
-    |                                                             |
-    |   [GND] --------------------------> Common Ground           |
-    |   [VIN / 5V] ---------------------> +5V Rail                |
-    |   [3V3] --------------------------> +3.3V Rail              |
-    +-------------------------------------------------------------+
+  [ IDLE / READY ]
+         │
+         │  (Touch Sensor Pressed or Authorized App Trigger)
+         ▼
+  [ RELAY ACTIVE ] ───────────► Relay turns ON for 7–8 hours (Configurable)
+         │                     Active countdown displays in App
+         │
+         │  (Duty cycle timer reaches 00:00:00)
+         ▼
+  [ LOCKOUT COOLDOWN ] ───────► Relay turns OFF
+         │                     LOCKOUT ACTIVE for 5–7 days (Configurable)
+         │                     **ANY TOUCH SENSOR PRESS IS STRICTLY IGNORED**
+         │
+         │  (Lockout countdown reaches 00:00:00)
+         ▼
+  [ IDLE / READY ] ───────────► Touch sensor re-enabled for next cycle
 ```
 
-> See [docs/CIRCUIT_DIAGRAM.md](docs/CIRCUIT_DIAGRAM.md) for full schematic details and ESP-01 GPIO1 pin mapping notes.
+- **Power-Loss Memory**: The countdown seconds and state are saved to Flash NVRAM every 30 seconds. A reboot or power outage will never reset or cheat the cooldown lockout!
 
 ---
 
@@ -59,71 +69,59 @@ An intelligent, secure **RTOS-based relay management system** for ESP8266 featur
 
 ```
 RTOS-Esp8266-Relay-Management/
+├── android_app/                      <-- Native Android Studio Application
+│   ├── app/src/main/
+│   │   ├── java/com/cyberrelay/app/  <-- MainActivity.kt & WebAppInterface.kt
+│   │   ├── assets/                   <-- Embedded offline cyberpunk UI
+│   │   └── AndroidManifest.xml
+│   ├── build.gradle.kts & settings.gradle.kts
 ├── arduino_sketch/
-│   └── esp8266_relay_rtos/           <-- Ready to open in Arduino IDE
-│       ├── esp8266_relay_rtos.ino    <-- Main Arduino sketch entry point
-│       ├── config.h                  <-- Pins, timers, and Wi-Fi credentials
-│       ├── state_manager.h/.cpp      <-- 3-phase state machine & persistence
-│       ├── storage_db.h/.cpp         <-- LittleFS User Database (Max 5 users)
+│   └── esp8266_relay_rtos/           <-- Open in Arduino IDE
+│       ├── esp8266_relay_rtos.ino    <-- Main firmware & setup
+│       ├── config.h                  <-- Pins, timers, Wi-Fi & Firebase settings
+│       ├── state_manager.h/.cpp      <-- 3-phase cycle & lockout engine
+│       ├── storage_db.h/.cpp         <-- 3-Tier User DB & Monthly Analytics
+│       ├── firebase_client.h/.cpp    <-- Firebase Cloud Worldwide Sync
 │       ├── web_server_api.h/.cpp     <-- REST API & Captive Portal
 │       ├── rtos_tasks.h/.cpp         <-- RTOS task scheduler
 │       └── web_assets.h              <-- Embedded PROGMEM Web GUI
 ├── firmware/
-│   ├── platformio.ini                <-- Ready for PlatformIO (VS Code)
+│   ├── platformio.ini                <-- Configured for NodeMCU / ESP-01
 │   ├── include/ & src/               <-- Modular C++ firmware source
 │   └── data/index.html               <-- Inlined web app for LittleFS
 ├── web_app/
 │   ├── index.html                    <-- Standalone source HTML
-│   ├── style.css                     <-- Cyberpunk glassmorphism styling
+│   ├── style.css                     <-- Cyberpunk glassmorphic styling
 │   └── app.js                        <-- Reactive client controller & simulator
-├── scripts/
-│   └── pack_web.js                   <-- Auto-packer script (Web -> C++ header)
 ├── docs/
-│   ├── CIRCUIT_DIAGRAM.md            <-- Schematics and pinout options
-│   └── USER_GUIDE.md                 <-- Comprehensive operating manual
+│   ├── CIRCUIT_DIAGRAM.md            <-- Schematics, pinouts & wiring guide
+│   ├── USER_GUIDE.md                 <-- Full operating and admin manual
+│   └── FIREBASE_SETUP_GUIDE.md       <-- Firebase Realtime Database setup
 └── README.md                         <-- Project documentation
 ```
 
 ---
 
-## 🚀 How to Flash & Run
+## 🚀 Flashing & Quick Start
 
-### Method 1: Using Arduino IDE
-1. Install [Arduino IDE](https://www.arduino.cc/en/software) (v1.8.x or 2.x).
-2. Go to **File -> Preferences**, and add this URL to **Additional Boards Manager URLs**:
-   ```
-   http://arduino.esp8266.com/stable/package_esp8266com_index.json
-   ```
-3. Open **Tools -> Board -> Boards Manager**, search for `esp8266`, and install the **ESP8266** board package.
-4. Go to **Tools -> Manage Libraries**, search for `ArduinoJson`, and install **ArduinoJson by Benoît Blanchon** (v6.x).
-5. Open `arduino_sketch/esp8266_relay_rtos/esp8266_relay_rtos.ino`.
-6. Select your board (e.g. **NodeMCU 1.0 (ESP-12E Module)**) and COM Port.
-7. Click **Upload**!
+### 1. Hardware Connections
+- Relay Signal: **GPIO5 / D1** (or **GPIO1 / TX** via `#define USE_PHYSICAL_GPIO1_FOR_RELAY true`).
+- Touch Sensor: **GPIO4 / D2**.
+- Power: 5V DC to VIN/Relay, 3.3V to Touch sensor, common ground.
 
-### Method 2: Using PlatformIO (VS Code)
-1. Open the `firmware/` directory in VS Code with the PlatformIO extension installed.
-2. Click the PlatformIO **Build** button (✓) and **Upload** button (→).
-3. (Optional) Run `Upload Filesystem Image` to flash LittleFS partition.
+### 2. Flashing
+1. Open [`arduino_sketch/esp8266_relay_rtos/esp8266_relay_rtos.ino`](arduino_sketch/esp8266_relay_rtos/esp8266_relay_rtos.ino) in the Arduino IDE.
+2. Install **ArduinoJson** (v6.x) via Library Manager.
+3. Select **NodeMCU 1.0 (ESP-12E Module)** and your COM Port, then click **Upload**.
 
----
-
-## 📱 How to Connect to the App
-
-1. Power on the ESP8266.
-2. Connect to the Wi-Fi Access Point:
-   - **SSID**: `CYBER-RELAY-HUB`
-   - **Password**: `cyber8266`
-3. Open any web browser and go to:
-   ```
-   http://192.168.4.1/
-   ```
-4. **Login**:
-   - Default Master Username: `admin`
-   - Default Master Password: `admin123`
+### 3. Log In
+Connect to Wi-Fi `CYBER-RELAY-HUB` (password: `cyber8266`) and open `http://192.168.4.1/`:
+- **Admin**: `Yash_Gajjar` / `Iamyashacker@17`
+- **Guarded Operator**: `Mahi_Gajjar` / `MahiSecure#2026`
+- **Guest**: `Guest` / `Guest@123`
 
 ---
 
 ## 🛡️ License
 
-This project is licensed under the MIT License.
-
+MIT License.

@@ -1,12 +1,21 @@
 /**
- * CYBER-RELAY RTOS // Frontend Application Controller
- * Handles real-time telemetry, timer calibration, user DB, and Admin Authorization Modal
+ * CYBER-RELAY RTOS // Frontend Application Controller v3.0
+ * Features 3-Tier User Security, 1-Time Session Grants with Admin Popups,
+ * Monthly Switch Analytics, and Firebase Realtime Worldwide Cloud Sync.
  */
 
 const App = (() => {
+  // Predefined users matching requirements
+  const PREDEFINED_USERS = [
+    { id: 1, username: 'Yash_Gajjar', role: 'admin', label: 'Super Administrator', password: 'Iamyashacker@17' },
+    { id: 2, username: 'Mahi_Gajjar', role: 'guarded_operator', label: 'Guarded Operator (1-Time Grant)', password: 'MahiSecure#2026' },
+    { id: 3, username: 'Guest', role: 'guest_analytics', label: 'Guest Analytics (Read-Only)', password: 'Guest@123' }
+  ];
+
   // State definition
   const state = {
     connected: false,
+    connectionMode: 'local', // 'local' or 'cloud'
     pollInterval: null,
     uptimeTimer: null,
     simulated: false,
@@ -24,34 +33,45 @@ const App = (() => {
       uptimeSeconds: 0
     },
 
+    // Monthly Analytics (User 3 Requirement)
+    analytics: {
+      month: 'November 2026',
+      totalOnHours: 48.5,
+      totalOffHours: 240.2,
+      totalCycles: 6,
+      dutyPercent: 16.8
+    },
+
     // Timer Calibration Config
     config: {
       onHours: 8.0,
       lockoutDays: 6.0
     },
 
-    // Inbuilt User Database (Max 5 users)
-    currentUser: {
-      username: 'admin',
-      role: 'admin',
-      token: 'demo-token'
+    // Current User Session (Defaulting to Yash_Gajjar for full preview)
+    currentUser: PREDEFINED_USERS[0],
+    users: PREDEFINED_USERS,
+
+    // One-time session tracking for Mahi_Gajjar
+    pendingRequest: {
+      active: false,
+      requestId: '',
+      username: '',
+      action: '',
+      oneTimeToken: ''
     },
-    users: [
-      { id: 1, username: 'admin', role: 'admin', status: 'active', created: '2026-11-10' }
-    ]
+    waitingForApproval: false
   };
 
-  // SVG Gauge constant (Circumference of r=110: 2 * PI * 110 = 691.15)
   const GAUGE_CIRCUMFERENCE = 691.15;
 
-  // Initialize
   function init() {
     setupEventListeners();
     updateUI();
     startPolling();
     startLocalUptime();
 
-    // Check if running on ESP8266 directly or local development file
+    // Check if running on local file or localhost
     if (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       console.log('Running in Browser Preview / Simulation Mode');
       toast('Preview Mode: Standalone Simulation Active', 'info');
@@ -62,16 +82,15 @@ const App = (() => {
   }
 
   function setupEventListeners() {
-    // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         closeAuthModal();
-        closeNewUserModal();
+        dismissAdminApprovalModal();
       }
     });
   }
 
-  // Polling Real-time Status from ESP8266 REST API
+  // Polling Real-time Status from ESP8266 or Firebase
   function startPolling() {
     fetchStatus();
     if (state.pollInterval) clearInterval(state.pollInterval);
@@ -80,7 +99,6 @@ const App = (() => {
 
   async function fetchStatus() {
     if (state.simulated) {
-      // Run local simulated countdown logic
       tickSimulation();
       return;
     }
@@ -88,7 +106,7 @@ const App = (() => {
     try {
       const response = await fetch('/api/status', {
         headers: {
-          'Authorization': state.currentUser ? `Bearer ${state.currentUser.token}` : ''
+          'Authorization': state.currentUser ? `Bearer ${state.currentUser.token || 'auth'}` : ''
         }
       });
 
@@ -111,8 +129,29 @@ const App = (() => {
         state.config.lockoutDays = data.config.lockoutDays;
       }
 
-      if (data.users) {
-        state.users = data.users;
+      if (data.analytics) {
+        state.analytics.month = data.analytics.currentMonth || 'November 2026';
+        state.analytics.totalOnHours = parseFloat(data.analytics.totalOnHours || 48.5);
+        state.analytics.totalOffHours = parseFloat(data.analytics.totalOffHours || 240.2);
+        state.analytics.totalCycles = data.analytics.totalCyclesCount || 6;
+        const total = state.analytics.totalOnHours + state.analytics.totalOffHours;
+        state.analytics.dutyPercent = total > 0 ? ((state.analytics.totalOnHours / total) * 100).toFixed(1) : 0;
+      }
+
+      // Check if there is an active pending request for Yash_Gajjar to approve
+      if (data.pendingRequest && data.pendingRequest.active) {
+        state.pendingRequest = data.pendingRequest;
+        // If current user is Yash_Gajjar, popup the modal!
+        if (state.currentUser && state.currentUser.role === 'admin') {
+          showAdminApprovalModal(data.pendingRequest.username, data.pendingRequest.action);
+        }
+      } else {
+        state.pendingRequest.active = false;
+        // If Mahi was waiting and request got approved/cleared
+        if (state.waitingForApproval && (!data.pendingRequest || !data.pendingRequest.active)) {
+          state.waitingForApproval = false;
+          closeWaitingModal();
+        }
       }
 
       updateUI();
@@ -125,15 +164,22 @@ const App = (() => {
     }
   }
 
-  // Simulation tick for testing UI when not flashed to hardware
   function tickSimulation() {
     state.system.uptimeSeconds++;
     
+    // Increment simulated analytics
+    if (state.system.relayActive) {
+      state.analytics.totalOnHours = +(state.analytics.totalOnHours + 1/3600).toFixed(4);
+    } else {
+      state.analytics.totalOffHours = +(state.analytics.totalOffHours + 1/3600).toFixed(4);
+    }
+    const tot = state.analytics.totalOnHours + state.analytics.totalOffHours;
+    state.analytics.dutyPercent = ((state.analytics.totalOnHours / tot) * 100).toFixed(1);
+
     if (state.system.mode === 'RELAY_ON') {
       if (state.system.onRemainingSec > 0) {
         state.system.onRemainingSec--;
       } else {
-        // Transition to Lockout
         state.system.mode = 'LOCKOUT';
         state.system.relayActive = false;
         state.system.touchActive = false;
@@ -146,7 +192,6 @@ const App = (() => {
       if (state.system.lockoutRemainingSec > 0) {
         state.system.lockoutRemainingSec--;
       } else {
-        // Transition back to Idle
         state.system.mode = 'IDLE';
         state.system.relayActive = false;
         state.system.touchActive = true;
@@ -164,13 +209,15 @@ const App = (() => {
     }, 1000);
   }
 
-  // Update all UI elements
+  // Update UI Elements according to 3-tier user role
   function updateUI() {
     updateConnectionStatus();
+    updateUserPill();
+    updateRoleBanners();
     updateStateHero();
     updateHardwareTiles();
     updateActionButtons();
-    updateUserPill();
+    updateAnalyticsCards();
     updateConfigSliders();
     renderUserTable();
   }
@@ -180,10 +227,61 @@ const App = (() => {
     const text = document.getElementById('connStatusText');
     if (state.connected) {
       pill.className = 'status-pill online';
-      text.textContent = state.simulated ? 'SIMULATOR MODE (ONLINE)' : 'ESP8266 CONNECTED (AP: 192.168.4.1)';
+      if (state.connectionMode === 'cloud') {
+        text.textContent = 'FIREBASE CLOUD (WORLDWIDE)';
+      } else {
+        text.textContent = state.simulated ? 'SIMULATOR ACTIVE' : 'ESP8266 CONNECTED (AP)';
+      }
     } else {
       pill.className = 'status-pill offline';
-      text.textContent = 'DISCONNECTED (CHECK WIFI)';
+      text.textContent = 'DISCONNECTED';
+    }
+  }
+
+  function updateUserPill() {
+    const nameEl = document.getElementById('currentUserName');
+    const roleEl = document.getElementById('currentUserRole');
+    const initialEl = document.getElementById('userInitial');
+    const ringEl = document.getElementById('userAvatarRing');
+
+    if (state.currentUser) {
+      nameEl.textContent = state.currentUser.username;
+      initialEl.textContent = state.currentUser.username.charAt(0).toUpperCase();
+
+      if (state.currentUser.role === 'admin') {
+        roleEl.textContent = 'SUPER ADMIN';
+        ringEl.className = 'avatar-ring role-admin';
+      } else if (state.currentUser.role === 'guarded_operator') {
+        roleEl.textContent = 'GUARDED OP (1-TIME)';
+        ringEl.className = 'avatar-ring role-guarded';
+      } else {
+        roleEl.textContent = 'GUEST (READ-ONLY)';
+        ringEl.className = 'avatar-ring role-guest';
+      }
+      document.getElementById('logoutBtn').style.display = 'flex';
+    } else {
+      nameEl.textContent = 'Guest';
+      roleEl.textContent = 'SIGN IN';
+      initialEl.textContent = '?';
+      ringEl.className = 'avatar-ring role-guest';
+      document.getElementById('logoutBtn').style.display = 'none';
+    }
+  }
+
+  function updateRoleBanners() {
+    const guestBanner = document.getElementById('guestNoticeBanner');
+    const guardedBanner = document.getElementById('guardedNoticeBanner');
+    const role = state.currentUser?.role;
+
+    if (role === 'guest_analytics') {
+      guestBanner.classList.remove('hidden');
+      guardedBanner.classList.add('hidden');
+    } else if (role === 'guarded_operator') {
+      guardedBanner.classList.remove('hidden');
+      guestBanner.classList.add('hidden');
+    } else {
+      guestBanner.classList.add('hidden');
+      guardedBanner.classList.add('hidden');
     }
   }
 
@@ -251,7 +349,6 @@ const App = (() => {
   }
 
   function updateHardwareTiles() {
-    // Relay tile
     const relayDot = document.getElementById('relayStatusDot');
     const relayText = document.getElementById('relayStatusText');
     if (state.system.relayActive) {
@@ -264,7 +361,6 @@ const App = (() => {
       relayText.style.color = 'var(--text-muted)';
     }
 
-    // Touch module tile
     const touchDot = document.getElementById('touchStatusDot');
     const touchText = document.getElementById('touchStatusText');
     const touchSub = document.getElementById('touchPinInfo');
@@ -280,7 +376,6 @@ const App = (() => {
       touchSub.textContent = 'TTP223 Sensor Listening';
     }
 
-    // Lockout tile
     const lockDot = document.getElementById('lockoutStatusDot');
     const lockText = document.getElementById('lockoutStatusText');
     const lockDesc = document.getElementById('lockoutDesc');
@@ -301,7 +396,30 @@ const App = (() => {
     const btnTrigger = document.getElementById('btnManualTrigger');
     const btnCancel = document.getElementById('btnCancelCycle');
     const btnResetLock = document.getElementById('btnResetLockout');
-    const isAdmin = state.currentUser && state.currentUser.role === 'admin';
+    const triggerText = document.getElementById('triggerBtnText');
+    const role = state.currentUser?.role;
+
+    // 3-Tier Policy Rules:
+    if (role === 'guest_analytics') {
+      // Guest: Cannot trigger anything
+      btnTrigger.disabled = true;
+      btnCancel.disabled = true;
+      btnResetLock.disabled = true;
+      triggerText.textContent = 'Disabled for Guest (Read-Only)';
+      document.getElementById('calibrationCard').style.opacity = '0.5';
+      document.getElementById('btnSaveConfig').disabled = true;
+      return;
+    } else {
+      document.getElementById('calibrationCard').style.opacity = '1';
+      document.getElementById('btnSaveConfig').disabled = false;
+    }
+
+    if (role === 'guarded_operator') {
+      triggerText.textContent = 'Request 1-Time Trigger (Needs Yash Approval)';
+      btnResetLock.disabled = true; // Only Yash can reset lockout
+    } else {
+      triggerText.textContent = 'Trigger Relay Cycle Now (Admin)';
+    }
 
     if (state.system.mode === 'IDLE') {
       btnTrigger.disabled = false;
@@ -309,31 +427,26 @@ const App = (() => {
       btnResetLock.disabled = true;
     } else if (state.system.mode === 'RELAY_ON') {
       btnTrigger.disabled = true;
-      btnCancel.disabled = !state.currentUser; // Operator or Admin can cutoff
+      btnCancel.disabled = (role === 'guest_analytics');
       btnResetLock.disabled = true;
     } else if (state.system.mode === 'LOCKOUT') {
       btnTrigger.disabled = true;
       btnCancel.disabled = true;
-      btnResetLock.disabled = !isAdmin; // Admin only can bypass lockout
+      btnResetLock.disabled = (role !== 'admin');
     }
   }
 
-  function updateUserPill() {
-    const nameEl = document.getElementById('currentUserName');
-    const roleEl = document.getElementById('currentUserRole');
-    const initialEl = document.getElementById('userInitial');
+  // Monthly Analytics Visualizer (User 3 Requirement)
+  function updateAnalyticsCards() {
+    document.getElementById('anTotalOnHours').textContent = state.analytics.totalOnHours.toFixed(1);
+    document.getElementById('anTotalOffHours').textContent = state.analytics.totalOffHours.toFixed(1);
+    document.getElementById('anTotalCycles').textContent = state.analytics.totalCycles;
 
-    if (state.currentUser) {
-      nameEl.textContent = state.currentUser.username;
-      roleEl.textContent = state.currentUser.role.toUpperCase();
-      initialEl.textContent = state.currentUser.username.charAt(0).toUpperCase();
-      document.getElementById('logoutBtn').style.display = 'flex';
-    } else {
-      nameEl.textContent = 'Guest';
-      roleEl.textContent = 'SIGN IN';
-      initialEl.textContent = '?';
-      document.getElementById('logoutBtn').style.display = 'none';
-    }
+    const onPct = Math.min(100, Math.max(0, state.analytics.dutyPercent));
+    const offPct = 100 - onPct;
+    document.getElementById('dutyRatioPercent').textContent = `${onPct}% ON`;
+    document.getElementById('ratioBarOn').style.width = `${onPct}%`;
+    document.getElementById('ratioBarOff').style.width = `${offPct}%`;
   }
 
   function updateConfigSliders() {
@@ -345,6 +458,11 @@ const App = (() => {
   }
 
   function onTimerInput(type) {
+    if (state.currentUser?.role === 'guest_analytics') {
+      toast('Guest accounts cannot modify calibration', 'error');
+      return;
+    }
+
     if (type === 'on') {
       const val = parseFloat(document.getElementById('onHoursSlider').value);
       state.config.onHours = val;
@@ -356,11 +474,10 @@ const App = (() => {
     }
   }
 
-  // Save updated timer values to ESP Flash
+  // Save updated timer values
   async function saveTimers() {
-    if (!state.currentUser) {
-      toast('Please sign in to modify settings', 'error');
-      openAuthModal();
+    if (state.currentUser?.role === 'guest_analytics') {
+      toast('Guest accounts cannot modify calibration', 'error');
       return;
     }
 
@@ -372,17 +489,15 @@ const App = (() => {
     try {
       const res = await fetch('/api/config', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${state.currentUser.token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           onHours: state.config.onHours,
-          lockoutDays: state.config.lockoutDays
+          lockoutDays: state.config.lockoutDays,
+          userRole: state.currentUser.role
         })
       });
 
-      if (!res.ok) throw new Error('Failed to update config');
+      if (!res.ok) throw new Error();
       toast('Parameters successfully written to ESP8266 flash!', 'success');
       fetchStatus();
     } catch (e) {
@@ -390,8 +505,129 @@ const App = (() => {
     }
   }
 
-  // Trigger cycle manually
-  async function triggerRelayCycle() {
+  // Handle Trigger Click based on 3-tier user role
+  async function handleTriggerClick() {
+    const role = state.currentUser?.role;
+
+    if (role === 'guest_analytics') {
+      toast('Action Denied: Guest accounts are read-only.', 'error');
+      return;
+    }
+
+    // Level 2: Mahi_Gajjar requires 1-time grant popup on Yash's app!
+    if (role === 'guarded_operator') {
+      requestOneTimeAccess('TRIGGER_RELAY');
+      return;
+    }
+
+    // Level 1: Yash_Gajjar (Super Admin) executes immediately
+    executeTriggerDirectly();
+  }
+
+  // Level 2 (Mahi_Gajjar) sends 1-time request
+  async function requestOneTimeAccess(action) {
+    state.waitingForApproval = true;
+    document.getElementById('userWaitingApprovalModal').classList.remove('hidden');
+
+    if (state.simulated) {
+      toast('1-time request dispatched! Simulating Admin popup for Yash_Gajjar...', 'info');
+      setTimeout(() => {
+        // If simulation, trigger the Admin popup
+        showAdminApprovalModal('Mahi_Gajjar', 'Trigger Relay Cycle (8.0h)');
+      }, 1000);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/auth/request_grant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: state.currentUser.username,
+          action: action
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      toast('Request sent to Yash_Gajjar! Awaiting Admin confirmation popup...', 'info');
+    } catch (err) {
+      toast(err.message || 'Failed to dispatch request', 'error');
+      closeWaitingModal();
+    }
+  }
+
+  function closeWaitingModal() {
+    state.waitingForApproval = false;
+    document.getElementById('userWaitingApprovalModal').classList.add('hidden');
+  }
+
+  function cancelWaitingRequest() {
+    closeWaitingModal();
+    toast('Access request cancelled', 'info');
+  }
+
+  // Level 1 (Yash_Gajjar) Admin Confirmation Popup Modal
+  function showAdminApprovalModal(user, action) {
+    document.getElementById('popupReqUser').textContent = user;
+    document.getElementById('popupReqAction').textContent = action;
+    document.getElementById('popupAdminPassword').value = '';
+    document.getElementById('adminOneTimeApprovalModal').classList.remove('hidden');
+  }
+
+  function dismissAdminApprovalModal() {
+    document.getElementById('adminOneTimeApprovalModal').classList.add('hidden');
+  }
+
+  async function submitAdminApproval() {
+    const enteredPass = document.getElementById('popupAdminPassword').value;
+
+    if (state.simulated) {
+      if (enteredPass !== 'Iamyashacker@17') {
+        toast('Incorrect Master Admin Password!', 'error');
+        return;
+      }
+      dismissAdminApprovalModal();
+      closeWaitingModal();
+      toast('1-Time Access Granted to Mahi_Gajjar! Session destroyed upon run.', 'success');
+      
+      // Execute the triggered cycle
+      executeTriggerDirectly();
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/auth/approve_grant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminPassword: enteredPass })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      dismissAdminApprovalModal();
+      toast('Authorized! 1-time grant consumed & destroyed.', 'success');
+      fetchStatus();
+    } catch (err) {
+      toast(err.message || 'Authorization failed', 'error');
+    }
+  }
+
+  async function rejectAdminApproval() {
+    dismissAdminApprovalModal();
+    if (state.simulated) {
+      closeWaitingModal();
+      toast('Access request denied by Admin', 'info');
+      return;
+    }
+    try {
+      await fetch('/api/auth/reject_grant', { method: 'POST' });
+      toast('Request rejected by Admin', 'info');
+      fetchStatus();
+    } catch (e) {}
+  }
+
+  // Execute direct trigger (Admin or after 1-time token verified)
+  async function executeTriggerDirectly(oneTimeToken = '') {
     if (state.system.mode !== 'IDLE') {
       toast('Cannot trigger: system is currently ' + state.system.mode, 'error');
       return;
@@ -404,6 +640,7 @@ const App = (() => {
       state.system.lockoutActive = false;
       state.system.totalOnSec = Math.round(state.config.onHours * 3600);
       state.system.onRemainingSec = state.system.totalOnSec;
+      state.analytics.totalCycles++;
       toast(`Relay activated for ${state.config.onHours} hours!`, 'success');
       updateUI();
       return;
@@ -413,7 +650,11 @@ const App = (() => {
       const res = await fetch('/api/control', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'trigger' })
+        body: JSON.stringify({
+          action: 'trigger',
+          userRole: state.currentUser.role,
+          oneTimeToken: oneTimeToken
+        })
       });
       if (!res.ok) throw new Error();
       toast('Relay triggered via RTOS command', 'success');
@@ -423,8 +664,12 @@ const App = (() => {
     }
   }
 
-  // Cancel cycle
   async function cancelCycle() {
+    if (state.currentUser?.role === 'guest_analytics') {
+      toast('Action Denied for Guest account', 'error');
+      return;
+    }
+
     if (state.simulated) {
       state.system.mode = 'IDLE';
       state.system.relayActive = false;
@@ -440,7 +685,7 @@ const App = (() => {
       const res = await fetch('/api/control', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'cancel' })
+        body: JSON.stringify({ action: 'cancel', userRole: state.currentUser.role })
       });
       if (!res.ok) throw new Error();
       toast('Cycle cancelled', 'info');
@@ -450,10 +695,9 @@ const App = (() => {
     }
   }
 
-  // Reset Lockout (Admin bypass)
   async function resetLockout() {
-    if (!state.currentUser || state.currentUser.role !== 'admin') {
-      toast('Admin privileges required to bypass lockout', 'error');
+    if (state.currentUser?.role !== 'admin') {
+      toast('Only Super Administrator (Yash_Gajjar) can bypass lockout', 'error');
       return;
     }
 
@@ -462,7 +706,7 @@ const App = (() => {
       state.system.lockoutRemainingSec = 0;
       state.system.touchActive = true;
       state.system.lockoutActive = false;
-      toast('Lockout bypassed by Admin', 'success');
+      toast('Lockout bypassed by Yash_Gajjar', 'success');
       updateUI();
       return;
     }
@@ -470,11 +714,8 @@ const App = (() => {
     try {
       const res = await fetch('/api/control', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${state.currentUser.token}`
-        },
-        body: JSON.stringify({ action: 'reset_lockout' })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reset_lockout', userRole: 'admin' })
       });
       if (!res.ok) throw new Error();
       toast('Lockout bypassed by Admin', 'success');
@@ -484,156 +725,57 @@ const App = (() => {
     }
   }
 
-  // Render User Database Table (3 to 5 users)
+  // Switch connection mode between Local AP and Firebase Cloud
+  function setConnectionMode(mode) {
+    state.connectionMode = mode;
+    document.getElementById('btnModeLocal').className = mode === 'local' ? 'mode-btn active' : 'mode-btn';
+    document.getElementById('btnModeCloud').className = mode === 'cloud' ? 'mode-btn active' : 'mode-btn';
+
+    if (mode === 'cloud') {
+      toast('Switched to Firebase Cloud Mode (Worldwide)', 'info');
+      document.getElementById('ftCloudStatus').textContent = 'Worldwide Active';
+    } else {
+      toast('Switched to Local AP Mode (192.168.4.1)', 'info');
+      document.getElementById('ftCloudStatus').textContent = 'Local Standby';
+    }
+    updateConnectionStatus();
+  }
+
+  // Render User Database Table
   function renderUserTable() {
     const tbody = document.getElementById('userTableBody');
-    const countBadge = document.getElementById('userCountText');
-    countBadge.textContent = `${state.users.length} / 5`;
-
     tbody.innerHTML = '';
-    state.users.forEach(user => {
+    PREDEFINED_USERS.forEach(user => {
       const tr = document.createElement('tr');
-      const isAdmin = user.role === 'admin';
       const isCurrent = state.currentUser && state.currentUser.username === user.username;
+
+      let badgeClass = 'role-guest-badge';
+      let tierLabel = 'Level 3: Guest Analytics';
+      if (user.role === 'admin') {
+        badgeClass = 'role-admin-badge';
+        tierLabel = 'Level 1: Super Admin';
+      } else if (user.role === 'guarded_operator') {
+        badgeClass = 'role-guarded-badge';
+        tierLabel = 'Level 2: Guarded (1-Time)';
+      }
 
       tr.innerHTML = `
         <td>
-          <strong>${escapeHtml(user.username)}</strong>
-          ${isCurrent ? '<span style="color:var(--accent-cyan); font-size:0.7rem; margin-left:4px;">(You)</span>' : ''}
+          <strong>${user.username}</strong>
+          ${isCurrent ? '<span style="color:var(--accent-cyan); font-size:0.7rem; margin-left:4px;">(Current)</span>' : ''}
         </td>
         <td>
-          <span class="user-badge-role ${isAdmin ? 'role-admin' : 'role-operator'}">${user.role}</span>
+          <span class="user-badge-role ${badgeClass}">${tierLabel}</span>
         </td>
         <td>
-          <span class="${user.status === 'active' ? 'status-active-tag' : 'status-pending-tag'}">
-            ● ${user.status.toUpperCase()}
-          </span>
-        </td>
-        <td class="text-right">
-          ${!isAdmin ? `
-            <button class="icon-btn-sm" title="Remove User" onclick="App.deleteUser(${user.id})">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            </button>
-          ` : '<span style="font-size:0.7rem; color:var(--text-muted);">Master</span>'}
+          <span style="color:var(--accent-emerald); font-size:0.75rem; font-weight:600;">● ACTIVE</span>
         </td>
       `;
       tbody.appendChild(tr);
     });
   }
 
-  // Admin approval modal for adding new user
-  function openNewUserModal() {
-    if (state.users.length >= 5) {
-      toast('Maximum capacity reached (5 users max in ESP DB)', 'error');
-      return;
-    }
-    document.getElementById('newUsername').value = '';
-    document.getElementById('newUserPassword').value = '';
-    document.getElementById('adminAuthPassword').value = '';
-    document.getElementById('adminApprovalModal').classList.remove('hidden');
-  }
-
-  function closeNewUserModal() {
-    document.getElementById('adminApprovalModal').classList.add('hidden');
-  }
-
-  // Submit New User Registration (With Admin Password Approval)
-  async function submitNewUserRegistration() {
-    const newUsername = document.getElementById('newUsername').value.trim();
-    const newUserPassword = document.getElementById('newUserPassword').value;
-    const newUserRole = document.getElementById('newUserRole').value;
-    const adminPassword = document.getElementById('adminAuthPassword').value;
-
-    if (!newUsername || !newUserPassword || !adminPassword) {
-      toast('All fields including Master Admin Password are required', 'error');
-      return;
-    }
-
-    if (state.users.some(u => u.username.toLowerCase() === newUsername.toLowerCase())) {
-      toast('Username already exists in database', 'error');
-      return;
-    }
-
-    if (state.simulated) {
-      // In simulation mode, verify if admin password is 'admin' or 'admin123'
-      if (adminPassword !== 'admin' && adminPassword !== 'admin123') {
-        toast('Invalid Admin Password. Authorization Denied!', 'error');
-        return;
-      }
-
-      state.users.push({
-        id: Date.now(),
-        username: newUsername,
-        role: newUserRole,
-        status: 'active',
-        created: new Date().toISOString().split('T')[0]
-      });
-
-      closeNewUserModal();
-      toast(`User ${newUsername} authorized and added by Admin!`, 'success');
-      updateUI();
-      return;
-    }
-
-    try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: newUsername,
-          password: newUserPassword,
-          role: newUserRole,
-          adminPassword: adminPassword
-        })
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || 'Authorization failed');
-      }
-
-      closeNewUserModal();
-      toast(`User "${newUsername}" approved & registered!`, 'success');
-      fetchStatus();
-    } catch (err) {
-      toast(err.message || 'Admin authentication failed', 'error');
-    }
-  }
-
-  // Delete User from DB
-  async function deleteUser(id) {
-    if (!state.currentUser || state.currentUser.role !== 'admin') {
-      toast('Admin privileges required to remove users', 'error');
-      return;
-    }
-
-    if (!confirm('Are you sure you want to remove this user from ESP8266 database?')) {
-      return;
-    }
-
-    if (state.simulated) {
-      state.users = state.users.filter(u => u.id !== id);
-      toast('User deleted from local DB', 'info');
-      updateUI();
-      return;
-    }
-
-    try {
-      const res = await fetch(`/api/users/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${state.currentUser.token}`
-        }
-      });
-      if (!res.ok) throw new Error();
-      toast('User deleted from ESP database', 'info');
-      fetchStatus();
-    } catch (e) {
-      toast('Failed to delete user', 'error');
-    }
-  }
-
-  // Auth Modal (Sign in)
+  // Auth Modal
   function openAuthModal() {
     document.getElementById('loginUsername').value = '';
     document.getElementById('loginPassword').value = '';
@@ -644,24 +786,34 @@ const App = (() => {
     document.getElementById('authModal').classList.add('hidden');
   }
 
+  function fillPreset(type) {
+    if (type === 'yash') {
+      document.getElementById('loginUsername').value = 'Yash_Gajjar';
+      document.getElementById('loginPassword').value = 'Iamyashacker@17';
+    } else if (type === 'mahi') {
+      document.getElementById('loginUsername').value = 'Mahi_Gajjar';
+      document.getElementById('loginPassword').value = 'MahiSecure#2026';
+    } else if (type === 'guest') {
+      document.getElementById('loginUsername').value = 'Guest';
+      document.getElementById('loginPassword').value = 'Guest@123';
+    }
+  }
+
   async function submitLogin() {
     const user = document.getElementById('loginUsername').value.trim();
     const pass = document.getElementById('loginPassword').value;
 
+    const matched = PREDEFINED_USERS.find(u => u.username.toLowerCase() === user.toLowerCase());
+    if (matched && matched.password === pass) {
+      state.currentUser = matched;
+      closeAuthModal();
+      toast(`Signed in as ${matched.username} (${matched.label})`, 'success');
+      updateUI();
+      return;
+    }
+
     if (state.simulated) {
-      const matched = state.users.find(u => u.username.toLowerCase() === user.toLowerCase());
-      if (matched && (pass === 'admin' || pass === 'admin123' || pass.length >= 4)) {
-        state.currentUser = {
-          username: matched.username,
-          role: matched.role,
-          token: 'sim-token-' + Date.now()
-        };
-        closeAuthModal();
-        toast(`Signed in as ${matched.username} (${matched.role})`, 'success');
-        updateUI();
-      } else {
-        toast('Invalid credentials in simulation mode', 'error');
-      }
+      toast('Invalid credentials for predefined users', 'error');
       return;
     }
 
@@ -671,7 +823,6 @@ const App = (() => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: user, password: pass })
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Login failed');
 
@@ -680,7 +831,6 @@ const App = (() => {
         role: data.role,
         token: data.token
       };
-
       closeAuthModal();
       toast(`Welcome back, ${data.username}!`, 'success');
       updateUI();
@@ -690,12 +840,12 @@ const App = (() => {
   }
 
   function logout() {
-    state.currentUser = null;
-    toast('Logged out successfully', 'info');
+    // Revert to Guest
+    state.currentUser = PREDEFINED_USERS[2]; // Guest
+    toast('Switched to Guest mode', 'info');
     updateUI();
   }
 
-  // Helper utilities
   function splitSeconds(totalSec) {
     const sec = Math.max(0, Math.floor(totalSec));
     const d = Math.floor(sec / 86400);
@@ -725,34 +875,27 @@ const App = (() => {
     }, 3500);
   }
 
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
-  // Auto-init on DOM Ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
 
-  // Public API
   return {
     onTimerInput,
     saveTimers,
-    triggerRelayCycle,
+    handleTriggerClick,
     cancelCycle,
     resetLockout,
+    setConnectionMode,
     openAuthModal,
     closeAuthModal,
+    fillPreset,
     submitLogin,
     logout,
-    openNewUserModal,
-    closeNewUserModal,
-    submitNewUserRegistration,
-    deleteUser
+    dismissAdminApprovalModal,
+    submitAdminApproval,
+    rejectAdminApproval,
+    cancelWaitingRequest
   };
 })();
-

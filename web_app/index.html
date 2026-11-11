@@ -3,12 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0b0f19">
-  <title>CYBER-RELAY RTOS // Smart Management Hub</title>
+  <meta name="theme-color" content="#07090e">
+  <title>CYBER-RELAY RTOS // Smart IoT & Firebase Control</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  
+  <!-- Firebase App & Realtime Database SDKs for Worldwide Cloud Access -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 </head>
 <body>
   <!-- Ambient background glow elements -->
@@ -28,12 +32,18 @@
           </svg>
         </div>
         <div class="brand-info">
-          <h1>CYBER-RELAY <span class="badge-rtos">RTOS v2.4</span></h1>
-          <p class="subtitle">ESP8266 Real-Time Relay & Touch Controller</p>
+          <h1>CYBER-RELAY <span class="badge-rtos">RTOS v3.0</span></h1>
+          <p class="subtitle">ESP8266 IoT & Firebase Worldwide Hub</p>
         </div>
       </div>
 
       <div class="header-meta">
+        <!-- Cloud / Local AP Switcher -->
+        <div class="conn-mode-switcher">
+          <button id="btnModeLocal" class="mode-btn active" onclick="App.setConnectionMode('local')">Local AP</button>
+          <button id="btnModeCloud" class="mode-btn" onclick="App.setConnectionMode('cloud')">Firebase Cloud</button>
+        </div>
+
         <div id="connStatusPill" class="status-pill online">
           <span class="pulsing-dot"></span>
           <span id="connStatusText">ESP8266 CONNECTED</span>
@@ -41,12 +51,12 @@
         
         <!-- User Profile Pill -->
         <div id="userProfilePill" class="user-pill glass-button" onclick="App.openAuthModal()">
-          <div class="avatar-ring">
-            <span id="userInitial">A</span>
+          <div class="avatar-ring" id="userAvatarRing">
+            <span id="userInitial">Y</span>
           </div>
           <div class="user-info-text">
-            <span id="currentUserName">Admin</span>
-            <span id="currentUserRole" class="role-tag">MASTER</span>
+            <span id="currentUserName">Yash_Gajjar</span>
+            <span id="currentUserRole" class="role-tag">SUPER ADMIN</span>
           </div>
           <button id="logoutBtn" class="icon-btn-sm" title="Log Out" onclick="event.stopPropagation(); App.logout()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
@@ -54,6 +64,17 @@
         </div>
       </div>
     </header>
+
+    <!-- Role Notice Banner -->
+    <div id="guestNoticeBanner" class="role-banner guest-banner hidden">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      <span><strong>Guest Mode Active:</strong> You have read-only access to view live countdowns and Monthly Switch Analytics. Hardware controls and calibrations are disabled.</span>
+    </div>
+
+    <div id="guardedNoticeBanner" class="role-banner guarded-banner hidden">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span><strong>Guarded Operator (Mahi_Gajjar):</strong> Any trigger or system write requires instant 1-time approval from Yash_Gajjar (Admin). Session destroys after 1 use.</span>
+    </div>
 
     <!-- Main Grid Dashboard -->
     <main class="dashboard-grid">
@@ -118,7 +139,7 @@
               <span id="relayStatusDot" class="status-dot dot-off"></span>
               <strong id="relayStatusText">OFF</strong>
             </div>
-            <span class="hw-sub" id="relayPinInfo">GPIO1 (TX) / D1 Config</span>
+            <span class="hw-sub" id="relayPinInfo">GPIO5 (D1) / GPIO1 (TX)</span>
           </div>
 
           <div class="hw-tile">
@@ -127,7 +148,7 @@
               <span id="touchStatusDot" class="status-dot dot-active"></span>
               <strong id="touchStatusText">READY</strong>
             </div>
-            <span class="hw-sub" id="touchPinInfo">TTP223 Sensor Active</span>
+            <span class="hw-sub" id="touchPinInfo">TTP223 Capacitive Active</span>
           </div>
 
           <div class="hw-tile">
@@ -140,11 +161,11 @@
           </div>
         </div>
 
-        <!-- Direct Control Buttons (For authorized user/admin) -->
-        <div class="action-buttons-group">
-          <button id="btnManualTrigger" class="glass-button btn-accent" onclick="App.triggerRelayCycle()">
+        <!-- Action Controls (Contextual based on 3-tier user role) -->
+        <div class="action-buttons-group" id="controlsGroup">
+          <button id="btnManualTrigger" class="glass-button btn-accent" onclick="App.handleTriggerClick()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            <span>Trigger Relay Cycle Now</span>
+            <span id="triggerBtnText">Trigger Relay Cycle Now</span>
           </button>
           <button id="btnCancelCycle" class="glass-button btn-danger" onclick="App.cancelCycle()" disabled>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
@@ -152,16 +173,75 @@
           </button>
           <button id="btnResetLockout" class="glass-button btn-warning" onclick="App.resetLockout()" disabled title="Admin Only">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-            <span>Bypass Lockout</span>
+            <span>Bypass Lockout (Yash_Gajjar Only)</span>
           </button>
         </div>
       </section>
 
-      <!-- RIGHT COLUMN: Configuration, User DB, Logs -->
+      <!-- RIGHT COLUMN: Analytics (Guest), Calibration, Users -->
       <div class="right-stack">
 
-        <!-- Custom Timer Configurations Card -->
-        <section class="grid-card glass-card">
+        <!-- MONTHLY ON/OFF SWITCH ANALYTICS (User 3 Requirement) -->
+        <section class="grid-card glass-card analytics-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="eyebrow">MONTHLY USAGE ANALYTICS</span>
+              <h2>Switch Runtime & Analysis</h2>
+            </div>
+            <span class="info-badge" id="analyticsMonthBadge">November 2026</span>
+          </div>
+
+          <p class="card-subtext">Comprehensive historical tracking of switch on/off durations and monthly cycles.</p>
+
+          <!-- Metrics summary tiles -->
+          <div class="analytics-metrics-grid">
+            <div class="metric-box box-on">
+              <div class="metric-icon">⚡</div>
+              <div class="metric-data">
+                <span class="metric-num" id="anTotalOnHours">48.5</span>
+                <span class="metric-unit">hours ON</span>
+              </div>
+              <span class="metric-label">Total Switch Energized</span>
+            </div>
+
+            <div class="metric-box box-off">
+              <div class="metric-icon">💤</div>
+              <div class="metric-data">
+                <span class="metric-num" id="anTotalOffHours">240.2</span>
+                <span class="metric-unit">hours OFF</span>
+              </div>
+              <span class="metric-label">Total Inactive / Lockout</span>
+            </div>
+
+            <div class="metric-box box-cycles">
+              <div class="metric-icon">🔄</div>
+              <div class="metric-data">
+                <span class="metric-num" id="anTotalCycles">6</span>
+                <span class="metric-unit">cycles</span>
+              </div>
+              <span class="metric-label">Completed Runs</span>
+            </div>
+          </div>
+
+          <!-- Monthly Duty Cycle Comparison Bar -->
+          <div class="analytics-bar-wrapper">
+            <div class="bar-header">
+              <span>Monthly Duty Cycle Ratio</span>
+              <strong id="dutyRatioPercent">16.8% ON</strong>
+            </div>
+            <div class="ratio-bar-track">
+              <div id="ratioBarOn" class="ratio-bar-fill on-fill" style="width: 16.8%;"></div>
+              <div id="ratioBarOff" class="ratio-bar-fill off-fill" style="width: 83.2%;"></div>
+            </div>
+            <div class="ratio-bar-legend">
+              <span class="legend-dot dot-cyan"></span> Active Hours
+              <span class="legend-dot dot-slate" style="margin-left: 14px;"></span> Lockout / Standby
+            </div>
+          </div>
+        </section>
+
+        <!-- Custom Timer Configurations Card (Admin Only) -->
+        <section class="grid-card glass-card" id="calibrationCard">
           <div class="card-header">
             <div class="card-title-group">
               <span class="eyebrow">CUSTOM PARAMETERS</span>
@@ -217,7 +297,6 @@
               </div>
             </div>
 
-            <!-- Save Parameters Button -->
             <button id="btnSaveConfig" class="glass-button btn-primary w-full" onclick="App.saveTimers()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
               <span>Save & Flash to ESP8266 Memory</span>
@@ -225,44 +304,33 @@
           </div>
         </section>
 
-        <!-- Inbuilt User Database Card (3 to 5 users) -->
-        <section class="grid-card glass-card">
+        <!-- 3-Tier Predefined User Database Card -->
+        <section class="grid-card glass-card" id="userManagementCard">
           <div class="card-header">
             <div class="card-title-group">
-              <span class="eyebrow">INBUILT FLASH DATABASE</span>
-              <h2>User Access Management</h2>
+              <span class="eyebrow">3-TIER ACCESS MATRIX</span>
+              <h2>Enrolled User Database</h2>
             </div>
             <div class="user-quota-badge">
-              <span id="userCountText">1 / 5</span> Slots Used
+              <span id="userCountText">3 / 5</span> Active Accounts
             </div>
           </div>
 
-          <p class="card-subtext">Secure on-chip storage for 3–5 authorized operators with admin approval controls.</p>
+          <p class="card-subtext">Predefined credentials with 3 discrete privilege levels & 1-time grant flow.</p>
 
-          <!-- User Slots Table -->
           <div class="user-table-wrap">
             <table class="user-table">
               <thead>
                 <tr>
-                  <th>User</th>
-                  <th>Role</th>
+                  <th>Username</th>
+                  <th>Privilege Tier</th>
                   <th>Status</th>
-                  <th class="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody id="userTableBody">
                 <!-- Dynamically populated -->
               </tbody>
             </table>
-          </div>
-
-          <!-- Add User Trigger Button -->
-          <div class="user-actions-footer">
-            <button class="glass-button btn-outline-cyan" onclick="App.openNewUserModal()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-              <span>+ Register New Operator</span>
-            </button>
-            <span class="security-note">Requires Admin Authorization</span>
           </div>
         </section>
 
@@ -273,15 +341,15 @@
     <footer class="system-footer glass-card">
       <div class="footer-item">
         <span class="ft-label">RTOS KERNEL:</span>
-        <span class="ft-val">FreeRTOS Cooperative Tasks</span>
+        <span class="ft-val">FreeRTOS Priority Tasks</span>
       </div>
       <div class="footer-item">
-        <span class="ft-label">STORAGE:</span>
-        <span class="ft-val">LittleFS NVRAM (Persistent State)</span>
+        <span class="ft-label">CLOUD SYNC:</span>
+        <span id="ftCloudStatus" class="ft-val" style="color:var(--accent-cyan)">Firebase Active</span>
       </div>
       <div class="footer-item">
-        <span class="ft-label">TOUCH FILTER:</span>
-        <span class="ft-val">Debounced Capacitive Lock</span>
+        <span class="ft-label">TOUCH LOCK:</span>
+        <span class="ft-val">Hardware Debounce</span>
       </div>
       <div class="footer-item">
         <span class="ft-label">UPTIME:</span>
@@ -290,23 +358,102 @@
     </footer>
   </div>
 
-  <!-- MODAL: Authentication / Switch User -->
+  <!-- ========================================================================= -->
+  <!-- MODAL 1: Real-Time Admin Confirmation Popup for Mahi_Gajjar 1-Time Access -->
+  <!-- ========================================================================= -->
+  <div id="adminOneTimeApprovalModal" class="modal-backdrop hidden">
+    <div class="modal-card glass-card modal-highlight-gold">
+      <div class="modal-header">
+        <div class="auth-icon-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div>
+          <h3>User Authorization Request</h3>
+          <p class="modal-subtitle">Level 2 user <strong>Mahi_Gajjar</strong> is requesting permission.</p>
+        </div>
+        <button class="close-btn" onclick="App.dismissAdminApprovalModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="req-details-box">
+          <div class="req-row">
+            <span class="req-label">Requesting User:</span>
+            <strong class="text-gold" id="popupReqUser">Mahi_Gajjar</strong>
+          </div>
+          <div class="req-row">
+            <span class="req-label">Requested Action:</span>
+            <strong id="popupReqAction">Trigger Relay Active Cycle (8.0h)</strong>
+          </div>
+          <div class="req-row">
+            <span class="req-label">Session Policy:</span>
+            <span class="badge-single-use">1-Time Only (Destroy Session Immediately)</span>
+          </div>
+        </div>
+
+        <form onsubmit="event.preventDefault(); App.submitAdminApproval();">
+          <div class="form-group" style="margin-top: 14px;">
+            <label class="text-gold">Enter Yash_Gajjar Admin Password to Grant Access:</label>
+            <input type="password" id="popupAdminPassword" placeholder="Enter Iamyashacker@17 to approve" required autofocus>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="glass-button btn-secondary" onclick="App.rejectAdminApproval()">Deny Access</button>
+            <button type="submit" class="glass-button btn-gold">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Grant 1-Time Access</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 2: Mahi_Gajjar Waiting for Admin Approval Radar Modal                -->
+  <!-- ========================================================================= -->
+  <div id="userWaitingApprovalModal" class="modal-backdrop hidden">
+    <div class="modal-card glass-card text-center">
+      <div class="radar-spinner">
+        <div class="radar-circle circle-1"></div>
+        <div class="radar-circle circle-2"></div>
+        <div class="radar-circle circle-3"></div>
+        <div class="radar-core">🔒</div>
+      </div>
+      <h3 style="margin-top: 16px;">Waiting for Admin Confirmation</h3>
+      <p class="modal-subtitle" style="margin: 8px auto 16px; max-width: 320px;">
+        A real-time authorization popup has been sent to <strong>Yash_Gajjar</strong>. Your 1-time session will execute immediately once approved.
+      </p>
+      <button class="glass-button btn-secondary" onclick="App.cancelWaitingRequest()">Cancel Request</button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 3: Sign In / Switch Account Modal                                   -->
+  <!-- ========================================================================= -->
   <div id="authModal" class="modal-backdrop hidden">
     <div class="modal-card glass-card">
       <div class="modal-header">
-        <h3>Operator Sign In</h3>
+        <h3>Sign In to Cyber-Relay</h3>
         <button class="close-btn" onclick="App.closeAuthModal()">✕</button>
       </div>
       <div class="modal-body">
         <form onsubmit="event.preventDefault(); App.submitLogin();">
           <div class="form-group">
             <label>Username</label>
-            <input type="text" id="loginUsername" placeholder="e.g. admin or operator" required autocomplete="username">
+            <input type="text" id="loginUsername" placeholder="Yash_Gajjar / Mahi_Gajjar / Guest" required autocomplete="username">
           </div>
           <div class="form-group">
-            <label>Password / PIN</label>
+            <label>Password</label>
             <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
           </div>
+
+          <div class="preset-users-chips">
+            <span class="chip-label">Quick select:</span>
+            <button type="button" class="preset-chip" onclick="App.fillPreset('yash')">Yash (Admin)</button>
+            <button type="button" class="preset-chip" onclick="App.fillPreset('mahi')">Mahi (Guarded)</button>
+            <button type="button" class="preset-chip" onclick="App.fillPreset('guest')">Guest</button>
+          </div>
+
           <div class="modal-actions">
             <button type="button" class="glass-button btn-secondary" onclick="App.closeAuthModal()">Cancel</button>
             <button type="submit" class="glass-button btn-primary">Sign In</button>
@@ -316,66 +463,9 @@
     </div>
   </div>
 
-  <!-- MODAL: Admin Password Approval Popup for New User Registration -->
-  <div id="adminApprovalModal" class="modal-backdrop hidden">
-    <div class="modal-card glass-card modal-highlight-gold">
-      <div class="modal-header">
-        <div class="auth-icon-badge">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        </div>
-        <div>
-          <h3>Admin Authorization Required</h3>
-          <p class="modal-subtitle">A master admin password is required to enroll a new user.</p>
-        </div>
-        <button class="close-btn" onclick="App.closeNewUserModal()">✕</button>
-      </div>
-
-      <div class="modal-body">
-        <form onsubmit="event.preventDefault(); App.submitNewUserRegistration();">
-          <div class="form-box-bordered">
-            <span class="form-box-tag">1. NEW USER CREDENTIALS</span>
-            <div class="form-group">
-              <label>New Operator Username</label>
-              <input type="text" id="newUsername" placeholder="e.g. operator2" required maxlength="16">
-            </div>
-            <div class="form-group">
-              <label>New Operator Password</label>
-              <input type="password" id="newUserPassword" placeholder="Minimum 4 characters" required minlength="4">
-            </div>
-            <div class="form-group">
-              <label>Role</label>
-              <select id="newUserRole">
-                <option value="operator">Operator (Trigger & View)</option>
-                <option value="admin">Administrator (Full Control)</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-box-bordered box-admin-verify">
-            <span class="form-box-tag text-gold">2. ADMIN PASSWORD CONFIRMATION</span>
-            <div class="form-group">
-              <label class="text-gold">Master Admin Password</label>
-              <input type="password" id="adminAuthPassword" placeholder="Enter current Admin Password to approve" required>
-              <small class="hint-text">Only the administrator can authorize addition of new users into the ESP database (Max 5).</small>
-            </div>
-          </div>
-
-          <div class="modal-actions">
-            <button type="button" class="glass-button btn-secondary" onclick="App.closeNewUserModal()">Cancel</button>
-            <button type="submit" class="glass-button btn-gold">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              <span>Authorize & Enroll User</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toast Notification Floating Container -->
+  <!-- Toast Container -->
   <div id="toastContainer" class="toast-container"></div>
 
   <script src="app.js"></script>
 </body>
 </html>
-

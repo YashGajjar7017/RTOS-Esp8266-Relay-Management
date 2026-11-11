@@ -21,13 +21,11 @@ StateManager::StateManager() :
 }
 
 void StateManager::begin() {
-  // 1. Initialize GPIO Pins
   pinMode(PIN_RELAY, OUTPUT);
-  applyRelayHardware(false); // Ensure relay starts OFF
+  applyRelayHardware(false);
 
   pinMode(PIN_TOUCH, INPUT);
 
-  // 2. Load configurations and restored state from storage
   storageDB.loadSettings(_settings);
   
   PersistentState restoredState;
@@ -36,7 +34,6 @@ void StateManager::begin() {
     Serial.printf("[STATE] Restored state from Flash: Mode=%s, OnRem=%u s, LockRem=%u s\n", 
       getModeString(), _state.onRemainingSec, _state.lockoutRemainingSec);
 
-    // Resume restored state
     if (_state.mode == MODE_RELAY_ON) {
       if (_state.onRemainingSec > 0) {
         applyRelayHardware(true);
@@ -88,6 +85,7 @@ void StateManager::transitionTo(SystemMode newMode) {
       _state.totalOnSec = (uint32_t)(_settings.onHours * 3600.0f);
       _state.onRemainingSec = _state.totalOnSec;
       applyRelayHardware(true);
+      storageDB.recordCycleTriggered();
       Serial.printf("[STATE] ---> Transitioned to RELAY_ON for %u seconds (%.1f h).\n", _state.totalOnSec, _settings.onHours);
       break;
 
@@ -106,7 +104,6 @@ void StateManager::persistState() {
   storageDB.saveState(_state);
 }
 
-// Called every 10-20 ms by RTOS Touch Task
 void StateManager::handleTouchSensor() {
   int rawReading = digitalRead(PIN_TOUCH);
   bool isTouched = (rawReading == TOUCH_ACTIVE_LEVEL);
@@ -120,7 +117,6 @@ void StateManager::handleTouchSensor() {
       _touchTriggered = true;
       Serial.println(F("[TOUCH] Capacitive touch event detected!"));
 
-      // Check current state machine rule:
       if (_state.mode == MODE_IDLE) {
         Serial.println(F("[TOUCH] System is IDLE. Triggering Relay Active Phase."));
         transitionTo(MODE_RELAY_ON);
@@ -137,9 +133,11 @@ void StateManager::handleTouchSensor() {
   _lastTouchReading = isTouched;
 }
 
-// Called every 1 second by RTOS Timer Task
 void StateManager::tickOneSecond() {
   _uptimeSeconds++;
+
+  // Feed monthly analytics runtime accumulator
+  storageDB.recordStateSecond(_relayActive);
 
   if (_state.mode == MODE_RELAY_ON) {
     if (_state.onRemainingSec > 0) {
@@ -160,18 +158,27 @@ void StateManager::tickOneSecond() {
     }
   }
 
-  // Periodic Flash NVRAM persistence every PERSIST_INTERVAL_MS
   if (millis() - _lastPersistMillis >= PERSIST_INTERVAL_MS) {
     _lastPersistMillis = millis();
     persistState();
   }
 }
 
-bool StateManager::triggerCycle(const char* source) {
+bool StateManager::triggerCycle(const char* source, const char* oneTimeToken) {
   if (_state.mode != MODE_IDLE) {
     Serial.printf("[CMD] Cannot trigger cycle from %s: system is %s\n", source, getModeString());
     return false;
   }
+
+  // If one-time token was provided (from Mahi_Gajjar Level 2), consume and destroy it
+  if (oneTimeToken && strlen(oneTimeToken) > 0) {
+    if (!storageDB.consumeOneTimeToken(oneTimeToken)) {
+      Serial.println(F("[AUTH-L2] REJECTED: Invalid or expired 1-time token."));
+      return false;
+    }
+    Serial.println(F("[AUTH-L2] Valid 1-time token consumed. Session destroyed!"));
+  }
+
   Serial.printf("[CMD] Cycle triggered by %s\n", source);
   transitionTo(MODE_RELAY_ON);
   return true;
@@ -207,7 +214,7 @@ bool StateManager::updateTimers(float onHours, float lockoutDays) {
 }
 
 String StateManager::getStatusJson(const char* currentUsername, const char* userRole) {
-  StaticJsonDocument<1024> doc;
+  StaticJsonDocument<2048> doc;
 
   doc["mode"] = getModeString();
   doc["relayActive"] = _relayActive;
@@ -227,9 +234,32 @@ String StateManager::getStatusJson(const char* currentUsername, const char* user
   if (currentUsername) {
     JsonObject cur = doc.createNestedObject("currentUser");
     cur["username"] = currentUsername;
-    cur["role"] = userRole ? userRole : "operator";
+    cur["role"] = userRole ? userRole : "guest_analytics";
   }
 
+  // Monthly Analytics for Guest and all users
+  const MonthlyAnalytics& an = storageDB.getAnalytics();
+  JsonObject analyticsObj = doc.createNestedObject("analytics");
+  analyticsObj["currentMonth"] = an.currentMonthYear;
+  analyticsObj["totalOnSeconds"] = an.totalOnSeconds;
+  analyticsObj["totalOffSeconds"] = an.totalOffSeconds;
+  analyticsObj["totalCyclesCount"] = an.totalCyclesCount;
+  float onHours = (float)an.totalOnSeconds / 3600.0f;
+  float offHours = (float)an.totalOffSeconds / 3600.0f;
+  analyticsObj["totalOnHours"] = serialized(String(onHours, 1));
+  analyticsObj["totalOffHours"] = serialized(String(offHours, 1));
+
+  // Level 2 Pending One-Time Request for Admin Popup
+  if (storageDB.hasActiveOneTimeRequest()) {
+    const OneTimeAccessRequest& req = storageDB.getOneTimeRequest();
+    JsonObject pendingObj = doc.createNestedObject("pendingRequest");
+    pendingObj["active"] = true;
+    pendingObj["requestId"] = req.requestId;
+    pendingObj["username"] = req.username;
+    pendingObj["action"] = req.requestedAction;
+  }
+
+  // Users list
   JsonArray usersArr = doc.createNestedArray("users");
   int count = storageDB.getUserCount();
   for (int i = 0; i < count; i++) {
@@ -248,4 +278,3 @@ String StateManager::getStatusJson(const char* currentUsername, const char* user
   serializeJson(doc, output);
   return output;
 }
-

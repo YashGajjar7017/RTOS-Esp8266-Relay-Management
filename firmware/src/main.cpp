@@ -4,13 +4,8 @@
 #include "storage_db.h"
 #include "state_manager.h"
 #include "web_server_api.h"
+#include "firebase_client.h"
 #include "rtos_tasks.h"
-
-/**
- * =========================================================================
- *                  TASK HANDLERS FOR RTOS SCHEDULER
- * =========================================================================
- */
 
 // Task 1: High frequency capacitive touch sensor polling & debouncing (15 ms)
 void taskTouchSensor() {
@@ -27,21 +22,22 @@ void taskNetworkServer() {
   webServerAPI.handleClient();
 }
 
-// Task 4: Background diagnostic logger (60000 ms)
+// Task 4: Firebase Realtime Cloud Synchronization (100 ms loop check)
+void taskFirebaseCloud() {
+  firebaseClient.update();
+}
+
+// Task 5: Background diagnostic logger (60000 ms)
 void taskDiagnosticLog() {
-  Serial.printf("[DIAG] Heap: %u bytes | Mode: %s | Relay: %d | Up: %u s\n",
+  Serial.printf("[DIAG] Heap: %u bytes | Mode: %s | Relay: %d | Cloud: %d | Up: %u s\n",
     ESP.getFreeHeap(),
     stateManager.getModeString(),
     stateManager.isRelayActive(),
+    firebaseClient.isConnected(),
     stateManager.getUptime()
   );
 }
 
-/**
- * =========================================================================
- *                       SETUP & INITIALIZATION
- * =========================================================================
- */
 void setup() {
   #if !USE_PHYSICAL_GPIO1_FOR_RELAY
     Serial.begin(115200);
@@ -52,13 +48,13 @@ void setup() {
     Serial.println(F("=================================================="));
   #endif
 
-  // 1. Initialize Storage & Inbuilt User Database
+  // 1. Initialize Storage & 3-Tier Predefined Users
   storageDB.begin();
 
   // 2. Initialize Hardware Relay & Touch State Manager
   stateManager.begin();
 
-  // 3. Configure Wi-Fi SoftAP Mode (and optional STA connection)
+  // 3. Configure Wi-Fi Dual AP + Station Mode
   WiFi.mode(WIFI_AP_STA);
   WiFi.softAPConfig(
     IPAddress(192, 168, 4, 1),
@@ -70,34 +66,32 @@ void setup() {
   if (apStarted) {
     Serial.printf("[WIFI] Access Point '%s' initialized.\n", WIFI_AP_SSID);
     Serial.printf("[WIFI] Connect to Wi-Fi and browse to: http://%s\n", WiFi.softAPIP().toString().c_str());
-  } else {
-    Serial.println(F("[WIFI] ERROR: SoftAP failed to start!"));
   }
 
-  #if ENABLE_WIFI_STA
-    WiFi.begin(WIFI_STA_SSID, WIFI_STA_PASSWORD);
-    Serial.printf("[WIFI] Connecting to Home Wi-Fi: %s\n", WIFI_STA_SSID);
+  #if ENABLE_INTERNET_WIFI
+    if (strlen(WIFI_STA_SSID) > 0 && strcmp(WIFI_STA_SSID, "Home_WiFi_Name") != 0) {
+      WiFi.begin(WIFI_STA_SSID, WIFI_STA_PASSWORD);
+      Serial.printf("[WIFI] Connecting to Internet Router: %s\n", WIFI_STA_SSID);
+    }
   #endif
 
   // 4. Start Web Server & Captive Portal
   webServerAPI.begin();
 
-  // 5. Register RTOS Priority Tasks
+  // 5. Initialize Firebase Cloud Client
+  firebaseClient.begin();
+
+  // 6. Register RTOS Priority Tasks
   rtosScheduler.registerTask("TouchSensor", 15, taskTouchSensor);
   rtosScheduler.registerTask("NetworkServer", 10, taskNetworkServer);
   rtosScheduler.registerTask("CountdownTick", 1000, taskCountdownTick);
+  rtosScheduler.registerTask("FirebaseCloud", 100, taskFirebaseCloud);
   rtosScheduler.registerTask("Diagnostics", 60000, taskDiagnosticLog);
   rtosScheduler.begin();
 
   Serial.println(F("[SYSTEM] Setup completed. System ready for operation."));
 }
 
-/**
- * =========================================================================
- *                         MAIN RTOS RUNNER LOOP
- * =========================================================================
- */
 void loop() {
   rtosScheduler.run();
 }
-
