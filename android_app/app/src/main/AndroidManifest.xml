@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.cyberrelay.app">
+    package="com.cyberrelay.app"
+    android:versionCode="1"
+    android:versionName="3.0.0">
 
-    <!-- Permissions for Local ESP8266 Wi-Fi & Firebase Worldwide Cloud Access -->
+    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="34" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -12,11 +15,9 @@
     <application
         android:allowBackup="true"
         android:icon="@android:drawable/ic_dialog_alert"
-        android:label="@string/app_name"
-        android:roundIcon="@android:drawable/ic_dialog_alert"
-        android:supportsRtl="true"
+        android:label="CyberRelay RTOS"
         android:usesCleartextTraffic="true"
-        android:theme="@style/Theme.CyberRelay">
+        android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
 
         <activity
             android:name=".MainActivity"
@@ -31,4 +32,3 @@
     </application>
 
 </manifest>
-
