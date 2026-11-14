@@ -1377,11 +1377,11 @@ body {
 
 .auth-card {
   width: 100%;
-  max-width: 480px;
-  padding: 32px 28px;
+  max-width: 720px;
+  padding: 38px 36px;
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(245, 158, 11, 0.25);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), 0 0 40px rgba(245, 158, 11, 0.15), inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 45px rgba(245, 158, 11, 0.16), inset 0 1px 1px 0 rgba(255, 255, 255, 0.15);
   position: relative;
   overflow: hidden;
 }
@@ -1663,9 +1663,37 @@ body {
   color: #fff;
 }
 
-/* Checkbox */
+/* Checkbox and Forgot Password Row */
 .form-checkbox-row {
   margin: 14px 0 18px;
+}
+
+.form-extra-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 12px 0 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btn-link-forgot {
+  background: transparent;
+  border: none;
+  color: var(--accent-amber);
+  font-family: var(--font-main);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 4px;
+  transition: all 0.2s ease;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.btn-link-forgot:hover {
+  color: #fde047;
+  text-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
 }
 
 .custom-checkbox-label {
@@ -1908,9 +1936,16 @@ body {
   padding: 7px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 680px) {
+  .auth-wrapper {
+    padding: 8px 6px;
+  }
+
   .auth-card {
-    padding: 24px 18px;
+    padding: 22px 14px;
+    width: 100%;
+    max-width: 100%;
+    border-radius: var(--radius-md);
   }
 
   .preset-users-chips .chip-group {
@@ -1926,6 +1961,82 @@ body {
   .conn-banner-actions {
     width: 100%;
     justify-content: space-between;
+  }
+
+  /* Compact Top Bar for normal mobile phones */
+  .main-top-bar {
+    padding: 6px 10px;
+    height: 50px;
+    min-height: 50px;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+
+  .top-bar-left {
+    gap: 6px;
+    min-width: 0;
+    flex-shrink: 1;
+  }
+
+  .btn-toggle-sidebar {
+    padding: 6px;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+  }
+
+  .view-heading-group {
+    min-width: 0;
+  }
+
+  .view-heading-group h1 {
+    font-size: 0.96rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.1;
+  }
+
+  .top-bar-right {
+    gap: 5px;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+  }
+
+  .conn-mode-switcher {
+    padding: 2px;
+  }
+
+  .mode-btn {
+    padding: 3px 6px;
+    font-size: 0.65rem;
+  }
+
+  .btn-quick-log {
+    padding: 5px 7px;
+  }
+
+  .btn-log-text {
+    display: none !important;
+  }
+
+  .hidden-mobile {
+    display: none !important;
+  }
+
+  .status-pill {
+    padding: 3px 7px;
+    font-size: 0.65rem;
+    gap: 4px;
+  }
+
+  .telemetry-beacon-group {
+    display: flex !important;
+  }
+
+  .telemetry-beacon-group .diag-pill {
+    padding: 3px 5px;
+    font-size: 0.65rem;
   }
 }
 
@@ -2622,16 +2733,17 @@ body {
             </div>
           </div>
 
-          <!-- Permanent Session Checkbox (Forever on Phone) -->
-          <div class="form-checkbox-row">
+          <!-- Permanent Session Checkbox (Forever on Phone) & Forgot Password -->
+          <div class="form-extra-row">
             <label class="custom-checkbox-label">
               <input type="checkbox" id="checkRememberSession" checked>
               <span class="checkbox-custom"></span>
               <span class="checkbox-text">
-                <strong>Remember session forever on this device</strong>
-                <span class="checkbox-subtext">Skip login automatically on next app launch</span>
+                <strong>Remember session forever</strong>
+                <span class="checkbox-subtext">Auto-login on app launch</span>
               </span>
             </label>
+            <button type="button" class="btn-link-forgot" onclick="App.openForgotPasswordModal()">Forgot Password?</button>
           </div>
 
           <button type="submit" id="btnSubmitSignIn" class="glass-button btn-accent w-full auth-submit-btn">
@@ -2813,38 +2925,38 @@ body {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
           <div class="view-heading-group">
-            <h1 id="headerViewTitle">⚡ Relay Control</h1>
-            <span class="view-subheading" id="headerViewSubtitle">ESP8266 Channel 1 &amp; Hardware Timers</span>
+            <h1 id="headerViewTitle">Relay Control</h1>
+            <span class="view-subheading hidden-mobile" id="headerViewSubtitle">Channel 1</span>
           </div>
         </div>
 
         <div class="top-bar-right">
+          <!-- Connection Mode Switcher (Local AP vs Firebase Cloud) -->
+          <div class="conn-mode-switcher" title="Toggle Connection Mode">
+            <button id="btnModeLocal" class="mode-btn active" type="button" onclick="App.setConnectionMode('local')">AP</button>
+            <button id="btnModeCloud" class="mode-btn" type="button" onclick="App.setConnectionMode('cloud')">Cloud</button>
+          </div>
+
           <!-- Real Telemetry Diagnostic Group (Real Ping & RSSI) -->
           <div class="telemetry-beacon-group">
-            <div class="diag-pill ping-good" id="headerPingPill" title="Actual Round-Trip Ping to ESP/Cloud">
+            <div class="diag-pill ping-good" id="headerPingPill" title="Actual Round-Trip Ping">
               <span>⚡</span>
               <span id="headerPingVal">-- ms</span>
             </div>
-            <div class="diag-pill rssi-good" id="headerRssiPill" title="Real Wi-Fi RSSI Signal Strength">
+            <div class="diag-pill rssi-good" id="headerRssiPill" title="Wi-Fi RSSI Signal Strength" style="display: none;">
               <span>📶</span>
               <span id="headerRssiVal">-- dBm</span>
             </div>
           </div>
 
-          <!-- Connection Mode Switcher (Local AP vs Firebase Cloud) -->
-          <div class="conn-mode-switcher">
-            <button id="btnModeLocal" class="mode-btn active" type="button" onclick="App.setConnectionMode('local')">Local AP</button>
-            <button id="btnModeCloud" class="mode-btn" type="button" onclick="App.setConnectionMode('cloud')">Firebase Cloud</button>
-          </div>
-
           <!-- Cloud Log Launcher Button -->
-          <button id="btnOpenCloudLog" class="btn-quick-log" type="button" title="View Real-Time Firebase Cloud Logs &amp; Controller" onclick="App.switchView('cloud')">
+          <button id="btnOpenCloudLog" class="btn-quick-log" type="button" title="Firebase Logs" onclick="App.switchView('cloud')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
-            <span>Cloud Log</span>
+            <span class="btn-log-text">Logs</span>
           </button>
 
           <!-- Status Pill -->
-          <div id="connStatusPill" class="status-pill online">
+          <div id="connStatusPill" class="status-pill online" title="ESP Status">
             <span class="pulsing-dot"></span>
             <span id="connStatusText">ONLINE</span>
           </div>
@@ -3428,6 +3540,72 @@ body {
         <button type="button" class="glass-button btn-primary" onclick="App.setConnectionMode('cloud'); App.closeLocalWifiModal();">Switch to Cloud</button>
         <button type="button" class="glass-button btn-secondary" onclick="App.retryLocalConnection()">Retry Connection</button>
         <button type="button" class="glass-button" onclick="App.closeLocalWifiModal()">Dismiss</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 5: ESP8266 LittleFS Database Password Reset Modal                   -->
+  <!-- ========================================================================= -->
+  <div id="forgotPasswordModal" class="modal-backdrop hidden">
+    <div class="modal-card glass-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <div class="auth-icon-badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div>
+          <h3>Reset Password</h3>
+          <p class="modal-subtitle">Directly updates ESP8266 chip database</p>
+        </div>
+        <button class="close-btn" type="button" onclick="App.closeForgotPasswordModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <form onsubmit="event.preventDefault(); App.submitForgotPassword();">
+          <div class="form-group">
+            <label for="resetTargetUser">Select Account to Recover</label>
+            <div class="input-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <select id="resetTargetUser" class="custom-select" onchange="App.onResetUserChange()">
+                <option value="Yash_Gajjar">Yash_Gajjar (Super Admin)</option>
+                <option value="Mahi_Gajjar">Mahi_Gajjar (Guarded Operator)</option>
+                <option value="Guest">Guest (Guest Analytics)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="resetAuthKey" id="lblResetAuthKey">Admin Password or Master Recovery PIN</label>
+            <div class="input-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <input type="password" id="resetAuthKey" placeholder="Admin password or PIN (CYBER-8266-ROOT)" required autocomplete="off">
+              <button type="button" class="btn-toggle-eye" onclick="App.togglePasswordVisibility('resetAuthKey')">👁️</button>
+            </div>
+            <p class="input-helper-text" id="resetAuthKeyHelp" style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Master PIN: <code>CYBER-8266-ROOT</code> or Admin password</p>
+          </div>
+
+          <div class="form-group">
+            <label for="resetNewPassword">New Password</label>
+            <div class="input-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="resetNewPassword" placeholder="Minimum 6 characters" required autocomplete="new-password">
+              <button type="button" class="btn-toggle-eye" onclick="App.togglePasswordVisibility('resetNewPassword')">👁️</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="resetConfirmPassword">Confirm New Password</label>
+            <div class="input-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              <input type="password" id="resetConfirmPassword" placeholder="Re-enter new password" required autocomplete="new-password">
+            </div>
+          </div>
+
+          <div class="modal-actions" style="margin-top: 18px;">
+            <button type="button" class="glass-button btn-secondary" onclick="App.closeForgotPasswordModal()">Cancel</button>
+            <button type="submit" class="glass-button btn-primary" id="btnSubmitPasswordReset">Save on ESP Chip</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -4809,6 +4987,103 @@ const App = (() => {
   }
 
   // ---------------------------------------------------------------------------
+  // FORGOT PASSWORD / ESP FLASH RECOVERY
+  // ---------------------------------------------------------------------------
+  function openForgotPasswordModal() {
+    const modal = document.getElementById('forgotPasswordModal');
+    if (!modal) return;
+    const userSelect = document.getElementById('resetTargetUser');
+    const inputUser = document.getElementById('inputUsername');
+    if (userSelect && inputUser && inputUser.value.trim()) {
+      userSelect.value = inputUser.value.trim();
+    }
+    onResetUserChange();
+    modal.classList.remove('hidden');
+  }
+
+  function closeForgotPasswordModal() {
+    const modal = document.getElementById('forgotPasswordModal');
+    if (modal) modal.classList.add('hidden');
+    const authKey = document.getElementById('resetAuthKey');
+    const newPass = document.getElementById('resetNewPassword');
+    const confPass = document.getElementById('resetConfirmPassword');
+    if (authKey) authKey.value = '';
+    if (newPass) newPass.value = '';
+    if (confPass) confPass.value = '';
+  }
+
+  function onResetUserChange() {
+    const target = document.getElementById('resetTargetUser').value;
+    const lbl = document.getElementById('lblResetAuthKey');
+    const help = document.getElementById('resetAuthKeyHelp');
+    if (target === 'Yash_Gajjar') {
+      if (lbl) lbl.textContent = 'Hardware Master Recovery PIN';
+      if (help) help.innerHTML = 'Super Admin password recovery requires Master PIN: <code>CYBER-8266-ROOT</code> or <code>cyber8266</code>';
+    } else {
+      if (lbl) lbl.textContent = 'Admin Password or Master PIN';
+      if (help) help.innerHTML = 'Enter Yash_Gajjar Admin Password or Hardware Master PIN <code>CYBER-8266-ROOT</code>';
+    }
+  }
+
+  async function submitForgotPassword() {
+    const targetUser = document.getElementById('resetTargetUser').value.trim();
+    const authKey = document.getElementById('resetAuthKey').value.trim();
+    const newPassword = document.getElementById('resetNewPassword').value;
+    const confirmPassword = document.getElementById('resetConfirmPassword').value;
+
+    if (!targetUser || !authKey || !newPassword) {
+      toast('Please fill in all recovery fields', 'error');
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast('New password must be at least 6 characters', 'error');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast('New passwords do not match!', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('btnSubmitPasswordReset');
+    if (btn) btn.disabled = true;
+
+    try {
+      if (state.connectionMode === 'local' || !state.firebaseHost) {
+        toast('Updating password on ESP8266 flash chip...', 'info');
+        const res = await fetch(`${state.espHost}/api/auth/reset_password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ targetUser, authKey, newPassword })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          toast(`Password for ${targetUser} successfully reset on ESP!`, 'success');
+          const u = state.users.find(x => x.username.toLowerCase() === targetUser.toLowerCase());
+          if (u) u.password = newPassword;
+          closeForgotPasswordModal();
+        } else {
+          toast(data.error || 'Password reset rejected by ESP chip', 'error');
+        }
+      } else {
+        toast('Broadcasting password reset to ESP via Firebase...', 'info');
+        await sendFirebaseCommand('RESET_PASSWORD', {
+          targetUser,
+          authKey,
+          newPassword
+        });
+        toast(`Reset command queued. Password for ${targetUser} will update immediately on ESP.`, 'success');
+        const u = state.users.find(x => x.username.toLowerCase() === targetUser.toLowerCase());
+        if (u) u.password = newPassword;
+        closeForgotPasswordModal();
+      }
+    } catch (e) {
+      toast('Reset failed: ' + e.message, 'error');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // UI RENDERING & DATA VISUALIZATION
   // ---------------------------------------------------------------------------
   function updateUI() {
@@ -5276,6 +5551,10 @@ const App = (() => {
     saveCloudSettings,
     testCloudConnection,
     testLocalConnection,
+    openForgotPasswordModal,
+    closeForgotPasswordModal,
+    onResetUserChange,
+    submitForgotPassword,
     dismissConnNotice
   };
 })();

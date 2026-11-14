@@ -197,6 +197,57 @@ bool StorageDB::setUserStatus(const char* targetUsername, const char* newStatus,
   return true;
 }
 
+bool StorageDB::resetUserPassword(const char* targetUsername, const char* recoveryKey, const char* newPassword, String& errorMsg) {
+  if (!targetUsername || strlen(targetUsername) == 0) {
+    errorMsg = "Target username is required";
+    return false;
+  }
+  if (!newPassword || strlen(newPassword) < 4) {
+    errorMsg = "New password must be at least 4 characters";
+    return false;
+  }
+
+  // Find target user
+  int targetIndex = -1;
+  for (int i = 0; i < _userCount; i++) {
+    if (strcasecmp(_users[i].username, targetUsername) == 0) {
+      targetIndex = i;
+      break;
+    }
+  }
+
+  if (targetIndex == -1) {
+    errorMsg = "User account not found";
+    return false;
+  }
+
+  // Recovery Verification:
+  // 1. Hardware Master Recovery PIN: "CYBER-8266-ROOT" or default AP pass "cyber8266"
+  bool hwKeyValid = (recoveryKey && (strcmp(recoveryKey, "CYBER-8266-ROOT") == 0 || strcmp(recoveryKey, "cyber8266") == 0));
+  
+  // 2. Or Super Admin Password (for non-admin users)
+  bool adminKeyValid = (recoveryKey && verifyAdminPassword(recoveryKey));
+
+  if (strcmp(_users[targetIndex].role, "admin") == 0) {
+    // Admin password can only be reset with Hardware Master Recovery PIN
+    if (!hwKeyValid) {
+      errorMsg = "Resetting Super Administrator requires Hardware Master Recovery Key ('CYBER-8266-ROOT')";
+      return false;
+    }
+  } else {
+    // Other accounts can be reset with either Admin Password or Hardware Master Recovery Key
+    if (!adminKeyValid && !hwKeyValid) {
+      errorMsg = "Invalid Recovery Authorization. Enter Admin Password or Hardware Master PIN.";
+      return false;
+    }
+  }
+
+  strncpy(_users[targetIndex].password, newPassword, sizeof(_users[targetIndex].password) - 1);
+  saveUsersToFile();
+  Serial.printf("[DB] Password for '%s' reset successfully in Flash LittleFS.\n", targetUsername);
+  return true;
+}
+
 bool StorageDB::verifyAdminPassword(const char* adminPassword) {
   for (int i = 0; i < _userCount; i++) {
     if (strcmp(_users[i].role, "admin") == 0 && strcmp(_users[i].password, adminPassword) == 0) {

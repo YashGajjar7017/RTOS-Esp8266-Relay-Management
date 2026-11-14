@@ -39,6 +39,7 @@ void WebServerAPI::setupRoutes() {
   _server.on("/api/config", HTTP_OPTIONS, sendCORS);
   _server.on("/api/control", HTTP_OPTIONS, sendCORS);
   _server.on("/api/auth/login", HTTP_OPTIONS, sendCORS);
+  _server.on("/api/auth/reset_password", HTTP_OPTIONS, sendCORS);
   _server.on("/api/auth/request_grant", HTTP_OPTIONS, sendCORS);
   _server.on("/api/auth/approve_grant", HTTP_OPTIONS, sendCORS);
   _server.on("/api/auth/reject_grant", HTTP_OPTIONS, sendCORS);
@@ -69,6 +70,7 @@ void WebServerAPI::setupRoutes() {
   _server.on("/api/config", HTTP_POST, std::bind(&WebServerAPI::handlePostConfig, this));
   _server.on("/api/control", HTTP_POST, std::bind(&WebServerAPI::handlePostControl, this));
   _server.on("/api/auth/login", HTTP_POST, std::bind(&WebServerAPI::handleAuthLogin, this));
+  _server.on("/api/auth/reset_password", HTTP_POST, std::bind(&WebServerAPI::handleAuthResetPassword, this));
   
   // Level 2 One-Time Grant Endpoints
   _server.on("/api/auth/request_grant", HTTP_POST, [this]() {
@@ -335,6 +337,31 @@ void WebServerAPI::handleAuthLogin() {
     sendJsonResponse(200, out);
   } else {
     sendError(401, "Invalid username or password");
+  }
+}
+
+void WebServerAPI::handleAuthResetPassword() {
+  if (!_server.hasArg("plain")) {
+    sendError(400, "Missing reset payload");
+    return;
+  }
+
+  StaticJsonDocument<256> doc;
+  deserializeJson(doc, _server.arg("plain"));
+  const char* username = doc["username"] | "";
+  const char* recoveryKey = doc["recoveryKey"] | "";
+  const char* newPassword = doc["newPassword"] | "";
+
+  String err;
+  if (storageDB.resetUserPassword(username, recoveryKey, newPassword, err)) {
+    StaticJsonDocument<128> resp;
+    resp["success"] = true;
+    resp["message"] = "Password reset successfully in ESP8266 database";
+    String out;
+    serializeJson(resp, out);
+    sendJsonResponse(200, out);
+  } else {
+    sendError(400, err);
   }
 }
 

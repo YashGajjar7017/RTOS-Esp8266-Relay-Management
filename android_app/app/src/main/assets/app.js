@@ -1371,6 +1371,103 @@ const App = (() => {
   }
 
   // ---------------------------------------------------------------------------
+  // FORGOT PASSWORD / ESP FLASH RECOVERY
+  // ---------------------------------------------------------------------------
+  function openForgotPasswordModal() {
+    const modal = document.getElementById('forgotPasswordModal');
+    if (!modal) return;
+    const userSelect = document.getElementById('resetTargetUser');
+    const inputUser = document.getElementById('inputUsername');
+    if (userSelect && inputUser && inputUser.value.trim()) {
+      userSelect.value = inputUser.value.trim();
+    }
+    onResetUserChange();
+    modal.classList.remove('hidden');
+  }
+
+  function closeForgotPasswordModal() {
+    const modal = document.getElementById('forgotPasswordModal');
+    if (modal) modal.classList.add('hidden');
+    const authKey = document.getElementById('resetAuthKey');
+    const newPass = document.getElementById('resetNewPassword');
+    const confPass = document.getElementById('resetConfirmPassword');
+    if (authKey) authKey.value = '';
+    if (newPass) newPass.value = '';
+    if (confPass) confPass.value = '';
+  }
+
+  function onResetUserChange() {
+    const target = document.getElementById('resetTargetUser').value;
+    const lbl = document.getElementById('lblResetAuthKey');
+    const help = document.getElementById('resetAuthKeyHelp');
+    if (target === 'Yash_Gajjar') {
+      if (lbl) lbl.textContent = 'Hardware Master Recovery PIN';
+      if (help) help.innerHTML = 'Super Admin password recovery requires Master PIN: <code>CYBER-8266-ROOT</code> or <code>cyber8266</code>';
+    } else {
+      if (lbl) lbl.textContent = 'Admin Password or Master PIN';
+      if (help) help.innerHTML = 'Enter Yash_Gajjar Admin Password or Hardware Master PIN <code>CYBER-8266-ROOT</code>';
+    }
+  }
+
+  async function submitForgotPassword() {
+    const targetUser = document.getElementById('resetTargetUser').value.trim();
+    const authKey = document.getElementById('resetAuthKey').value.trim();
+    const newPassword = document.getElementById('resetNewPassword').value;
+    const confirmPassword = document.getElementById('resetConfirmPassword').value;
+
+    if (!targetUser || !authKey || !newPassword) {
+      toast('Please fill in all recovery fields', 'error');
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast('New password must be at least 6 characters', 'error');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast('New passwords do not match!', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('btnSubmitPasswordReset');
+    if (btn) btn.disabled = true;
+
+    try {
+      if (state.connectionMode === 'local' || !state.firebaseHost) {
+        toast('Updating password on ESP8266 flash chip...', 'info');
+        const res = await fetch(`${state.espHost}/api/auth/reset_password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ targetUser, authKey, newPassword })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          toast(`Password for ${targetUser} successfully reset on ESP!`, 'success');
+          const u = state.users.find(x => x.username.toLowerCase() === targetUser.toLowerCase());
+          if (u) u.password = newPassword;
+          closeForgotPasswordModal();
+        } else {
+          toast(data.error || 'Password reset rejected by ESP chip', 'error');
+        }
+      } else {
+        toast('Broadcasting password reset to ESP via Firebase...', 'info');
+        await sendFirebaseCommand('RESET_PASSWORD', {
+          targetUser,
+          authKey,
+          newPassword
+        });
+        toast(`Reset command queued. Password for ${targetUser} will update immediately on ESP.`, 'success');
+        const u = state.users.find(x => x.username.toLowerCase() === targetUser.toLowerCase());
+        if (u) u.password = newPassword;
+        closeForgotPasswordModal();
+      }
+    } catch (e) {
+      toast('Reset failed: ' + e.message, 'error');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // UI RENDERING & DATA VISUALIZATION
   // ---------------------------------------------------------------------------
   function updateUI() {
@@ -1838,6 +1935,10 @@ const App = (() => {
     saveCloudSettings,
     testCloudConnection,
     testLocalConnection,
+    openForgotPasswordModal,
+    closeForgotPasswordModal,
+    onResetUserChange,
+    submitForgotPassword,
     dismissConnNotice
   };
 })();

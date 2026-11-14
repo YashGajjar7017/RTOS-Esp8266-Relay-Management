@@ -29,6 +29,7 @@ private:
   void handlePostControl();
   void handleAuthLogin();
   void handleAuthRegister();
+  void handleAuthResetPassword();
   void handleDeleteUser();
   void handleNotFound();
 };

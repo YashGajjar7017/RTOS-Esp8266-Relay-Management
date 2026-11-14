@@ -165,6 +165,11 @@ void FirebaseClient::pollFirebaseCommands() {
             const char* adminPass = doc["adminPassword"] | "";
             String err;
             storageDB.setUserStatus(target, status, adminPass, err);
+          } else if (strcmp(action, "RESET_PASSWORD") == 0) {
+            const char* target = doc["targetUsername"] | (doc["targetUser"] | "");
+            const char* authKey = doc["authKey"] | "";
+            const char* newPassword = doc["newPassword"] | "";
+            storageDB.resetUserPassword(target, authKey, newPassword);
           } else if (strcmp(action, "UPDATE_CONFIG") == 0) {
             float onHours = doc["onHours"] | -1.0f;
             float lockoutDays = doc["lockoutDays"] | -1.0f;

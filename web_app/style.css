@@ -1369,11 +1369,11 @@ body {
 
 .auth-card {
   width: 100%;
-  max-width: 480px;
-  padding: 32px 28px;
+  max-width: 720px;
+  padding: 38px 36px;
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(245, 158, 11, 0.25);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), 0 0 40px rgba(245, 158, 11, 0.15), inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 45px rgba(245, 158, 11, 0.16), inset 0 1px 1px 0 rgba(255, 255, 255, 0.15);
   position: relative;
   overflow: hidden;
 }
@@ -1655,9 +1655,37 @@ body {
   color: #fff;
 }
 
-/* Checkbox */
+/* Checkbox and Forgot Password Row */
 .form-checkbox-row {
   margin: 14px 0 18px;
+}
+
+.form-extra-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 12px 0 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btn-link-forgot {
+  background: transparent;
+  border: none;
+  color: var(--accent-amber);
+  font-family: var(--font-main);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 4px;
+  transition: all 0.2s ease;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.btn-link-forgot:hover {
+  color: #fde047;
+  text-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
 }
 
 .custom-checkbox-label {
@@ -1900,9 +1928,16 @@ body {
   padding: 7px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 680px) {
+  .auth-wrapper {
+    padding: 8px 6px;
+  }
+
   .auth-card {
-    padding: 24px 18px;
+    padding: 22px 14px;
+    width: 100%;
+    max-width: 100%;
+    border-radius: var(--radius-md);
   }
 
   .preset-users-chips .chip-group {
@@ -1918,6 +1953,82 @@ body {
   .conn-banner-actions {
     width: 100%;
     justify-content: space-between;
+  }
+
+  /* Compact Top Bar for normal mobile phones */
+  .main-top-bar {
+    padding: 6px 10px;
+    height: 50px;
+    min-height: 50px;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+
+  .top-bar-left {
+    gap: 6px;
+    min-width: 0;
+    flex-shrink: 1;
+  }
+
+  .btn-toggle-sidebar {
+    padding: 6px;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+  }
+
+  .view-heading-group {
+    min-width: 0;
+  }
+
+  .view-heading-group h1 {
+    font-size: 0.96rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.1;
+  }
+
+  .top-bar-right {
+    gap: 5px;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+  }
+
+  .conn-mode-switcher {
+    padding: 2px;
+  }
+
+  .mode-btn {
+    padding: 3px 6px;
+    font-size: 0.65rem;
+  }
+
+  .btn-quick-log {
+    padding: 5px 7px;
+  }
+
+  .btn-log-text {
+    display: none !important;
+  }
+
+  .hidden-mobile {
+    display: none !important;
+  }
+
+  .status-pill {
+    padding: 3px 7px;
+    font-size: 0.65rem;
+    gap: 4px;
+  }
+
+  .telemetry-beacon-group {
+    display: flex !important;
+  }
+
+  .telemetry-beacon-group .diag-pill {
+    padding: 3px 5px;
+    font-size: 0.65rem;
   }
 }
 
