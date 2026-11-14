@@ -60,7 +60,7 @@ public class MainActivity extends Activity {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
                 window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-                window.setStatusBarColor(Color.parseColor("#07090E"));
+                window.setStatusBarColor(Color.parseColor("#08090C"));
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
