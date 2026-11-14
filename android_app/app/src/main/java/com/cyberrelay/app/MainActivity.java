@@ -107,6 +107,8 @@ public class MainActivity extends Activity {
         }
 
         webView.setBackgroundColor(Color.parseColor("#07090E"));
+        // Hardware acceleration for 60-120fps butter-smooth rendering
+        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
 
         // Register Native Android Bridge
         WebAppInterface nativeBridge = new WebAppInterface(this);

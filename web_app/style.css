@@ -39,6 +39,11 @@
   padding: 0;
 }
 
+/* Global Hidden Utility */
+.hidden {
+  display: none !important;
+}
+
 body {
   background-color: var(--bg-deep);
   color: var(--text-primary);
@@ -50,50 +55,44 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Ambient glow orbs */
+/* Ambient glow orbs (Optimized: zero GPU lag, no heavy runtime blur filters) */
 .ambient-glow {
   position: fixed;
   border-radius: 50%;
-  filter: blur(140px);
   pointer-events: none;
   z-index: 0;
-  opacity: 0.28;
+  opacity: 0.18;
 }
 
 .glow-1 {
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, #0284c7 0%, rgba(2, 132, 199, 0) 70%);
-  top: -120px;
-  left: -120px;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(2, 132, 199, 0.45) 0%, rgba(2, 132, 199, 0) 70%);
+  top: -60px;
+  left: -60px;
 }
 
 .glow-2 {
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, #8b5cf6 0%, rgba(139, 92, 246, 0) 70%);
-  bottom: -150px;
-  right: -150px;
+  width: 360px;
+  height: 360px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.35) 0%, rgba(139, 92, 246, 0) 70%);
+  bottom: -60px;
+  right: -60px;
 }
 
 .glow-3 {
-  width: 450px;
-  height: 450px;
-  background: radial-gradient(circle, #059669 0%, rgba(5, 150, 105, 0) 70%);
-  top: 40%;
-  left: 35%;
-  opacity: 0.15;
+  display: none;
 }
 
-/* Base Glass Card */
+/* Base Glass Card (Optimized: light 6px blur + solid high-contrast cyber dark surface) */
 .glass-card {
-  background: var(--bg-card);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  background: rgba(14, 19, 31, 0.94);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.03);
-  transition: all 0.25s ease;
+  box-shadow: 0 10px 28px -6px rgba(0, 0, 0, 0.65);
+  transition: border-color 0.2s ease;
 }
 
 /* App Layout */
@@ -482,36 +481,47 @@ body {
 }
 
 .countdown-label {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-family: var(--font-mono);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: var(--text-secondary);
   text-transform: uppercase;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 
 .digital-clock {
   font-family: var(--font-mono);
-  font-size: 1.55rem;
+  font-size: 1.12rem;
   font-weight: 700;
   letter-spacing: 0.02em;
-  color: var(--text-primary);
-  text-shadow: 0 0 14px rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .digital-clock .unit {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  margin-right: 2px;
+  font-size: 0.68rem;
+  color: var(--accent-cyan);
+  margin-right: 3px;
+  font-weight: 600;
 }
 
 .sub-status {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   color: var(--text-muted);
-  margin-top: 6px;
+  margin-top: 5px;
   max-width: 190px;
-  line-height: 1.3;
+  line-height: 1.25;
 }
 
 /* Hardware Status Tiles */
@@ -1543,79 +1553,96 @@ body {
   opacity: 1;
 }
 
-/* Preset Chips */
-.preset-users-chips {
+/* Role Login Quick Selectors (Admin Login / User Login / Guest Login) */
+.role-select-section {
   margin-bottom: 16px;
 }
 
-.preset-users-chips .chip-label {
+.role-select-label {
   display: block;
   margin-bottom: 6px;
   font-size: 0.72rem;
   color: var(--text-muted);
   font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-.preset-users-chips .chip-group {
+.role-select-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  gap: 8px;
 }
 
-.preset-chip {
+.role-select-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 7px 6px;
+  justify-content: center;
+  padding: 10px 6px;
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
+  font-family: var(--font-main);
   text-align: center;
 }
 
-.preset-chip .chip-icon {
-  font-size: 1.05rem;
-  margin-bottom: 2px;
+.role-select-btn .btn-icon {
+  font-size: 1.15rem;
+  margin-bottom: 3px;
 }
 
-.preset-chip .chip-name {
-  font-size: 0.72rem;
+.role-select-btn .btn-title {
+  font-size: 0.74rem;
   font-weight: 700;
   color: var(--text-primary);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
 }
 
-.preset-chip .chip-tier {
+.role-select-btn .btn-user {
   font-size: 0.62rem;
-  text-transform: uppercase;
   color: var(--text-muted);
-  font-weight: 600;
   margin-top: 1px;
 }
 
-.preset-chip:hover {
+.role-select-btn:hover {
   transform: translateY(-2px);
 }
 
-.preset-chip.chip-admin:hover {
+.role-select-btn.btn-admin:hover,
+.role-select-btn.btn-admin.selected {
   background: rgba(251, 191, 36, 0.12);
-  border-color: rgba(251, 191, 36, 0.4);
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.25);
 }
 
-.preset-chip.chip-guarded:hover {
+.role-select-btn.btn-admin.selected .btn-title {
+  color: var(--accent-gold);
+}
+
+.role-select-btn.btn-user:hover,
+.role-select-btn.btn-user.selected {
   background: rgba(6, 182, 212, 0.12);
-  border-color: rgba(6, 182, 212, 0.4);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.25);
 }
 
-.preset-chip.chip-guest:hover {
+.role-select-btn.btn-user.selected .btn-title {
+  color: var(--accent-cyan);
+}
+
+.role-select-btn.btn-guest:hover,
+.role-select-btn.btn-guest.selected {
   background: rgba(148, 163, 184, 0.12);
-  border-color: rgba(148, 163, 184, 0.4);
+  border-color: #94a3b8;
+  box-shadow: 0 0 12px rgba(148, 163, 184, 0.25);
+}
+
+.role-select-btn.btn-guest.selected .btn-title {
+  color: #fff;
 }
 
 /* Checkbox */

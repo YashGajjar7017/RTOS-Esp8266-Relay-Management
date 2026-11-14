@@ -251,16 +251,28 @@ const App = (() => {
   function showLoginView() {
     const loginSec = document.getElementById('loginSection');
     const dashSec = document.getElementById('dashboardSection');
-    if (loginSec) loginSec.classList.remove('hidden');
-    if (dashSec) dashSec.classList.add('hidden');
+    if (loginSec) {
+      loginSec.classList.remove('hidden');
+      loginSec.style.display = 'flex';
+    }
+    if (dashSec) {
+      dashSec.classList.add('hidden');
+      dashSec.style.display = 'none';
+    }
     updateConnectionModeButtons();
   }
 
   function showDashboardView() {
     const loginSec = document.getElementById('loginSection');
     const dashSec = document.getElementById('dashboardSection');
-    if (loginSec) loginSec.classList.add('hidden');
-    if (dashSec) dashSec.classList.remove('hidden');
+    if (loginSec) {
+      loginSec.classList.add('hidden');
+      loginSec.style.display = 'none';
+    }
+    if (dashSec) {
+      dashSec.classList.remove('hidden');
+      dashSec.style.display = 'flex';
+    }
 
     updateUI();
     renderUserTable();
@@ -285,19 +297,43 @@ const App = (() => {
     }
   }
 
-  function fillPreset(key) {
+  function selectRoleLogin(role) {
     const userField = document.getElementById('inputUsername');
     const passField = document.getElementById('inputPassword');
 
-    let preset = PREDEFINED_USERS[0];
-    if (key === 'mahi') preset = PREDEFINED_USERS[1];
-    if (key === 'guest') preset = PREDEFINED_USERS[2];
+    // Update selected button style
+    ['btnSelectAdmin', 'btnSelectUser', 'btnSelectGuest'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('selected');
+    });
 
-    if (userField && passField) {
-      userField.value = preset.username;
-      passField.value = preset.password;
-      vibrate(30);
+    if (role === 'admin') {
+      if (userField) userField.value = 'Yash_Gajjar';
+      const b = document.getElementById('btnSelectAdmin');
+      if (b) b.classList.add('selected');
+    } else if (role === 'user') {
+      if (userField) userField.value = 'Mahi_Gajjar';
+      const b = document.getElementById('btnSelectUser');
+      if (b) b.classList.add('selected');
+    } else if (role === 'guest') {
+      if (userField) userField.value = 'Guest';
+      const b = document.getElementById('btnSelectGuest');
+      if (b) b.classList.add('selected');
     }
+
+    // DO NOT AUTO WRITE PASSWORD! Clear password and focus so user enters it manually
+    if (passField) {
+      passField.value = '';
+      passField.focus();
+    }
+    vibrate(25);
+  }
+
+  function fillPreset(key) {
+    // Legacy fallback mapped to selectRoleLogin
+    if (key === 'yash') selectRoleLogin('admin');
+    else if (key === 'mahi') selectRoleLogin('user');
+    else if (key === 'guest') selectRoleLogin('guest');
   }
 
   function togglePasswordVisibility(fieldId) {
@@ -1000,7 +1036,10 @@ const App = (() => {
     toast(`Pinging Local ESP8266 at ${eHost}...`, 'info');
     const start = Date.now();
     try {
-      const res = await fetch(`${eHost}/api/status`, { signal: AbortSignal.timeout(3000) });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      const res = await fetch(`${eHost}/api/status`, { signal: controller.signal });
+      clearTimeout(timeoutId);
       const latency = Date.now() - start;
       if (res.ok) {
         toast(`ESP8266 Ping OK (${latency} ms) - Connected!`, 'success');
@@ -1341,6 +1380,7 @@ const App = (() => {
     init,
     setConnectionMode,
     switchAuthTab,
+    selectRoleLogin,
     fillPreset,
     togglePasswordVisibility,
     handleSignInSubmit,
