@@ -35,6 +35,7 @@ void WebServerAPI::setupRoutes() {
   };
 
   _server.on("/api/status", HTTP_OPTIONS, sendCORS);
+  _server.on("/api/ping", HTTP_OPTIONS, sendCORS);
   _server.on("/api/config", HTTP_OPTIONS, sendCORS);
   _server.on("/api/control", HTTP_OPTIONS, sendCORS);
   _server.on("/api/auth/login", HTTP_OPTIONS, sendCORS);
@@ -45,6 +46,18 @@ void WebServerAPI::setupRoutes() {
 
   // Main UI route
   _server.on("/", HTTP_GET, std::bind(&WebServerAPI::handleRoot, this));
+
+  // Ping & Diagnostic route
+  _server.on("/api/ping", HTTP_GET, [this]() {
+    StaticJsonDocument<128> p;
+    p["pong"] = true;
+    p["rssi"] = WiFi.RSSI();
+    p["millis"] = millis();
+    p["heap"] = ESP.getFreeHeap();
+    String out;
+    serializeJson(p, out);
+    sendJsonResponse(200, out);
+  });
 
   // Captive Portal detectors
   _server.on("/generate_204", HTTP_GET, std::bind(&WebServerAPI::handleCaptivePortal, this));
@@ -239,6 +252,48 @@ void WebServerAPI::handlePostControl() {
     stateManager.cancelCycle("APP");
     sendJsonResponse(200, "{\"success\":true,\"message\":\"Cycle cancelled\"}");
   } 
+  else if (strcmp(action, "extend") == 0) {
+    // Admin can extend active running relay timer
+    if (strcmp(userRole, "admin") != 0) {
+      sendError(403, "Only Super Administrator can extend active timer.");
+      return;
+    }
+    int extraMinutes = doc["minutes"] | (doc["seconds"] | 0) / 60;
+    if (extraMinutes <= 0) extraMinutes = 15;
+    uint32_t extraSec = (uint32_t)extraMinutes * 60;
+    if (stateManager.extendActiveTimer(extraSec)) {
+      StaticJsonDocument<128> resp;
+      resp["success"] = true;
+      resp["message"] = String("Timer extended by ") + extraMinutes + " minutes";
+      resp["onRemainingSec"] = stateManager.getOnRemainingSec();
+      String s;
+      serializeJson(resp, s);
+      sendJsonResponse(200, s);
+    } else {
+      sendError(400, "Cannot extend timer: relay is not actively energized");
+    }
+  }
+  else if (strcmp(action, "set_user_status") == 0) {
+    // Admin can temporarily disable or enable user accounts
+    if (strcmp(userRole, "admin") != 0) {
+      sendError(403, "Only Administrator can change account status.");
+      return;
+    }
+    const char* target = doc["targetUsername"] | "";
+    const char* newStatus = doc["status"] | "disabled";
+    const char* adminPass = doc["adminPassword"] | "";
+    String err;
+    if (storageDB.setUserStatus(target, newStatus, adminPass, err)) {
+      StaticJsonDocument<128> resp;
+      resp["success"] = true;
+      resp["message"] = String("User status updated to ") + newStatus;
+      String s;
+      serializeJson(resp, s);
+      sendJsonResponse(200, s);
+    } else {
+      sendError(400, err);
+    }
+  }
   else if (strcmp(action, "reset_lockout") == 0) {
     // Only Yash_Gajjar (admin) can bypass lockout
     if (strcmp(userRole, "admin") != 0) {

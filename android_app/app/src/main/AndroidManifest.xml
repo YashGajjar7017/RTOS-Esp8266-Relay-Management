@@ -14,7 +14,8 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@android:drawable/ic_dialog_alert"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="CyberRelay RTOS"
         android:hardwareAccelerated="true"
         android:usesCleartextTraffic="true"

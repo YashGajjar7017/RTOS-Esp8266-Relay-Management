@@ -15,6 +15,7 @@ public:
   bool triggerCycle(const char* source = "MANUAL", const char* oneTimeToken = nullptr);
   bool cancelCycle(const char* source = "MANUAL");
   bool resetLockout(const char* source = "ADMIN");
+  bool extendActiveTimer(uint32_t additionalSeconds);
 
   // Configuration updates
   bool updateTimers(float onHours, float lockoutDays);

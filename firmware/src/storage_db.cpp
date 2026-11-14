@@ -161,11 +161,40 @@ bool StorageDB::findUser(const char* username, UserRecord& user) {
 bool StorageDB::verifyCredentials(const char* username, const char* password, UserRecord& matchedUser) {
   for (int i = 0; i < _userCount; i++) {
     if (strcasecmp(_users[i].username, username) == 0 && strcmp(_users[i].password, password) == 0) {
+      if (strcasecmp(_users[i].status, "disabled") == 0) {
+        Serial.printf("[AUTH] Login rejected: user '%s' is temporarily suspended/disabled.\n", username);
+        return false;
+      }
       matchedUser = _users[i];
       return true;
     }
   }
   return false;
+}
+
+bool StorageDB::setUserStatus(const char* targetUsername, const char* newStatus, const char* adminPassword, String& errorMsg) {
+  if (!verifyAdminPassword(adminPassword)) {
+    errorMsg = "Invalid Admin Master Password. Status change unauthorized.";
+    return false;
+  }
+
+  int targetIndex = -1;
+  for (int i = 0; i < _userCount; i++) {
+    if (strcasecmp(_users[i].username, targetUsername) == 0) {
+      targetIndex = i;
+      break;
+    }
+  }
+
+  if (targetIndex == -1) {
+    errorMsg = "User not found";
+    return false;
+  }
+
+  strncpy(_users[targetIndex].status, newStatus, sizeof(_users[targetIndex].status) - 1);
+  saveUsersToFile();
+  Serial.printf("[DB] User %s status updated to: %s\n", targetUsername, newStatus);
+  return true;
 }
 
 bool StorageDB::verifyAdminPassword(const char* adminPassword) {

@@ -141,21 +141,38 @@ def main():
         "--lib", PLATFORM_JAR
     ] + class_files)
 
-    # 3. AAPT2 Link Manifest and Assets
-    print("[3/5] Packaging manifest and assets into raw APK stream using AAPT2...")
+    # 3. AAPT2 Compile Resources and Link Manifest + Assets
+    print("[3/5] Compiling resources and packaging manifest/assets with AAPT2...")
+    res_dir = os.path.join(APP_MODULE_DIR, "src", "main", "res")
+    compiled_flat_dir = os.path.join(INTERMEDIATE, "compiled_flat")
+    if os.path.exists(compiled_flat_dir):
+        shutil.rmtree(compiled_flat_dir)
+    os.makedirs(compiled_flat_dir, exist_ok=True)
+
+    run([
+        AAPT2_EXE, "compile",
+        "--dir", res_dir,
+        "-o", compiled_flat_dir
+    ])
+
+    flat_files = [os.path.join(compiled_flat_dir, f) for f in os.listdir(compiled_flat_dir) if f.endswith('.flat')]
+
     manifest = os.path.join(APP_MODULE_DIR, "src", "main", "AndroidManifest.xml")
     assets_dir = os.path.join(APP_MODULE_DIR, "src", "main", "assets")
     unaligned_raw = os.path.join(INTERMEDIATE, "raw_stream.apk")
     if os.path.exists(unaligned_raw):
         os.remove(unaligned_raw)
 
-    run([
+    link_cmd = [
         AAPT2_EXE, "link",
         "-I", PLATFORM_JAR,
         "--manifest", manifest,
         "-A", assets_dir,
-        "-o", unaligned_raw
-    ], ignore_error=True)
+        "-o", unaligned_raw,
+        "--auto-add-overlay"
+    ] + flat_files
+
+    run(link_cmd, ignore_error=True)
 
     if not os.path.exists(unaligned_raw) or os.path.getsize(unaligned_raw) == 0:
         print("[ERROR] AAPT2 failed to generate raw_stream.apk!")

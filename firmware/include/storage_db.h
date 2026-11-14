@@ -78,6 +78,7 @@ public:
   
   // Registration & User Management
   bool registerUserWithAdminApproval(const char* username, const char* password, const char* role, const char* adminPassword, String& errorMsg);
+  bool setUserStatus(const char* targetUsername, const char* newStatus, const char* adminPassword, String& errorMsg);
   bool deleteUser(uint8_t id, String& errorMsg);
 
   // Level 2: One-Time Access Grant for Mahi_Gajjar

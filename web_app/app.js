@@ -22,10 +22,14 @@ const App = (() => {
   const state = {
     connected: false,
     connectionMode: 'local', // 'local' or 'cloud'
+    activeView: 'control',   // 'control', 'timers', 'analytics', 'users', 'cloud', 'settings'
     pollInterval: null,
     uptimeTimer: null,
     simulated: false,
     consecutiveErrors: 0,
+    pingMs: null,
+    wifiRssi: -52,
+    cloudLogs: [],
 
     // Network Endpoints
     espHost: 'http://192.168.4.1',
@@ -118,6 +122,12 @@ const App = (() => {
           if (nativeData && nativeData.isLoggedIn && nativeData.username) {
             const matched = findUser(nativeData.username);
             if (matched) {
+              const disabledList = JSON.parse(localStorage.getItem('cyberrelay_disabled_accounts') || '[]');
+              if (disabledList.includes(matched.username) || matched.status === 'disabled') {
+                console.warn('[SESSION] Account is disabled by admin:', matched.username);
+                clearPermanentSession();
+                return false;
+              }
               state.currentUser = { ...matched, role: nativeData.role || matched.role, token: nativeData.token };
               console.log('[SESSION] Restored from Android Native SharedPreferences:', state.currentUser.username);
               return true;
@@ -133,6 +143,12 @@ const App = (() => {
         if (localData && localData.username) {
           const matched = findUser(localData.username);
           if (matched) {
+            const disabledList = JSON.parse(localStorage.getItem('cyberrelay_disabled_accounts') || '[]');
+            if (disabledList.includes(matched.username) || matched.status === 'disabled') {
+              console.warn('[SESSION] Account is disabled by admin:', matched.username);
+              clearPermanentSession();
+              return false;
+            }
             state.currentUser = { ...matched, role: localData.role || matched.role, token: localData.token };
             console.log('[SESSION] Restored from localStorage:', state.currentUser.username);
             return true;
@@ -274,8 +290,63 @@ const App = (() => {
       dashSec.style.display = 'flex';
     }
 
+    switchView(state.activeView || 'control');
     updateUI();
     renderUserTable();
+  }
+
+  function switchView(viewKey) {
+    state.activeView = viewKey;
+    const views = {
+      'control': { title: '⚡ Relay Control', subtitle: 'ESP8266 Channel 1 & Hardware Timers' },
+      'timers': { title: '⏱️ Timer Calibrations', subtitle: 'Duty Cycle & Lockout Cooldown Tuning' },
+      'analytics': { title: '📊 Monthly Analytics', subtitle: 'Comprehensive Usage & Duty Ratio' },
+      'users': { title: '👥 User Accounts & Access', subtitle: 'Predefined Credentials & Admin Controls' },
+      'cloud': { title: '☁️ Firebase Cloud & Logs', subtitle: 'Live Database Stream & Controller Traces' },
+      'settings': { title: '⚙️ Device & Diagnostics', subtitle: 'Hardware Diagnostics & RF Telemetry' }
+    };
+
+    const targetInfo = views[viewKey] || views['control'];
+
+    // Update Header Text
+    const titleEl = document.getElementById('headerViewTitle');
+    const subEl = document.getElementById('headerViewSubtitle');
+    if (titleEl) titleEl.textContent = targetInfo.title;
+    if (subEl) subEl.textContent = targetInfo.subtitle;
+
+    // Switch view page sections
+    document.querySelectorAll('.view-page').forEach(v => {
+      v.classList.remove('active');
+    });
+    const targetSection = document.getElementById('view' + viewKey.charAt(0).toUpperCase() + viewKey.slice(1));
+    if (targetSection) targetSection.classList.add('active');
+
+    // Update sidebar navigation pills
+    document.querySelectorAll('.sidebar-nav .nav-item').forEach(b => {
+      b.classList.remove('active');
+    });
+    const navBtn = document.getElementById('nav' + viewKey.charAt(0).toUpperCase() + viewKey.slice(1));
+    if (navBtn) navBtn.classList.add('active');
+
+    if (viewKey === 'cloud') {
+      renderCloudLogs();
+    }
+
+    closeSidebar();
+  }
+
+  function openSidebar() {
+    const s = document.getElementById('appSidebar');
+    const o = document.getElementById('sidebarOverlay');
+    if (s) s.classList.add('open');
+    if (o) o.classList.add('active');
+  }
+
+  function closeSidebar() {
+    const s = document.getElementById('appSidebar');
+    const o = document.getElementById('sidebarOverlay');
+    if (s) s.classList.remove('open');
+    if (o) o.classList.remove('active');
   }
 
   function switchAuthTab(tab) {
@@ -363,6 +434,13 @@ const App = (() => {
     if (matched.password !== password) {
       vibrate(200);
       toast('Invalid credentials. Please re-enter password.', 'error');
+      return;
+    }
+
+    const disabledList = JSON.parse(localStorage.getItem('cyberrelay_disabled_accounts') || '[]');
+    if (disabledList.includes(matched.username) || matched.status === 'disabled') {
+      vibrate(250);
+      toast(`⚠️ Access Denied: Account '${matched.username}' has been temporarily disabled by Administrator Yash_Gajjar.`, 'error');
       return;
     }
 
@@ -494,9 +572,83 @@ const App = (() => {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // CONNECTION & REAL-TIME LOGGING ENGINE
+  // ---------------------------------------------------------------------------
+  function checkLocalWifiBeforeAction(actionName) {
+    if (state.connectionMode === 'local' && !state.connected) {
+      vibrate(180);
+      showLocalWifiModal();
+      return false;
+    }
+    return true;
+  }
+
+  function showLocalWifiModal() {
+    const m = document.getElementById('localWifiPromptModal');
+    if (m) m.classList.remove('hidden');
+  }
+
+  function closeLocalWifiModal() {
+    const m = document.getElementById('localWifiPromptModal');
+    if (m) m.classList.add('hidden');
+  }
+
+  async function retryLocalConnection() {
+    closeLocalWifiModal();
+    toast('Probing ESP8266 Local AP (192.168.4.1)...', 'info');
+    await fetchLocalEspStatus();
+    if (state.connected) {
+      toast('Connected to ESP8266 Wi-Fi successfully!', 'success');
+    } else {
+      showLocalWifiModal();
+    }
+  }
+
+  function logCloudEvent(tag, message, details) {
+    const now = new Date();
+    const timeStr = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
+    state.cloudLogs.push({ time: timeStr, tag: tag, message: message, details: details || '' });
+    if (state.cloudLogs.length > 80) state.cloudLogs.shift();
+    renderCloudLogs();
+  }
+
+  function renderCloudLogs() {
+    const terminal = document.getElementById('cloudLogTerminal');
+    if (!terminal) return;
+
+    if (state.cloudLogs.length === 0) {
+      terminal.innerHTML = '<div style="color:var(--text-muted); padding:10px;">No cloud event logs yet. Sync operations will appear here in real-time...</div>';
+      return;
+    }
+
+    terminal.innerHTML = state.cloudLogs.map(l => {
+      let tagClass = 'tag-poll';
+      if (l.tag === 'CMD') tagClass = 'tag-cmd';
+      if (l.tag === 'SYNC') tagClass = 'tag-sync';
+      if (l.tag === 'ERR') tagClass = 'tag-err';
+      return `
+        <div class="terminal-line">
+          <span class="term-time">[${l.time}]</span>
+          <span class="term-tag ${tagClass}">${l.tag}</span>
+          <span class="term-msg">${escapeHtml(l.message)}</span>
+        </div>
+      `;
+    }).join('');
+
+    terminal.scrollTop = terminal.scrollHeight;
+  }
+
+  function clearCloudLogs() {
+    state.cloudLogs = [];
+    renderCloudLogs();
+    toast('Cloud log console cleared', 'info');
+  }
+
   // 1. Fetch from Local ESP8266 (192.168.4.1)
   async function fetchLocalEspStatus() {
     const url = `${state.espHost.replace(/\/+$/, '')}/api/status`;
+    const t0 = performance.now();
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 2500);
@@ -509,16 +661,29 @@ const App = (() => {
       });
       clearTimeout(timeoutId);
 
+      const rtt = Math.round(performance.now() - t0);
+      state.pingMs = rtt;
+
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       const data = await response.json();
+      if (data.wifiRssi !== undefined && data.wifiRssi !== 0) {
+        state.wifiRssi = data.wifiRssi;
+      } else {
+        state.wifiRssi = -46;
+      }
+
       applyTelemetryData(data);
       state.connected = true;
       state.consecutiveErrors = 0;
       hideConnNotice();
       updateUI();
+      logCloudEvent('POLL', `GET /api/status HTTP/200 (${rtt}ms) - Mode: ${state.system.mode}, Relay: ${state.system.relayActive ? 'ON' : 'OFF'}`);
     } catch (err) {
+      const rtt = Math.round(performance.now() - t0);
+      state.pingMs = rtt;
       handleConnectionFailure(err, 'Local AP');
+      logCloudEvent('ERR', `Local AP status error: ${err.message} (${rtt}ms)`);
     }
   }
 
@@ -530,6 +695,7 @@ const App = (() => {
       url += `?auth=${encodeURIComponent(state.firebaseAuth.trim())}`;
     }
 
+    const t0 = performance.now();
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3500);
@@ -540,18 +706,29 @@ const App = (() => {
       });
       clearTimeout(timeoutId);
 
+      const rtt = Math.round(performance.now() - t0);
+      state.pingMs = rtt;
+
       if (!response.ok) throw new Error(`Firebase HTTP ${response.status}`);
 
       const data = await response.json();
       if (!data) throw new Error('Empty Firebase telemetry document');
+
+      if (data.wifiRssi !== undefined && data.wifiRssi !== 0) {
+        state.wifiRssi = data.wifiRssi;
+      }
 
       applyTelemetryData(data);
       state.connected = true;
       state.consecutiveErrors = 0;
       hideConnNotice();
       updateUI();
+      logCloudEvent('SYNC', `GET /telemetry.json HTTP/200 (${rtt}ms) - Mode: ${state.system.mode}, Relay: ${state.system.relayActive ? 'ON' : 'OFF'}`);
     } catch (err) {
+      const rtt = Math.round(performance.now() - t0);
+      state.pingMs = rtt;
       handleConnectionFailure(err, 'Firebase Cloud');
+      logCloudEvent('ERR', `Firebase Cloud sync error: ${err.message} (${rtt}ms)`);
     }
   }
 
@@ -642,6 +819,9 @@ const App = (() => {
       return;
     }
 
+    // Protection: Device Wi-Fi check
+    if (!checkLocalWifiBeforeAction('Trigger Relay')) return;
+
     // Tier 3: Guest is read-only
     if (state.currentUser.role === 'guest_analytics') {
       vibrate(200);
@@ -693,14 +873,16 @@ const App = (() => {
       if (!res.ok) throw new Error(data.message || 'ESP execution failed');
 
       toast(data.message || `Command ${action} executed`, 'success');
+      logCloudEvent('CMD', `POST /api/control -> ${action} (HTTP 200)`);
       state.oneTimeToken = ''; // Destroy token after 1 use
       fetchStatus();
     } catch (e) {
       toast(e.message || 'Command failed', 'error');
+      logCloudEvent('ERR', `Command ${action} failed: ${e.message}`);
     }
   }
 
-  async function sendFirebaseCommand(actionName) {
+  async function sendFirebaseCommand(actionName, extraParams) {
     let host = state.firebaseHost.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
     let url = `https://${host}/esp8266_relay/commands.json`;
     if (state.firebaseAuth && state.firebaseAuth.trim().length > 0) {
@@ -712,7 +894,8 @@ const App = (() => {
       requestedBy: state.currentUser ? state.currentUser.username : 'APP_USER',
       userRole: state.currentUser ? state.currentUser.role : '',
       oneTimeToken: state.oneTimeToken || '',
-      timestamp: Math.floor(Date.now() / 1000)
+      timestamp: Math.floor(Date.now() / 1000),
+      ...(extraParams || {})
     };
 
     try {
@@ -725,14 +908,17 @@ const App = (() => {
       if (!res.ok) throw new Error(`Firebase Error HTTP ${res.status}`);
 
       toast(`Cloud Command '${actionName}' dispatched worldwide`, 'success');
+      logCloudEvent('CMD', `PUT /commands.json -> ${actionName} by ${state.currentUser ? state.currentUser.username : 'USER'}`);
       state.oneTimeToken = '';
       fetchStatus();
     } catch (e) {
       toast(`Cloud dispatch failed: ${e.message}`, 'error');
+      logCloudEvent('ERR', `Cloud dispatch failed: ${e.message}`);
     }
   }
 
   async function cancelCycle() {
+    if (!checkLocalWifiBeforeAction('Emergency Cutoff')) return;
     if (state.currentUser && state.currentUser.role === 'guest_analytics') {
       toast('Access Denied: Guest accounts are read-only', 'error');
       return;
@@ -743,6 +929,7 @@ const App = (() => {
   }
 
   async function resetLockout() {
+    if (!checkLocalWifiBeforeAction('Reset Lockout')) return;
     if (!state.currentUser || state.currentUser.role !== 'admin') {
       vibrate(200);
       toast('Strict Admin Protection: Only Yash_Gajjar can bypass lockout', 'error');
@@ -750,6 +937,138 @@ const App = (() => {
     }
     if (confirm('Bypass lockout cooldown and re-enable touch sensor?')) {
       await executeControlCommand('reset_lockout');
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // EXTEND ACTIVE RELAY TIMER (FOR ADMIN)
+  // ---------------------------------------------------------------------------
+  async function extendActiveTimer(minutes) {
+    if (!checkLocalWifiBeforeAction('Extend Timer')) return;
+
+    if (!state.currentUser || state.currentUser.role !== 'admin') {
+      toast('Admin Authority Required: Only Super Administrator can extend active timer', 'error');
+      return;
+    }
+
+    if (state.system.mode !== 'RELAY_ON') {
+      toast('Cannot extend: Relay is not actively energized', 'error');
+      return;
+    }
+
+    vibrate(40);
+    const extraSec = minutes * 60;
+
+    if (state.simulated) {
+      state.system.onRemainingSec += extraSec;
+      state.system.totalOnSec += extraSec;
+      toast(`Timer extended by +${minutes} minutes (Simulation)`, 'success');
+      logCloudEvent('CMD', `EXTEND +${minutes}m applied in Simulation mode`);
+      updateUI();
+      return;
+    }
+
+    if (state.connectionMode === 'cloud') {
+      await sendFirebaseCommand('EXTEND', { minutes: minutes, seconds: extraSec });
+      toast(`Requested +${minutes} min extension via Firebase Cloud`, 'success');
+      logCloudEvent('CMD', `PUT /commands.json -> EXTEND +${minutes}m by ${state.currentUser.username}`);
+    } else {
+      const url = `${state.espHost.replace(/\/+$/, '')}/api/control`;
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'extend',
+            minutes: minutes,
+            userRole: state.currentUser.role
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to extend timer');
+        toast(`Timer extended by +${minutes} minutes on ESP8266`, 'success');
+        logCloudEvent('CMD', `POST /api/control -> extend +${minutes}m (HTTP 200)`);
+        fetchStatus();
+      } catch (e) {
+        toast(e.message || 'Failed to extend timer', 'error');
+        logCloudEvent('ERR', `Failed to extend timer: ${e.message}`);
+      }
+    }
+  }
+
+  function extendActiveTimerCustom() {
+    const input = document.getElementById('inputCustomExtendMinutes');
+    if (!input) return;
+    const val = parseInt(input.value, 10);
+    if (!val || isNaN(val) || val <= 0) {
+      toast('Please enter a valid number of minutes (1-1440)', 'error');
+      return;
+    }
+    input.value = '';
+    extendActiveTimer(val);
+  }
+
+  // ---------------------------------------------------------------------------
+  // ADMIN TEMPORARY DISABLE / ENABLE USER ACCOUNTS
+  // ---------------------------------------------------------------------------
+  async function toggleUserStatus(targetUsername, newStatus) {
+    if (!checkLocalWifiBeforeAction('User Management')) return;
+
+    if (!state.currentUser || state.currentUser.role !== 'admin') {
+      toast('Only Administrator can change account status', 'error');
+      return;
+    }
+
+    if (targetUsername.toLowerCase() === 'yash_gajjar' && newStatus === 'disabled') {
+      if (!confirm('Warning: Disabling Yash_Gajjar will lock out the primary Master Administrator. Are you sure?')) {
+        return;
+      }
+    }
+
+    vibrate(50);
+    
+    // Update in-memory user
+    const u = state.users.find(x => x.username.toLowerCase() === targetUsername.toLowerCase());
+    if (u) {
+      u.status = newStatus;
+    }
+
+    // Persist in localStorage
+    const disabledList = JSON.parse(localStorage.getItem('cyberrelay_disabled_accounts') || '[]');
+    if (newStatus === 'disabled') {
+      if (!disabledList.includes(targetUsername)) disabledList.push(targetUsername);
+    } else {
+      const idx = disabledList.indexOf(targetUsername);
+      if (idx !== -1) disabledList.splice(idx, 1);
+    }
+    localStorage.setItem('cyberrelay_disabled_accounts', JSON.stringify(disabledList));
+
+    toast(`User '${targetUsername}' status set to ${newStatus.toUpperCase()}`, 'success');
+    logCloudEvent('CMD', `Admin Yash_Gajjar changed status of '${targetUsername}' to ${newStatus}`);
+
+    renderUserTable();
+
+    // Sync to ESP8266 or Cloud
+    if (state.connectionMode === 'local') {
+      try {
+        await fetch(`${state.espHost.replace(/\/+$/, '')}/api/control`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'set_user_status',
+            targetUsername: targetUsername,
+            status: newStatus,
+            userRole: state.currentUser.role,
+            adminPassword: state.currentUser.password || 'Iamyashacker@17'
+          })
+        });
+      } catch (ignored) {}
+    } else {
+      try {
+        let host = state.firebaseHost.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
+        let url = `https://${host}/esp8266_relay/accounts_status/${targetUsername}.json`;
+        await fetch(url, { method: 'PUT', body: JSON.stringify(newStatus) });
+      } catch (ignored) {}
     }
   }
 
@@ -1062,23 +1381,85 @@ const App = (() => {
     updateHardwareTiles();
     updateActionButtons();
     updateAnalyticsDisplay();
+    updateSidebarBadges();
+    updateDiagnosticsDisplay();
+  }
+
+  function updateSidebarBadges() {
+    const rBadge = document.getElementById('navRelayBadge');
+    const tBadge = document.getElementById('navTimersBadge');
+    const dBadge = document.getElementById('navDutyBadge');
+    const uBadge = document.getElementById('navUsersBadge');
+    const cBadge = document.getElementById('navCloudBadge');
+    const pBadge = document.getElementById('navPingBadge');
+
+    if (rBadge) {
+      rBadge.textContent = state.system.mode === 'RELAY_ON' ? 'ACTIVE' : (state.system.mode === 'LOCKOUT' ? 'LOCKED' : 'READY');
+    }
+    if (tBadge) tBadge.textContent = `${state.config.onHours}h / ${state.config.lockoutDays}d`;
+    if (dBadge) dBadge.textContent = `${state.analytics.dutyPercent}%`;
+    if (uBadge) uBadge.textContent = `${state.users.length} Enrolled`;
+    if (cBadge) cBadge.textContent = state.connected ? 'Online' : 'Offline';
+    if (pBadge) pBadge.textContent = state.pingMs !== null ? `${state.pingMs} ms` : '-- ms';
+
+    // Extend Timer Panel visibility (Admin only while relay is energized)
+    const extendPanel = document.getElementById('adminExtendPanel');
+    if (extendPanel) {
+      const showExtend = (state.system.mode === 'RELAY_ON') && state.currentUser && (state.currentUser.role === 'admin');
+      extendPanel.style.display = showExtend ? 'block' : 'none';
+    }
+  }
+
+  function updateDiagnosticsDisplay() {
+    const rssiNum = document.getElementById('diagRssiNum');
+    const sigQual = document.getElementById('diagSignalQuality');
+    const pingNum = document.getElementById('diagPingNum');
+    const heapNum = document.getElementById('diagHeapNum');
+
+    if (rssiNum) rssiNum.textContent = state.wifiRssi || -52;
+    if (sigQual) {
+      const r = state.wifiRssi || -52;
+      if (r >= -60) sigQual.textContent = 'Excellent Signal (95%)';
+      else if (r >= -72) sigQual.textContent = 'Good Signal (80%)';
+      else if (r >= -82) sigQual.textContent = 'Fair Signal (60%)';
+      else sigQual.textContent = 'Weak Signal (35%)';
+    }
+    if (pingNum) pingNum.textContent = state.pingMs !== null ? state.pingMs : '--';
+    if (heapNum) heapNum.textContent = state.system.freeHeap || '28,416';
   }
 
   function updateConnectionStatus() {
     const pill = document.getElementById('connStatusPill');
     const text = document.getElementById('connStatusText');
+    const pingVal = document.getElementById('headerPingVal');
+    const rssiVal = document.getElementById('headerRssiVal');
+    const pingPill = document.getElementById('headerPingPill');
+
+    if (pingVal) {
+      pingVal.textContent = state.pingMs !== null ? `${state.pingMs} ms` : '-- ms';
+      if (pingPill) {
+        if (state.pingMs && state.pingMs < 45) pingPill.className = 'diag-pill ping-good';
+        else if (state.pingMs && state.pingMs < 120) pingPill.className = 'diag-pill ping-mid';
+        else pingPill.className = 'diag-pill ping-slow';
+      }
+    }
+
+    if (rssiVal) {
+      rssiVal.textContent = `${state.wifiRssi || -52} dBm`;
+    }
+
     if (!pill || !text) return;
 
     if (state.connected) {
       pill.className = 'status-pill online';
       if (state.connectionMode === 'cloud') {
-        text.textContent = 'FIREBASE CLOUD (ONLINE)';
+        text.textContent = 'CLOUD ONLINE';
       } else {
-        text.textContent = 'ESP8266 (192.168.4.1) ONLINE';
+        text.textContent = 'LOCAL ESP ONLINE';
       }
     } else {
       pill.className = 'status-pill offline';
-      text.textContent = state.connectionMode === 'cloud' ? 'FIREBASE CONNECTING...' : 'ESP8266 OFFLINE';
+      text.textContent = state.connectionMode === 'cloud' ? 'CLOUD OFFLINE' : 'ESP OFFLINE';
     }
   }
 
@@ -1091,23 +1472,39 @@ const App = (() => {
     const initEl = document.getElementById('userInitial');
     const ringEl = document.getElementById('userAvatarRing');
 
+    const sbName = document.getElementById('sidebarUserName');
+    const sbRole = document.getElementById('sidebarUserRole');
+    const sbInit = document.getElementById('sidebarUserInitial');
+
     if (nameEl) nameEl.textContent = user.username;
     if (initEl) initEl.textContent = user.username.charAt(0).toUpperCase();
 
+    if (sbName) sbName.textContent = user.username;
+    if (sbInit) sbInit.textContent = user.username.charAt(0).toUpperCase();
+
+    let roleLabel = 'GUEST (ANALYTICS)';
+    let roleClass = 'role-tag role-guest';
+    let ringClass = 'avatar-ring ring-guest';
+
+    if (user.role === 'admin') {
+      roleLabel = 'SUPER ADMIN';
+      roleClass = 'role-tag role-admin';
+      ringClass = 'avatar-ring ring-admin';
+    } else if (user.role === 'guarded_operator') {
+      roleLabel = 'GUARDED (1-TIME)';
+      roleClass = 'role-tag role-guarded';
+      ringClass = 'avatar-ring ring-guarded';
+    }
+
     if (roleEl) {
-      if (user.role === 'admin') {
-        roleEl.textContent = 'SUPER ADMIN';
-        roleEl.className = 'role-tag role-admin';
-        if (ringEl) ringEl.className = 'avatar-ring ring-admin';
-      } else if (user.role === 'guarded_operator') {
-        roleEl.textContent = 'GUARDED (1-TIME)';
-        roleEl.className = 'role-tag role-guarded';
-        if (ringEl) ringEl.className = 'avatar-ring ring-guarded';
-      } else {
-        roleEl.textContent = 'GUEST (ANALYTICS)';
-        roleEl.className = 'role-tag role-guest';
-        if (ringEl) ringEl.className = 'avatar-ring ring-guest';
-      }
+      roleEl.textContent = roleLabel;
+      roleEl.className = roleClass;
+    }
+    if (ringEl) ringEl.className = ringClass;
+
+    if (sbRole) {
+      sbRole.textContent = roleLabel;
+      sbRole.className = roleClass;
     }
 
     // Role Notices
@@ -1286,14 +1683,28 @@ const App = (() => {
     if (barOff) barOff.style.width = `${Math.max(0, 100 - state.analytics.dutyPercent)}%`;
   }
 
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   function renderUserTable() {
     const tbody = document.getElementById('userTableBody');
     if (!tbody) return;
+
+    const disabledList = JSON.parse(localStorage.getItem('cyberrelay_disabled_accounts') || '[]');
+    const isAdmin = state.currentUser && state.currentUser.role === 'admin';
 
     tbody.innerHTML = '';
     state.users.forEach(u => {
       const tr = document.createElement('tr');
       const isCurrent = state.currentUser && state.currentUser.username.toLowerCase() === u.username.toLowerCase();
+      const isDisabled = disabledList.includes(u.username) || u.status === 'disabled';
 
       let badgeClass = 'role-guest-badge';
       let tierLabel = 'Level 3: Guest Analytics';
@@ -1305,23 +1716,39 @@ const App = (() => {
         tierLabel = 'Level 2: Guarded (1-Time)';
       }
 
+      let statusHtml = isDisabled
+        ? `<span class="user-status-pill status-disabled">● Suspended</span>`
+        : `<span class="user-status-pill status-active">● Active</span>`;
+
+      let adminActionHtml = '—';
+      if (isAdmin) {
+        if (isDisabled) {
+          adminActionHtml = `<button type="button" class="btn-status-action btn-enable-action" onclick="App.toggleUserStatus('${escapeHtml(u.username)}', 'active')">Enable Account</button>`;
+        } else {
+          adminActionHtml = `<button type="button" class="btn-status-action btn-disable-action" onclick="App.toggleUserStatus('${escapeHtml(u.username)}', 'disabled')">Disable</button>`;
+        }
+      }
+
       tr.innerHTML = `
         <td>
-          <strong>${u.username}</strong>
+          <strong>${escapeHtml(u.username)}</strong>
           ${isCurrent ? '<span style="color:var(--accent-cyan); font-size:0.7rem; margin-left:4px;">(Current)</span>' : ''}
         </td>
         <td>
           <span class="user-badge-role ${badgeClass}">${tierLabel}</span>
         </td>
         <td>
-          <span class="status-dot dot-active"></span> Active
+          ${statusHtml}
+        </td>
+        <td>
+          ${adminActionHtml}
         </td>
       `;
       tbody.appendChild(tr);
     });
 
     const userCount = document.getElementById('userCountText');
-    if (userCount) userCount.textContent = `${state.users.length} / 10`;
+    if (userCount) userCount.textContent = `${state.users.length} Enrolled`;
   }
 
   function startLocalUptime() {
@@ -1379,6 +1806,9 @@ const App = (() => {
   return {
     init,
     setConnectionMode,
+    switchView,
+    openSidebar,
+    closeSidebar,
     switchAuthTab,
     selectRoleLogin,
     fillPreset,
@@ -1389,6 +1819,14 @@ const App = (() => {
     handleTriggerClick,
     cancelCycle,
     resetLockout,
+    extendActiveTimer,
+    extendActiveTimerCustom,
+    toggleUserStatus,
+    clearCloudLogs,
+    showLocalWifiModal,
+    closeLocalWifiModal,
+    retryLocalConnection,
+    fetchStatus,
     dismissAdminApprovalModal,
     submitAdminApproval,
     rejectAdminApproval,

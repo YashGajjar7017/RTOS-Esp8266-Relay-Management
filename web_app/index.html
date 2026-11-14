@@ -172,360 +172,590 @@
   <!-- ========================================================================= -->
   <!-- 2. MAIN CYBER-RELAY RTOS DASHBOARD (Shown when Authenticated)             -->
   <!-- ========================================================================= -->
-  <div id="dashboardSection" class="app-layout hidden" style="display: none;">
+  <!-- ========================================================================= -->
+  <!-- 2. MAIN CYBER-RELAY RTOS APP SHELL (SIDEBAR + MULTI-VIEW ARCHITECTURE)    -->
+  <!-- ========================================================================= -->
+  <div id="dashboardSection" class="app-shell hidden" style="display: none;">
     
-    <!-- Top Navigation Header -->
-    <header class="app-header glass-card">
-      <div class="header-brand">
-        <div class="brand-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="App.closeSidebar()"></div>
+
+    <!-- Apple Glassy Prism Sidebar Navigation -->
+    <aside class="app-sidebar" id="appSidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <div class="brand-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <h2>CYBER-RELAY</h2>
+            <span class="brand-tag">RTOS v3.0 PRISM</span>
+          </div>
         </div>
-        <div class="brand-info">
-          <h1>CYBER-RELAY <span class="badge-rtos">RTOS v3.0</span></h1>
-          <p class="subtitle">ESP8266 IoT &amp; Firebase Worldwide Hub</p>
-        </div>
+        <button class="btn-close-sidebar" type="button" onclick="App.closeSidebar()" aria-label="Close Sidebar">✕</button>
       </div>
 
-      <div class="header-meta">
-        <!-- Cloud / Local AP Switcher -->
-        <div class="conn-mode-switcher">
-          <button id="btnModeLocal" class="mode-btn active" type="button" onclick="App.setConnectionMode('local')">Local AP</button>
-          <button id="btnModeCloud" class="mode-btn" type="button" onclick="App.setConnectionMode('cloud')">Firebase Cloud</button>
-        </div>
+      <!-- Navigation Links -->
+      <nav class="sidebar-nav">
+        <span class="nav-section-title">CONTROL &amp; TIMERS</span>
 
-        <!-- Firebase & Cloud Config Button -->
-        <button id="btnOpenCloudConfig" class="icon-btn-settings glass-button" type="button" title="Configure Firebase &amp; IP Settings" onclick="App.openCloudConfigModal()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <button type="button" class="nav-item active" id="navControl" onclick="App.switchView('control')">
+          <div class="nav-item-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            <span>Relay Control</span>
+          </div>
+          <span class="nav-badge" id="navRelayBadge">READY</span>
         </button>
 
-        <!-- Connection Status Pill -->
-        <div id="connStatusPill" class="status-pill online">
-          <span class="pulsing-dot"></span>
-          <span id="connStatusText">ESP8266 CONNECTED</span>
-        </div>
-        
-        <!-- User Profile Pill & Logout -->
-        <div id="userProfilePill" class="user-pill glass-button">
-          <div class="avatar-ring" id="userAvatarRing">
-            <span id="userInitial">Y</span>
+        <button type="button" class="nav-item" id="navTimers" onclick="App.switchView('timers')">
+          <div class="nav-item-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>Timer Calibrations</span>
           </div>
-          <div class="user-info-text">
-            <span id="currentUserName">Yash_Gajjar</span>
-            <span id="currentUserRole" class="role-tag">SUPER ADMIN</span>
+          <span class="nav-badge" id="navTimersBadge">8h / 6d</span>
+        </button>
+
+        <span class="nav-section-title">INSIGHTS &amp; SECURITY</span>
+
+        <button type="button" class="nav-item" id="navAnalytics" onclick="App.switchView('analytics')">
+          <div class="nav-item-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+            <span>Monthly Analytics</span>
           </div>
-          <button id="logoutBtn" class="logout-btn-styled" title="Log Out / Switch Account" type="button" onclick="App.logout()">
+          <span class="nav-badge" id="navDutyBadge">16.8%</span>
+        </button>
+
+        <button type="button" class="nav-item" id="navUsers" onclick="App.switchView('users')">
+          <div class="nav-item-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span>User Accounts</span>
+          </div>
+          <span class="nav-badge" id="navUsersBadge">3 Active</span>
+        </button>
+
+        <span class="nav-section-title">SYSTEM &amp; CLOUD</span>
+
+        <button type="button" class="nav-item" id="navCloud" onclick="App.switchView('cloud')">
+          <div class="nav-item-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+            <span>Firebase Cloud &amp; Logs</span>
+          </div>
+          <span class="nav-badge" id="navCloudBadge">Online</span>
+        </button>
+
+        <button type="button" class="nav-item" id="navSettings" onclick="App.switchView('settings')">
+          <div class="nav-item-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>Device Diagnostics</span>
+          </div>
+          <span class="nav-badge" id="navPingBadge">-- ms</span>
+        </button>
+      </nav>
+
+      <!-- Sidebar User Profile Footer -->
+      <div class="sidebar-footer">
+        <div class="sidebar-user-box">
+          <div class="sidebar-user-info">
+            <div class="avatar-ring" id="sidebarAvatarRing">
+              <span id="sidebarUserInitial">Y</span>
+            </div>
+            <div class="user-info-text">
+              <span id="sidebarUserName">Yash_Gajjar</span>
+              <span id="sidebarUserRole" class="role-tag">SUPER ADMIN</span>
+            </div>
+          </div>
+          <button id="sidebarLogoutBtn" class="logout-btn-styled" title="Log Out / Switch Account" type="button" onclick="App.logout()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-            <span class="logout-text">Logout</span>
+            <span class="logout-text">Exit</span>
           </button>
         </div>
       </div>
-    </header>
+    </aside>
 
-    <!-- Non-Intrusive Connection Assistance Banner (Appears if local AP or Cloud is reconnecting) -->
-    <div id="connNoticeBanner" class="conn-help-banner hidden">
-      <div class="conn-banner-left">
-        <span class="pulsing-warn-dot"></span>
-        <span id="connNoticeText">Connecting to ESP8266 Local AP (192.168.4.1)...</span>
-      </div>
-      <div class="conn-banner-actions">
-        <button type="button" class="btn-banner-action" onclick="App.setConnectionMode('cloud')">Switch to Firebase Cloud</button>
-        <button type="button" class="btn-banner-dismiss" onclick="App.dismissConnNotice()">✕</button>
-      </div>
-    </div>
-
-    <!-- Role Notice Banners -->
-    <div id="guestNoticeBanner" class="role-banner guest-banner hidden">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-      <span><strong>Guest Mode Active:</strong> You have read-only access to view live countdowns and Monthly Switch Analytics. Hardware controls and calibrations are disabled.</span>
-    </div>
-
-    <div id="guardedNoticeBanner" class="role-banner guarded-banner hidden">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      <span><strong>Guarded Operator (Mahi_Gajjar):</strong> Any trigger or system write requires instant 1-time approval from Yash_Gajjar (Admin). Session destroys after 1 use.</span>
-    </div>
-
-    <!-- Main Grid Dashboard -->
-    <main class="dashboard-grid">
-
-      <!-- LEFT COLUMN: Live State & Circular Countdown Gauge -->
-      <section class="grid-card glass-card state-hero-card">
-        <div class="card-header">
-          <div class="card-title-group">
-            <span class="eyebrow">SYSTEM MONITOR</span>
-            <h2>Live Operational State</h2>
-          </div>
-          <div id="sysStateBadge" class="state-badge badge-idle">
-            <span class="state-icon">●</span>
-            <span id="sysStateText">IDLE / READY</span>
+    <!-- Main Content Canvas -->
+    <div class="app-main-content">
+      
+      <!-- Top Dynamic Header Bar with Real Diagnostics & Mode Switcher -->
+      <header class="main-top-bar glass-card">
+        <div class="top-bar-left">
+          <button type="button" class="btn-toggle-sidebar" id="btnToggleSidebar" onclick="App.openSidebar()" aria-label="Toggle Navigation">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <div class="view-heading-group">
+            <h1 id="headerViewTitle">⚡ Relay Control</h1>
+            <span class="view-subheading" id="headerViewSubtitle">ESP8266 Channel 1 &amp; Hardware Timers</span>
           </div>
         </div>
 
-        <!-- Radial Countdown Visualizer -->
-        <div class="countdown-radial-container">
-          <svg class="radial-svg" viewBox="0 0 260 260">
-            <defs>
-              <linearGradient id="cyanGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#fbbf24" />
-                <stop offset="100%" stop-color="#f59e0b" />
-              </linearGradient>
-              <linearGradient id="amberGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#f59e0b" />
-                <stop offset="100%" stop-color="#d97706" />
-              </linearGradient>
-              <linearGradient id="emeraldGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#fbbf24" />
-                <stop offset="100%" stop-color="#d97706" />
-              </linearGradient>
-            </defs>
-            <circle class="radial-bg" cx="130" cy="130" r="110"></circle>
-            <circle id="radialProgress" class="radial-progress" cx="130" cy="130" r="110"></circle>
-          </svg>
+        <div class="top-bar-right">
+          <!-- Real Telemetry Diagnostic Group (Real Ping & RSSI) -->
+          <div class="telemetry-beacon-group">
+            <div class="diag-pill ping-good" id="headerPingPill" title="Actual Round-Trip Ping to ESP/Cloud">
+              <span>⚡</span>
+              <span id="headerPingVal">-- ms</span>
+            </div>
+            <div class="diag-pill rssi-good" id="headerRssiPill" title="Real Wi-Fi RSSI Signal Strength">
+              <span>📶</span>
+              <span id="headerRssiVal">-- dBm</span>
+            </div>
+          </div>
 
-          <!-- Inside Radial Gauge -->
-          <div class="radial-center-content">
-            <div class="relay-bulb-indicator" id="relayBulb">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          <!-- Connection Mode Switcher (Local AP vs Firebase Cloud) -->
+          <div class="conn-mode-switcher">
+            <button id="btnModeLocal" class="mode-btn active" type="button" onclick="App.setConnectionMode('local')">Local AP</button>
+            <button id="btnModeCloud" class="mode-btn" type="button" onclick="App.setConnectionMode('cloud')">Firebase Cloud</button>
+          </div>
+
+          <!-- Cloud Log Launcher Button -->
+          <button id="btnOpenCloudLog" class="btn-quick-log" type="button" title="View Real-Time Firebase Cloud Logs &amp; Controller" onclick="App.switchView('cloud')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+            <span>Cloud Log</span>
+          </button>
+
+          <!-- Status Pill -->
+          <div id="connStatusPill" class="status-pill online">
+            <span class="pulsing-dot"></span>
+            <span id="connStatusText">ONLINE</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Connection & Role Banners -->
+      <div id="connNoticeBanner" class="conn-help-banner hidden">
+        <div class="conn-banner-left">
+          <span class="pulsing-warn-dot"></span>
+          <span id="connNoticeText">Connecting to ESP8266 Local AP (192.168.4.1)...</span>
+        </div>
+        <div class="conn-banner-actions">
+          <button type="button" class="btn-banner-action" onclick="App.setConnectionMode('cloud')">Switch to Firebase Cloud</button>
+          <button type="button" class="btn-banner-dismiss" onclick="App.dismissConnNotice()">✕</button>
+        </div>
+      </div>
+
+      <div id="guestNoticeBanner" class="role-banner guest-banner hidden">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <span><strong>Guest Mode Active:</strong> You have read-only access to view live countdowns and Monthly Switch Analytics. Hardware controls and calibrations are disabled.</span>
+      </div>
+
+      <div id="guardedNoticeBanner" class="role-banner guarded-banner hidden">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span><strong>Guarded Operator (Mahi_Gajjar):</strong> Any trigger or system write requires instant 1-time approval from Yash_Gajjar (Admin). Session destroys after 1 use.</span>
+      </div>
+
+      <!-- VIEWS CONTAINER -->
+      <main class="views-container">
+
+        <!-- =================================================================== -->
+        <!-- VIEW 1: RELAY CONTROL & EXTEND TIMER                                 -->
+        <!-- =================================================================== -->
+        <section id="viewControl" class="view-page active">
+          <div class="grid-card glass-card state-hero-card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="eyebrow">SYSTEM MONITOR</span>
+                <h2>Live Operational State</h2>
+              </div>
+              <div id="sysStateBadge" class="state-badge badge-idle">
+                <span class="state-icon">●</span>
+                <span id="sysStateText">IDLE / READY</span>
+              </div>
+            </div>
+
+            <!-- Radial Countdown Visualizer -->
+            <div class="countdown-radial-container">
+              <svg class="radial-svg" viewBox="0 0 260 260">
+                <defs>
+                  <linearGradient id="cyanGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#fbbf24" />
+                    <stop offset="100%" stop-color="#f59e0b" />
+                  </linearGradient>
+                  <linearGradient id="amberGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#f59e0b" />
+                    <stop offset="100%" stop-color="#d97706" />
+                  </linearGradient>
+                  <linearGradient id="emeraldGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#fbbf24" />
+                    <stop offset="100%" stop-color="#d97706" />
+                  </linearGradient>
+                </defs>
+                <circle class="radial-bg" cx="130" cy="130" r="110"></circle>
+                <circle id="radialProgress" class="radial-progress" cx="130" cy="130" r="110"></circle>
               </svg>
-            </div>
-            <div class="countdown-label" id="countdownLabel">READY FOR TOUCH</div>
-            <div class="digital-clock" id="digitalClock">
-              <span id="clockDays">00</span><span class="unit">d</span> :
-              <span id="clockHours">00</span><span class="unit">h</span> :
-              <span id="clockMins">00</span><span class="unit">m</span> :
-              <span id="clockSecs">00</span><span class="unit">s</span>
-            </div>
-            <div class="sub-status" id="countdownSubtext">Tap touch sensor to engage 8.0h duty cycle</div>
-          </div>
-        </div>
 
-        <!-- Quick Hardware Status Tiles -->
-        <div class="hardware-tiles-row">
-          <div class="hw-tile">
-            <span class="hw-label">RELAY PIN</span>
-            <div class="hw-val-group">
-              <span id="relayStatusDot" class="status-dot dot-off"></span>
-              <strong id="relayStatusText">OFF</strong>
-            </div>
-            <span class="hw-sub" id="relayPinInfo">GPIO5 (D1) / GPIO1 (TX)</span>
-          </div>
-
-          <div class="hw-tile">
-            <span class="hw-label">TOUCH SENSOR</span>
-            <div class="hw-val-group">
-              <span id="touchStatusDot" class="status-dot dot-active"></span>
-              <strong id="touchStatusText">READY</strong>
-            </div>
-            <span class="hw-sub" id="touchPinInfo">TTP223 Active</span>
-          </div>
-
-          <div class="hw-tile">
-            <span class="hw-label">LOCKOUT FILTER</span>
-            <div class="hw-val-group">
-              <span id="lockoutStatusDot" class="status-dot dot-disabled"></span>
-              <strong id="lockoutStatusText">UNLOCKED</strong>
-            </div>
-            <span class="hw-sub" id="lockoutDesc">Triggers allowed</span>
-          </div>
-        </div>
-
-        <!-- Action Controls (Contextual based on 3-tier user role) -->
-        <div class="action-buttons-group" id="controlsGroup">
-          <button id="btnManualTrigger" class="glass-button btn-accent" type="button" onclick="App.handleTriggerClick()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            <span id="triggerBtnText">Trigger Relay Cycle Now</span>
-          </button>
-          <button id="btnCancelCycle" class="glass-button btn-danger" type="button" onclick="App.cancelCycle()" disabled>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
-            <span>Emergency Cutoff</span>
-          </button>
-          <button id="btnResetLockout" class="glass-button btn-warning" type="button" onclick="App.resetLockout()" disabled title="Admin Only">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-            <span>Bypass Lockout (Admin Only)</span>
-          </button>
-        </div>
-      </section>
-
-      <!-- RIGHT COLUMN: Analytics (Guest), Calibration, Users -->
-      <div class="right-stack">
-
-        <!-- MONTHLY ON/OFF SWITCH ANALYTICS (User 3 Requirement) -->
-        <section class="grid-card glass-card analytics-card">
-          <div class="card-header">
-            <div class="card-title-group">
-              <span class="eyebrow">MONTHLY USAGE ANALYTICS</span>
-              <h2>Switch Runtime &amp; Analysis</h2>
-            </div>
-            <span class="info-badge" id="analyticsMonthBadge">November 2026</span>
-          </div>
-
-          <p class="card-subtext">Comprehensive historical tracking of switch on/off durations and monthly cycles.</p>
-
-          <!-- Metrics summary tiles -->
-          <div class="analytics-metrics-grid">
-            <div class="metric-box box-on">
-              <div class="metric-icon">⚡</div>
-              <div class="metric-data">
-                <span class="metric-num" id="anTotalOnHours">48.5</span>
-                <span class="metric-unit">hours ON</span>
+              <!-- Inside Radial Gauge -->
+              <div class="radial-center-content">
+                <div class="relay-bulb-indicator" id="relayBulb">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                  </svg>
+                </div>
+                <div class="countdown-label" id="countdownLabel">READY FOR TOUCH</div>
+                <div class="digital-clock" id="digitalClock">
+                  <span id="clockDays">00</span><span class="unit">d</span> :
+                  <span id="clockHours">00</span><span class="unit">h</span> :
+                  <span id="clockMins">00</span><span class="unit">m</span> :
+                  <span id="clockSecs">00</span><span class="unit">s</span>
+                </div>
+                <div class="sub-status" id="countdownSubtext">Tap touch sensor to engage 8.0h duty cycle</div>
               </div>
-              <span class="metric-label">Total Switch Energized</span>
             </div>
 
-            <div class="metric-box box-off">
-              <div class="metric-icon">💤</div>
-              <div class="metric-data">
-                <span class="metric-num" id="anTotalOffHours">240.2</span>
-                <span class="metric-unit">hours OFF</span>
+            <!-- Quick Hardware Status Tiles -->
+            <div class="hardware-tiles-row">
+              <div class="hw-tile">
+                <span class="hw-label">RELAY PIN</span>
+                <div class="hw-val-group">
+                  <span id="relayStatusDot" class="status-dot dot-off"></span>
+                  <strong id="relayStatusText">OFF</strong>
+                </div>
+                <span class="hw-sub" id="relayPinInfo">GPIO5 (D1) / GPIO1 (TX)</span>
               </div>
-              <span class="metric-label">Total Inactive / Lockout</span>
+
+              <div class="hw-tile">
+                <span class="hw-label">TOUCH SENSOR</span>
+                <div class="hw-val-group">
+                  <span id="touchStatusDot" class="status-dot dot-active"></span>
+                  <strong id="touchStatusText">READY</strong>
+                </div>
+                <span class="hw-sub" id="touchPinInfo">TTP223 Active</span>
+              </div>
+
+              <div class="hw-tile">
+                <span class="hw-label">LOCKOUT FILTER</span>
+                <div class="hw-val-group">
+                  <span id="lockoutStatusDot" class="status-dot dot-disabled"></span>
+                  <strong id="lockoutStatusText">UNLOCKED</strong>
+                </div>
+                <span class="hw-sub" id="lockoutDesc">Triggers allowed</span>
+              </div>
             </div>
 
-            <div class="metric-box box-cycles">
-              <div class="metric-icon">🔄</div>
-              <div class="metric-data">
-                <span class="metric-num" id="anTotalCycles">6</span>
-                <span class="metric-unit">cycles</span>
-              </div>
-              <span class="metric-label">Completed Runs</span>
+            <!-- Action Controls -->
+            <div class="action-buttons-group" id="controlsGroup">
+              <button id="btnManualTrigger" class="glass-button btn-accent" type="button" onclick="App.handleTriggerClick()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span id="triggerBtnText">Trigger Relay Cycle Now</span>
+              </button>
+              <button id="btnCancelCycle" class="glass-button btn-danger" type="button" onclick="App.cancelCycle()" disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
+                <span>Emergency Cutoff</span>
+              </button>
+              <button id="btnResetLockout" class="glass-button btn-warning" type="button" onclick="App.resetLockout()" disabled title="Admin Only">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                <span>Bypass Lockout (Admin Only)</span>
+              </button>
             </div>
+
+            <!-- ADMIN FEATURE: EXTEND ACTIVE RUNNING RELAY TIMER -->
+            <div id="adminExtendPanel" class="extend-timer-panel">
+              <div class="extend-header">
+                <span class="extend-title">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 10"/></svg>
+                  <span>Admin Extend Active Relay Timer</span>
+                </span>
+                <span class="badge-single-use">Live Sync</span>
+              </div>
+              <p class="card-subtext" style="margin-bottom: 10px;">Add extra running time to the active relay without restarting the cycle.</p>
+              <div class="extend-chips-grid">
+                <button type="button" class="btn-extend-chip" onclick="App.extendActiveTimer(15)">+15 min</button>
+                <button type="button" class="btn-extend-chip" onclick="App.extendActiveTimer(30)">+30 min</button>
+                <button type="button" class="btn-extend-chip" onclick="App.extendActiveTimer(60)">+1 hour</button>
+                <button type="button" class="btn-extend-chip" onclick="App.extendActiveTimer(120)">+2 hours</button>
+              </div>
+              <div class="extend-custom-row">
+                <input type="number" id="inputCustomExtendMinutes" placeholder="Custom minutes (e.g. 45)" min="1" max="1440">
+                <button type="button" class="glass-button btn-primary" onclick="App.extendActiveTimerCustom()">+ Add Time</button>
+              </div>
+            </div>
+
           </div>
+        </section>
 
-          <!-- Monthly Duty Cycle Comparison Bar -->
-          <div class="analytics-bar-wrapper">
-            <div class="bar-header">
-              <span>Monthly Duty Cycle Ratio</span>
-              <strong id="dutyRatioPercent">16.8% ON</strong>
+        <!-- =================================================================== -->
+        <!-- VIEW 2: TIMER CALIBRATIONS                                          -->
+        <!-- =================================================================== -->
+        <section id="viewTimers" class="view-page">
+          <div class="grid-card glass-card" id="calibrationCard">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="eyebrow">CUSTOM PARAMETERS</span>
+                <h2>Timing Calibration</h2>
+              </div>
+              <span class="info-badge">RTOS Synced</span>
             </div>
-            <div class="ratio-bar-track">
-              <div id="ratioBarOn" class="ratio-bar-fill on-fill" style="width: 16.8%;"></div>
-              <div id="ratioBarOff" class="ratio-bar-fill off-fill" style="width: 83.2%;"></div>
-            </div>
-            <div class="ratio-bar-legend">
-              <span class="legend-dot dot-cyan"></span> Active Hours
-              <span class="legend-dot dot-slate" style="margin-left: 14px;"></span> Lockout / Standby
+
+            <div class="config-controls">
+              <!-- Relay ON Duration Setting -->
+              <div class="control-box">
+                <div class="control-header">
+                  <div class="control-info">
+                    <label for="onHoursSlider">Relay Active Duration</label>
+                    <p class="control-desc">Time relay remains energized when triggered</p>
+                  </div>
+                  <div class="number-display">
+                    <span id="onHoursDisplay">8.0</span> <span class="unit">hours</span>
+                  </div>
+                </div>
+                <div class="slider-wrapper">
+                  <input type="range" id="onHoursSlider" min="1" max="24" step="0.5" value="8" oninput="App.onTimerInput('on')">
+                  <div class="slider-ticks">
+                    <span>1h</span>
+                    <span>7h</span>
+                    <span class="highlight">8h (Default)</span>
+                    <span>16h</span>
+                    <span>24h</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lockout Cooldown Duration Setting -->
+              <div class="control-box">
+                <div class="control-header">
+                  <div class="control-info">
+                    <label for="lockoutDaysSlider">Lockout Cooldown Duration</label>
+                    <p class="control-desc">Touch sensor completely ignored until countdown expires</p>
+                  </div>
+                  <div class="number-display">
+                    <span id="lockoutDaysDisplay">6.0</span> <span class="unit">days</span>
+                  </div>
+                </div>
+                <div class="slider-wrapper">
+                  <input type="range" id="lockoutDaysSlider" min="1" max="30" step="0.5" value="6" oninput="App.onTimerInput('lockout')">
+                  <div class="slider-ticks">
+                    <span>1d</span>
+                    <span>5d</span>
+                    <span class="highlight">6d - 7d (Target)</span>
+                    <span>14d</span>
+                    <span>30d</span>
+                  </div>
+                </div>
+              </div>
+
+              <button id="btnSaveConfig" class="glass-button btn-primary w-full" type="button" onclick="App.saveTimers()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                <span>Save &amp; Flash to ESP8266 Memory</span>
+              </button>
             </div>
           </div>
         </section>
 
-        <!-- Custom Timer Configurations Card (Admin Only) -->
-        <section class="grid-card glass-card" id="calibrationCard">
-          <div class="card-header">
-            <div class="card-title-group">
-              <span class="eyebrow">CUSTOM PARAMETERS</span>
-              <h2>Timing Calibration</h2>
-            </div>
-            <span class="info-badge">RTOS Synced</span>
-          </div>
-
-          <div class="config-controls">
-            <!-- Relay ON Duration Setting -->
-            <div class="control-box">
-              <div class="control-header">
-                <div class="control-info">
-                  <label for="onHoursSlider">Relay Active Duration</label>
-                  <p class="control-desc">Time relay remains energized when triggered</p>
-                </div>
-                <div class="number-display">
-                  <span id="onHoursDisplay">8.0</span> <span class="unit">hours</span>
-                </div>
+        <!-- =================================================================== -->
+        <!-- VIEW 3: MONTHLY USAGE ANALYTICS                                     -->
+        <!-- =================================================================== -->
+        <section id="viewAnalytics" class="view-page">
+          <div class="grid-card glass-card analytics-card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="eyebrow">MONTHLY USAGE ANALYTICS</span>
+                <h2>Switch Runtime &amp; Analysis</h2>
               </div>
-              <div class="slider-wrapper">
-                <input type="range" id="onHoursSlider" min="1" max="24" step="0.5" value="8" oninput="App.onTimerInput('on')">
-                <div class="slider-ticks">
-                  <span>1h</span>
-                  <span>7h</span>
-                  <span class="highlight">8h (Default)</span>
-                  <span>16h</span>
-                  <span>24h</span>
-                </div>
-              </div>
+              <span class="info-badge" id="analyticsMonthBadge">November 2026</span>
             </div>
 
-            <!-- Lockout Cooldown Duration Setting -->
-            <div class="control-box">
-              <div class="control-header">
-                <div class="control-info">
-                  <label for="lockoutDaysSlider">Lockout Cooldown Duration</label>
-                  <p class="control-desc">Touch sensor completely ignored until countdown expires</p>
+            <p class="card-subtext">Comprehensive historical tracking of switch on/off durations and monthly cycles.</p>
+
+            <!-- Metrics summary tiles -->
+            <div class="analytics-metrics-grid">
+              <div class="metric-box box-on">
+                <div class="metric-icon">⚡</div>
+                <div class="metric-data">
+                  <span class="metric-num" id="anTotalOnHours">48.5</span>
+                  <span class="metric-unit">hours ON</span>
                 </div>
-                <div class="number-display">
-                  <span id="lockoutDaysDisplay">6.0</span> <span class="unit">days</span>
-                </div>
+                <span class="metric-label">Total Switch Energized</span>
               </div>
-              <div class="slider-wrapper">
-                <input type="range" id="lockoutDaysSlider" min="1" max="30" step="0.5" value="6" oninput="App.onTimerInput('lockout')">
-                <div class="slider-ticks">
-                  <span>1d</span>
-                  <span>5d</span>
-                  <span class="highlight">6d - 7d (Target)</span>
-                  <span>14d</span>
-                  <span>30d</span>
+
+              <div class="metric-box box-off">
+                <div class="metric-icon">💤</div>
+                <div class="metric-data">
+                  <span class="metric-num" id="anTotalOffHours">240.2</span>
+                  <span class="metric-unit">hours OFF</span>
                 </div>
+                <span class="metric-label">Total Inactive / Lockout</span>
+              </div>
+
+              <div class="metric-box box-cycles">
+                <div class="metric-icon">🔄</div>
+                <div class="metric-data">
+                  <span class="metric-num" id="anTotalCycles">6</span>
+                  <span class="metric-unit">cycles</span>
+                </div>
+                <span class="metric-label">Completed Runs</span>
               </div>
             </div>
 
-            <button id="btnSaveConfig" class="glass-button btn-primary w-full" type="button" onclick="App.saveTimers()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-              <span>Save &amp; Flash to ESP8266 Memory</span>
-            </button>
-          </div>
-        </section>
-
-        <!-- 3-Tier Predefined User Database Card -->
-        <section class="grid-card glass-card" id="userManagementCard">
-          <div class="card-header">
-            <div class="card-title-group">
-              <span class="eyebrow">3-TIER ACCESS MATRIX</span>
-              <h2>Enrolled User Database</h2>
+            <!-- Monthly Duty Cycle Comparison Bar -->
+            <div class="analytics-bar-wrapper">
+              <div class="bar-header">
+                <span>Monthly Duty Cycle Ratio</span>
+                <strong id="dutyRatioPercent">16.8% ON</strong>
+              </div>
+              <div class="ratio-bar-track">
+                <div id="ratioBarOn" class="ratio-bar-fill on-fill" style="width: 16.8%;"></div>
+                <div id="ratioBarOff" class="ratio-bar-fill off-fill" style="width: 83.2%;"></div>
+              </div>
+              <div class="ratio-bar-legend">
+                <span class="legend-dot dot-cyan"></span> Active Hours
+                <span class="legend-dot dot-slate" style="margin-left: 14px;"></span> Lockout / Standby
+              </div>
             </div>
-            <div class="user-quota-badge">
-              <span id="userCountText">3 / 5</span> Active Accounts
-            </div>
-          </div>
-
-          <p class="card-subtext">Predefined credentials with 3 discrete privilege levels &amp; 1-time grant flow.</p>
-
-          <div class="user-table-wrap">
-            <table class="user-table">
-              <thead>
-                <tr>
-                  <th>Username</th>
-                  <th>Privilege Tier</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="userTableBody">
-                <!-- Dynamically populated -->
-              </tbody>
-            </table>
           </div>
         </section>
 
-      </div>
-    </main>
+        <!-- =================================================================== -->
+        <!-- VIEW 4: USER SECURITY & ACCESS (WITH ADMIN DISABLE POWER)           -->
+        <!-- =================================================================== -->
+        <section id="viewUsers" class="view-page">
+          <div class="grid-card glass-card" id="userManagementCard">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="eyebrow">3-TIER ACCESS MATRIX</span>
+                <h2>Enrolled User Database</h2>
+              </div>
+              <div class="user-quota-badge">
+                <span id="userCountText">3 Active</span> Accounts
+              </div>
+            </div>
 
-    <!-- Activity Log & RTOS Telemetry Footer -->
-    <footer class="system-footer glass-card">
-      <div class="footer-item">
-        <span class="ft-label">RTOS KERNEL:</span>
-        <span class="ft-val">FreeRTOS Tasks</span>
-      </div>
-      <div class="footer-item">
-        <span class="ft-label">CLOUD SYNC:</span>
-        <span id="ftCloudStatus" class="ft-val" style="color:var(--accent-cyan)">Firebase Active</span>
-      </div>
-      <div class="footer-item">
-        <span class="ft-label">TOUCH LOCK:</span>
-        <span class="ft-val">Hardware Filter</span>
-      </div>
-      <div class="footer-item">
-        <span class="ft-label">UPTIME:</span>
-        <span id="espUptime" class="ft-val">00:00:00</span>
-      </div>
-    </footer>
+            <p class="card-subtext">Predefined credentials with 3 discrete privilege levels. Administrators have authority to temporarily disable or enable user accounts.</p>
+
+            <div class="user-table-wrap">
+              <table class="user-table">
+                <thead>
+                  <tr>
+                    <th>Username</th>
+                    <th>Privilege Tier</th>
+                    <th>Status</th>
+                    <th>Admin Authority</th>
+                  </tr>
+                </thead>
+                <tbody id="userTableBody">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- VIEW 5: FIREBASE CLOUD & REAL-TIME LOG VIEWER                       -->
+        <!-- =================================================================== -->
+        <section id="viewCloud" class="view-page">
+          <div class="grid-card glass-card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="eyebrow">FIREBASE WORLDWIDE CLOUD</span>
+                <h2>Cloud Stream &amp; Controller Logs</h2>
+              </div>
+              <span class="info-badge" id="cloudSyncStatusBadge">Connected</span>
+            </div>
+
+            <div class="cloud-log-container">
+              <!-- Target and Node details -->
+              <div class="cloud-target-box">
+                <div>
+                  <span class="eyebrow">ACTIVE FIREBASE ENDPOINT</span>
+                  <div class="cloud-target-url" id="lblFirebaseTarget">https://cyber-relay-rtos-default-rtdb.firebaseio.com/esp8266_relay</div>
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <button type="button" class="glass-button btn-secondary" onclick="App.testCloudConnection()">Test Ping</button>
+                  <button type="button" class="glass-button btn-primary" onclick="App.openCloudConfigModal()">Edit Config</button>
+                </div>
+              </div>
+
+              <!-- Terminal Stream -->
+              <div class="cloud-log-terminal" id="cloudLogTerminal">
+                <!-- Log entries added dynamically -->
+              </div>
+
+              <!-- Terminal actions -->
+              <div class="cloud-log-actions">
+                <span class="card-subtext">Live feed of read/write sync operations, controller origins, and command latency.</span>
+                <div style="display:flex; gap:8px;">
+                  <button type="button" class="glass-button btn-secondary" onclick="App.clearCloudLogs()">Clear Console</button>
+                  <button type="button" class="glass-button btn-primary" onclick="App.fetchStatus()">Force Sync Now</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- VIEW 6: DEVICE & DIAGNOSTICS                                        -->
+        <!-- =================================================================== -->
+        <section id="viewSettings" class="view-page">
+          <div class="grid-card glass-card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="eyebrow">HARDWARE &amp; RF TELEMETRY</span>
+                <h2>Device &amp; Diagnostics</h2>
+              </div>
+              <span class="info-badge">RTOS v3.0</span>
+            </div>
+
+            <div class="analytics-metrics-grid">
+              <div class="metric-box">
+                <span class="eyebrow">REAL RF SIGNAL</span>
+                <div class="metric-data">
+                  <span class="metric-num" id="diagRssiNum">--</span>
+                  <span class="metric-unit">dBm</span>
+                </div>
+                <span class="metric-label" id="diagSignalQuality">Checking...</span>
+              </div>
+
+              <div class="metric-box">
+                <span class="eyebrow">ROUND-TRIP PING</span>
+                <div class="metric-data">
+                  <span class="metric-num" id="diagPingNum">--</span>
+                  <span class="metric-unit">ms</span>
+                </div>
+                <span class="metric-label">Latency</span>
+              </div>
+
+              <div class="metric-box">
+                <span class="eyebrow">ESP8266 HEAP</span>
+                <div class="metric-data">
+                  <span class="metric-num" id="diagHeapNum">--</span>
+                  <span class="metric-unit">bytes</span>
+                </div>
+                <span class="metric-label">RAM Free</span>
+              </div>
+            </div>
+
+            <div class="config-controls" style="margin-top: 18px;">
+              <div class="test-conn-row">
+                <button type="button" class="glass-button btn-secondary" onclick="App.testLocalConnection()">Test ESP Ping</button>
+                <button type="button" class="glass-button btn-secondary" onclick="App.testCloudConnection()">Test Firebase Ping</button>
+                <button type="button" class="glass-button btn-warning" onclick="App.openCloudConfigModal()">Network Settings</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- System Footer -->
+      <footer class="system-footer glass-card">
+        <div class="footer-item">
+          <span class="ft-label">RTOS KERNEL:</span>
+          <span class="ft-val">FreeRTOS Tasks</span>
+        </div>
+        <div class="footer-item">
+          <span class="ft-label">CLOUD SYNC:</span>
+          <span id="ftCloudStatus" class="ft-val" style="color:var(--accent-cyan)">Firebase Active</span>
+        </div>
+        <div class="footer-item">
+          <span class="ft-label">TOUCH LOCK:</span>
+          <span class="ft-val">Hardware Filter</span>
+        </div>
+        <div class="footer-item">
+          <span class="ft-label">UPTIME:</span>
+          <span id="espUptime" class="ft-val">00:00:00</span>
+        </div>
+      </footer>
+    </div>
   </div>
 
   <!-- ========================================================================= -->
@@ -643,6 +873,32 @@
             <button type="submit" class="glass-button btn-primary">Save Settings</button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 4: Local ESP Wi-Fi Disconnected Protection Popup Modal               -->
+  <!-- ========================================================================= -->
+  <div id="localWifiPromptModal" class="modal-backdrop hidden">
+    <div class="modal-card glass-card text-center" style="max-width: 440px;">
+      <div class="auth-icon-badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; margin: 0 auto 12px; width: 62px; height: 62px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 32px; height: 32px;"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+      </div>
+      <h3 style="font-size: 1.25rem;">Connect Device Wi-Fi First</h3>
+      <p class="modal-subtitle" style="margin: 10px auto 16px; font-size: 0.85rem; line-height: 1.5;">
+        Your device is not connected to the ESP8266 local Wi-Fi hotspot (<strong>CYBER-RELAY-HUB</strong>).
+        Please connect to <strong>CYBER-RELAY-HUB</strong> first before doing changes, or switch to <strong>Firebase Cloud</strong> mode.
+      </p>
+      <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 18px; text-align: left; font-size: 0.76rem; font-family: var(--font-mono);">
+        <div>• Wi-Fi SSID: <strong style="color:var(--accent-amber)">CYBER-RELAY-HUB</strong></div>
+        <div>• Password: <strong style="color:var(--accent-amber)">cyber8266</strong></div>
+        <div>• Gateway IP: <strong style="color:var(--accent-cyan)">http://192.168.4.1</strong></div>
+      </div>
+      <div class="modal-actions" style="justify-content: center; gap: 8px;">
+        <button type="button" class="glass-button btn-primary" onclick="App.setConnectionMode('cloud'); App.closeLocalWifiModal();">Switch to Cloud</button>
+        <button type="button" class="glass-button btn-secondary" onclick="App.retryLocalConnection()">Retry Connection</button>
+        <button type="button" class="glass-button" onclick="App.closeLocalWifiModal()">Dismiss</button>
       </div>
     </div>
   </div>

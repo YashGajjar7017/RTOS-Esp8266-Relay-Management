@@ -155,6 +155,16 @@ void FirebaseClient::pollFirebaseCommands() {
             stateManager.cancelCycle(requestedBy);
           } else if (strcmp(action, "RESET_LOCKOUT") == 0) {
             stateManager.resetLockout(requestedBy);
+          } else if (strcmp(action, "EXTEND") == 0) {
+            int extraMinutes = doc["minutes"] | (doc["seconds"] | 0) / 60;
+            if (extraMinutes <= 0) extraMinutes = 15;
+            stateManager.extendActiveTimer((uint32_t)extraMinutes * 60);
+          } else if (strcmp(action, "SET_USER_STATUS") == 0) {
+            const char* target = doc["targetUsername"] | "";
+            const char* status = doc["status"] | "disabled";
+            const char* adminPass = doc["adminPassword"] | "";
+            String err;
+            storageDB.setUserStatus(target, status, adminPass, err);
           } else if (strcmp(action, "UPDATE_CONFIG") == 0) {
             float onHours = doc["onHours"] | -1.0f;
             float lockoutDays = doc["lockoutDays"] | -1.0f;

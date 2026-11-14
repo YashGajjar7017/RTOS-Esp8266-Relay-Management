@@ -1,5 +1,6 @@
 #include "state_manager.h"
 #include <ArduinoJson.h>
+#include <ESP8266WiFi.h>
 
 StateManager stateManager;
 
@@ -199,6 +200,18 @@ bool StateManager::resetLockout(const char* source) {
   return true;
 }
 
+bool StateManager::extendActiveTimer(uint32_t additionalSeconds) {
+  if (_state.mode != MODE_RELAY_ON) {
+    Serial.println(F("[TIMER] Cannot extend: relay is not in RELAY_ON state."));
+    return false;
+  }
+  _state.onRemainingSec += additionalSeconds;
+  _state.totalOnSec += additionalSeconds;
+  persistState();
+  Serial.printf("[TIMER] Extended active relay by %u seconds. New remaining: %u s\n", additionalSeconds, _state.onRemainingSec);
+  return true;
+}
+
 bool StateManager::updateTimers(float onHours, float lockoutDays) {
   if (onHours < MIN_ON_HOURS || onHours > MAX_ON_HOURS ||
       lockoutDays < MIN_LOCKOUT_DAYS || lockoutDays > MAX_LOCKOUT_DAYS) {
@@ -226,6 +239,12 @@ String StateManager::getStatusJson(const char* currentUsername, const char* user
   doc["totalLockoutSec"] = _state.totalLockoutSec;
   doc["uptimeSeconds"] = _uptimeSeconds;
   doc["version"] = FIRMWARE_VERSION;
+
+  // Real RF & Hardware diagnostics from ESP8266
+  doc["wifiRssi"] = WiFi.RSSI();
+  doc["wifiChannel"] = WiFi.channel();
+  doc["softApStations"] = WiFi.softAPgetStationNum();
+  doc["freeHeap"] = ESP.getFreeHeap();
 
   JsonObject cfg = doc.createNestedObject("config");
   cfg["onHours"] = _settings.onHours;

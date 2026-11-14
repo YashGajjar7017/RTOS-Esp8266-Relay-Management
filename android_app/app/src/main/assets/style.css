@@ -1920,3 +1920,608 @@ body {
     justify-content: space-between;
   }
 }
+
+/* ========================================================================= */
+/* SIDEBAR NAVIGATION & MULTI-VIEW ARCHITECTURE (APPLE PRISM OBSIDIAN AMBER)  */
+/* ========================================================================= */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 90;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.sidebar-overlay.active {
+  display: block;
+  opacity: 1;
+}
+
+.app-sidebar {
+  width: 270px;
+  flex-shrink: 0;
+  background: rgba(14, 16, 23, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 95;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-header {
+  padding: 20px 18px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sidebar-brand .brand-icon {
+  width: 38px;
+  height: 38px;
+}
+
+.sidebar-brand h2 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.sidebar-brand .brand-tag {
+  font-size: 0.62rem;
+  font-family: var(--font-mono);
+  color: var(--accent-amber);
+}
+
+.btn-close-sidebar {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.sidebar-nav {
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.nav-section-title {
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  padding: 8px 10px 4px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: var(--font-main);
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-align: left;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 100%;
+}
+
+.nav-item-left {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.nav-item svg {
+  width: 18px;
+  height: 18px;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.nav-item:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.nav-item:hover svg {
+  color: var(--accent-cyan);
+}
+
+.nav-item.active {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(251, 191, 36, 0.35);
+  color: #fbbf24;
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.1), 0 0 16px rgba(245, 158, 11, 0.15);
+}
+
+.nav-item.active svg {
+  color: var(--accent-cyan);
+}
+
+.nav-badge {
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+}
+
+.nav-item.active .nav-badge {
+  background: rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+}
+
+.sidebar-footer {
+  padding: 14px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(8, 9, 12, 0.4);
+}
+
+.sidebar-user-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.sidebar-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Main Content Area */
+.app-main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 100vh;
+}
+
+.main-top-bar {
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(14, 16, 23, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 80;
+}
+
+.top-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.btn-toggle-sidebar {
+  display: none;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  padding: 8px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-toggle-sidebar svg {
+  width: 20px;
+  height: 20px;
+}
+
+.view-heading-group h1 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.view-subheading {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Real Telemetry Badges (Real ESP Ping & RSSI) */
+.telemetry-beacon-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.diag-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+}
+
+.diag-pill.ping-good {
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+.diag-pill.ping-mid {
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.diag-pill.ping-slow {
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.diag-pill.rssi-good {
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.btn-quick-log {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  color: #fbbf24;
+  border-radius: var(--radius-full);
+  padding: 6px 13px;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-quick-log:hover {
+  background: rgba(245, 158, 11, 0.22);
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.3);
+}
+
+.btn-quick-log svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Page Views Container */
+.views-container {
+  padding: 24px 28px 40px;
+  max-width: 1240px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.view-page {
+  display: none;
+  animation: pageViewFadeIn 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.view-page.active {
+  display: block;
+}
+
+@keyframes pageViewFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================================================================= */
+/* EXTEND RUNNING RELAY TIMER PANEL (FOR ADMIN)                              */
+/* ========================================================================= */
+.extend-timer-panel {
+  margin-top: 18px;
+  background: rgba(245, 158, 11, 0.06);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08);
+}
+
+.extend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.extend-title {
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: #fbbf24;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.extend-chips-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.btn-extend-chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  color: #f8fafc;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.btn-extend-chip:hover {
+  background: rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+  border-color: #fbbf24;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.35);
+  transform: translateY(-1px);
+}
+
+.extend-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.extend-custom-row input {
+  flex: 1;
+  padding: 8px 12px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.extend-custom-row button {
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ========================================================================= */
+/* FIREBASE CLOUD LOG CONSOLE & INSPECTOR                                    */
+/* ========================================================================= */
+.cloud-log-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cloud-target-box {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.cloud-target-url {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--accent-cyan);
+  word-break: break-all;
+}
+
+.cloud-log-terminal {
+  background: #040507;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  height: 420px;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  line-height: 1.6;
+  color: #cbd5e1;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.terminal-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  padding-bottom: 4px;
+}
+
+.term-time {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.term-tag {
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 0.65rem;
+  flex-shrink: 0;
+}
+
+.tag-poll { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+.tag-cmd  { background: rgba(245, 158, 11, 0.25); color: #fbbf24; }
+.tag-sync { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+.tag-err  { background: rgba(244, 63, 94, 0.25); color: #fb7185; }
+
+.term-msg {
+  flex: 1;
+  word-break: break-all;
+}
+
+.cloud-log-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ========================================================================= */
+/* USER STATUS TOGGLES (ACTIVE / SUSPENDED BY ADMIN)                         */
+/* ========================================================================= */
+.user-status-pill {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.user-status-pill.status-active {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.user-status-pill.status-disabled {
+  background: rgba(244, 63, 94, 0.18);
+  color: #fb7185;
+  border: 1px solid rgba(244, 63, 94, 0.35);
+}
+
+.btn-status-action {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-disable-action {
+  color: #fb7185;
+  border-color: rgba(244, 63, 94, 0.3);
+}
+
+.btn-disable-action:hover {
+  background: rgba(244, 63, 94, 0.2);
+}
+
+.btn-enable-action {
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.btn-enable-action:hover {
+  background: rgba(16, 185, 129, 0.2);
+}
+
+/* ========================================================================= */
+/* RESPONSIVE BREAKPOINTS FOR SIDEBAR                                        */
+/* ========================================================================= */
+@media (max-width: 900px) {
+  .app-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    transform: translateX(-100%);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.7);
+  }
+
+  .app-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .btn-close-sidebar {
+    display: block;
+  }
+
+  .btn-toggle-sidebar {
+    display: inline-flex;
+  }
+
+  .views-container {
+    padding: 16px 14px 30px;
+  }
+
+  .telemetry-beacon-group {
+    display: none;
+  }
+}

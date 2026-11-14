@@ -8,7 +8,7 @@ This local reference file contains the enrolled credentials and access permissio
 
 | Privilege Level | Username | Password | Role Key | Key Capabilities |
 |---|---|---|---|---|
-| 🛡️ **Level 1: Super Admin** | `Yash_Gajjar` | `Iamyashacker@17` | `admin` | Full Read/Write, Trigger 8h Cycle, Emergency Cutoff, Bypass Lockout, Timing Calibrations, Instant Authorization Popups |
+| 🛡️ **Level 1: Super Admin** | `Yash_Gajjar` | `Iamyashacker@17` | `admin` | Full Master Control, Trigger/Cutoff, Bypass Lockout, Calibrate Timers, **Extend Active Timer (+15m..+2h)**, **Temporarily Disable/Enable Accounts**, View Cloud Logs & Controller Trace |
 | ⚡ **Level 2: Guarded Operator** | `Mahi_Gajjar` | `MahiSecure#2026` | `guarded_operator` | Can request triggers; requires 1-time admin approval from `Yash_Gajjar`. Session destroys after single use |
 | 👁️ **Level 3: Guest Analytics** | `Guest` | `Guest@123` | `guest_analytics` | Strict Read-Only. Hardware controls locked. Full access to Monthly Switch Runtime Analytics |
 
