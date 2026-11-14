@@ -18,6 +18,7 @@ FirebaseClient::FirebaseClient() :
 void FirebaseClient::begin() {
   #if ENABLE_INTERNET_WIFI
     Serial.println(F("[FIREBASE] Initializing Firebase Realtime Cloud integration..."));
+    WiFi.setAutoReconnect(true);
     checkWiFiConnection();
   #else
     Serial.println(F("[FIREBASE] Internet Wi-Fi station disabled. Running local SoftAP only."));
@@ -59,7 +60,10 @@ void FirebaseClient::update() {
 void FirebaseClient::syncToFirebase() {
   WiFiClientSecure client;
   client.setInsecure(); // Allows fast HTTPS without maintaining dynamic root certificates
+  client.setBufferSizes(1024, 512); // CRITICAL ESP8266 RAM optimization to prevent TLS out-of-memory crash
+  
   HTTPClient http;
+  http.setTimeout(4000);
 
   String url = String("https://") + FIREBASE_HOST + "/esp8266_relay/telemetry.json";
   if (strlen(FIREBASE_AUTH) > 0 && strcmp(FIREBASE_AUTH, "YOUR_FIREBASE_DATABASE_SECRET") != 0) {
@@ -121,7 +125,10 @@ void FirebaseClient::syncToFirebase() {
 void FirebaseClient::pollFirebaseCommands() {
   WiFiClientSecure client;
   client.setInsecure();
+  client.setBufferSizes(1024, 512); // CRITICAL ESP8266 RAM optimization
+  
   HTTPClient http;
+  http.setTimeout(4000);
 
   String url = String("https://") + FIREBASE_HOST + "/esp8266_relay/commands.json";
   if (strlen(FIREBASE_AUTH) > 0 && strcmp(FIREBASE_AUTH, "YOUR_FIREBASE_DATABASE_SECRET") != 0) {
@@ -167,4 +174,3 @@ void FirebaseClient::pollFirebaseCommands() {
     http.end();
   }
 }
-

@@ -2,17 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#07090e">
-  <title>CYBER-RELAY RTOS // Smart IoT & Firebase Control</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <title>CYBER-RELAY RTOS // Smart IoT &amp; Firebase Control</title>
   <link rel="stylesheet" href="style.css">
-  
-  <!-- Firebase App & Realtime Database SDKs for Worldwide Cloud Access -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 </head>
 <body>
   <!-- Ambient background glow elements -->
@@ -20,8 +13,166 @@
   <div class="ambient-glow glow-2"></div>
   <div class="ambient-glow glow-3"></div>
 
-  <!-- Main Container -->
-  <div class="app-layout">
+  <!-- ========================================================================= -->
+  <!-- 1. FULL-SCREEN LOGIN & SIGN-IN PORTAL (First Screen for Authentication)    -->
+  <!-- ========================================================================= -->
+  <div id="loginSection" class="auth-wrapper">
+    <div class="auth-card glass-card">
+      
+      <!-- Brand & Header -->
+      <div class="auth-brand">
+        <div class="auth-logo-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h1 class="auth-title">CYBER-RELAY <span class="badge-rtos">RTOS v3.0</span></h1>
+        <p class="auth-subtitle">Secure IoT Relay Management &amp; Worldwide Cloud Portal</p>
+      </div>
+
+      <!-- Network Mode Quick Switcher -->
+      <div class="auth-conn-bar">
+        <span class="auth-bar-label">Target Network:</span>
+        <div class="conn-mode-switcher compact">
+          <button id="authBtnLocal" class="mode-btn active" type="button" onclick="App.setConnectionMode('local')">Local AP</button>
+          <button id="authBtnCloud" class="mode-btn" type="button" onclick="App.setConnectionMode('cloud')">Firebase Cloud</button>
+        </div>
+      </div>
+
+      <!-- Tabs: Sign In / Register -->
+      <div class="auth-tabs">
+        <button id="tabBtnSignIn" class="auth-tab-btn active" type="button" onclick="App.switchAuthTab('signin')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+          <span>Sign In</span>
+        </button>
+        <button id="tabBtnRegister" class="auth-tab-btn" type="button" onclick="App.switchAuthTab('register')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+          <span>Register New</span>
+        </button>
+      </div>
+
+      <!-- TAB 1: SIGN IN FORM -->
+      <div id="tabContentSignIn" class="auth-tab-content active">
+        <!-- Quick Preset User Selector Chips -->
+        <div class="preset-users-chips">
+          <span class="chip-label">Quick Select Predefined Accounts:</span>
+          <div class="chip-group">
+            <button type="button" class="preset-chip chip-admin" onclick="App.fillPreset('yash')">
+              <span class="chip-icon">🛡️</span>
+              <span class="chip-name">Yash_Gajjar</span>
+              <span class="chip-tier">Admin</span>
+            </button>
+            <button type="button" class="preset-chip chip-guarded" onclick="App.fillPreset('mahi')">
+              <span class="chip-icon">⚡</span>
+              <span class="chip-name">Mahi_Gajjar</span>
+              <span class="chip-tier">Guarded</span>
+            </button>
+            <button type="button" class="preset-chip chip-guest" onclick="App.fillPreset('guest')">
+              <span class="chip-icon">👁️</span>
+              <span class="chip-name">Guest</span>
+              <span class="chip-tier">Analytics</span>
+            </button>
+          </div>
+        </div>
+
+        <form id="signInForm" onsubmit="event.preventDefault(); App.handleSignInSubmit();">
+          <div class="form-group">
+            <label for="inputUsername">Username or ID</label>
+            <div class="input-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" id="inputUsername" placeholder="e.g. Yash_Gajjar" required autocomplete="username">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="inputPassword">Password</label>
+            <div class="input-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="inputPassword" placeholder="Enter password" required autocomplete="current-password">
+              <button type="button" class="btn-toggle-eye" onclick="App.togglePasswordVisibility('inputPassword')" title="Show/Hide Password">👁️</button>
+            </div>
+          </div>
+
+          <!-- Permanent Session Checkbox (Forever on Phone) -->
+          <div class="form-checkbox-row">
+            <label class="custom-checkbox-label">
+              <input type="checkbox" id="checkRememberSession" checked>
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">
+                <strong>Remember session forever on this device</strong>
+                <span class="checkbox-subtext">Skip login automatically on next app launch</span>
+              </span>
+            </label>
+          </div>
+
+          <button type="submit" id="btnSubmitSignIn" class="glass-button btn-accent w-full auth-submit-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>SIGN IN &amp; CONNECT</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- TAB 2: REGISTER OPERATOR FORM -->
+      <div id="tabContentRegister" class="auth-tab-content">
+        <form id="registerForm" onsubmit="event.preventDefault(); App.handleRegisterSubmit();">
+          <div class="form-group">
+            <label for="regUsername">Desired Username</label>
+            <div class="input-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" id="regUsername" placeholder="e.g. Operator_1" required autocomplete="off">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="regPassword">Create Password</label>
+            <div class="input-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="regPassword" placeholder="Min. 6 characters" required autocomplete="new-password">
+              <button type="button" class="btn-toggle-eye" onclick="App.togglePasswordVisibility('regPassword')">👁️</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="regRole">Privilege Tier</label>
+            <div class="input-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <select id="regRole" class="custom-select">
+                <option value="admin">Level 1: Super Administrator (Full Control &amp; Bypasses)</option>
+                <option value="guarded_operator" selected>Level 2: Guarded Operator (1-Time Session Grants)</option>
+                <option value="guest_analytics">Level 3: Guest Analytics (Read-Only Live Analytics)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-checkbox-row">
+            <label class="custom-checkbox-label">
+              <input type="checkbox" id="checkRegRememberSession" checked>
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">
+                <strong>Remember session forever on this device</strong>
+              </span>
+            </label>
+          </div>
+
+          <button type="submit" id="btnSubmitRegister" class="glass-button btn-primary w-full auth-submit-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
+            <span>ENROLL &amp; ENTER SYSTEM</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- App Info Footer inside Auth Card -->
+      <div class="auth-footer-meta">
+        <span>Protected by Hardware RTOS &amp; AES Session Engine</span>
+        <span class="security-badge">● ENCRYPTED</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. MAIN CYBER-RELAY RTOS DASHBOARD (Shown when Authenticated)             -->
+  <!-- ========================================================================= -->
+  <div id="dashboardSection" class="app-layout hidden">
     
     <!-- Top Navigation Header -->
     <header class="app-header glass-card">
@@ -33,24 +184,30 @@
         </div>
         <div class="brand-info">
           <h1>CYBER-RELAY <span class="badge-rtos">RTOS v3.0</span></h1>
-          <p class="subtitle">ESP8266 IoT & Firebase Worldwide Hub</p>
+          <p class="subtitle">ESP8266 IoT &amp; Firebase Worldwide Hub</p>
         </div>
       </div>
 
       <div class="header-meta">
         <!-- Cloud / Local AP Switcher -->
         <div class="conn-mode-switcher">
-          <button id="btnModeLocal" class="mode-btn active" onclick="App.setConnectionMode('local')">Local AP</button>
-          <button id="btnModeCloud" class="mode-btn" onclick="App.setConnectionMode('cloud')">Firebase Cloud</button>
+          <button id="btnModeLocal" class="mode-btn active" type="button" onclick="App.setConnectionMode('local')">Local AP</button>
+          <button id="btnModeCloud" class="mode-btn" type="button" onclick="App.setConnectionMode('cloud')">Firebase Cloud</button>
         </div>
 
+        <!-- Firebase & Cloud Config Button -->
+        <button id="btnOpenCloudConfig" class="icon-btn-settings glass-button" type="button" title="Configure Firebase &amp; IP Settings" onclick="App.openCloudConfigModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+
+        <!-- Connection Status Pill -->
         <div id="connStatusPill" class="status-pill online">
           <span class="pulsing-dot"></span>
           <span id="connStatusText">ESP8266 CONNECTED</span>
         </div>
         
-        <!-- User Profile Pill -->
-        <div id="userProfilePill" class="user-pill glass-button" onclick="App.openAuthModal()">
+        <!-- User Profile Pill & Logout -->
+        <div id="userProfilePill" class="user-pill glass-button">
           <div class="avatar-ring" id="userAvatarRing">
             <span id="userInitial">Y</span>
           </div>
@@ -58,14 +215,27 @@
             <span id="currentUserName">Yash_Gajjar</span>
             <span id="currentUserRole" class="role-tag">SUPER ADMIN</span>
           </div>
-          <button id="logoutBtn" class="icon-btn-sm" title="Log Out" onclick="event.stopPropagation(); App.logout()">
+          <button id="logoutBtn" class="logout-btn-styled" title="Log Out / Switch Account" type="button" onclick="App.logout()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+            <span class="logout-text">Logout</span>
           </button>
         </div>
       </div>
     </header>
 
-    <!-- Role Notice Banner -->
+    <!-- Non-Intrusive Connection Assistance Banner (Appears if local AP or Cloud is reconnecting) -->
+    <div id="connNoticeBanner" class="conn-help-banner hidden">
+      <div class="conn-banner-left">
+        <span class="pulsing-warn-dot"></span>
+        <span id="connNoticeText">Connecting to ESP8266 Local AP (192.168.4.1)...</span>
+      </div>
+      <div class="conn-banner-actions">
+        <button type="button" class="btn-banner-action" onclick="App.setConnectionMode('cloud')">Switch to Firebase Cloud</button>
+        <button type="button" class="btn-banner-dismiss" onclick="App.dismissConnNotice()">✕</button>
+      </div>
+    </div>
+
+    <!-- Role Notice Banners -->
     <div id="guestNoticeBanner" class="role-banner guest-banner hidden">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
       <span><strong>Guest Mode Active:</strong> You have read-only access to view live countdowns and Monthly Switch Analytics. Hardware controls and calibrations are disabled.</span>
@@ -134,7 +304,7 @@
         <!-- Quick Hardware Status Tiles -->
         <div class="hardware-tiles-row">
           <div class="hw-tile">
-            <span class="hw-label">RELAY PIN 1</span>
+            <span class="hw-label">RELAY PIN</span>
             <div class="hw-val-group">
               <span id="relayStatusDot" class="status-dot dot-off"></span>
               <strong id="relayStatusText">OFF</strong>
@@ -148,7 +318,7 @@
               <span id="touchStatusDot" class="status-dot dot-active"></span>
               <strong id="touchStatusText">READY</strong>
             </div>
-            <span class="hw-sub" id="touchPinInfo">TTP223 Capacitive Active</span>
+            <span class="hw-sub" id="touchPinInfo">TTP223 Active</span>
           </div>
 
           <div class="hw-tile">
@@ -157,23 +327,23 @@
               <span id="lockoutStatusDot" class="status-dot dot-disabled"></span>
               <strong id="lockoutStatusText">UNLOCKED</strong>
             </div>
-            <span class="hw-sub" id="lockoutDesc">Touch triggers allowed</span>
+            <span class="hw-sub" id="lockoutDesc">Triggers allowed</span>
           </div>
         </div>
 
         <!-- Action Controls (Contextual based on 3-tier user role) -->
         <div class="action-buttons-group" id="controlsGroup">
-          <button id="btnManualTrigger" class="glass-button btn-accent" onclick="App.handleTriggerClick()">
+          <button id="btnManualTrigger" class="glass-button btn-accent" type="button" onclick="App.handleTriggerClick()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             <span id="triggerBtnText">Trigger Relay Cycle Now</span>
           </button>
-          <button id="btnCancelCycle" class="glass-button btn-danger" onclick="App.cancelCycle()" disabled>
+          <button id="btnCancelCycle" class="glass-button btn-danger" type="button" onclick="App.cancelCycle()" disabled>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
             <span>Emergency Cutoff</span>
           </button>
-          <button id="btnResetLockout" class="glass-button btn-warning" onclick="App.resetLockout()" disabled title="Admin Only">
+          <button id="btnResetLockout" class="glass-button btn-warning" type="button" onclick="App.resetLockout()" disabled title="Admin Only">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-            <span>Bypass Lockout (Yash_Gajjar Only)</span>
+            <span>Bypass Lockout (Admin Only)</span>
           </button>
         </div>
       </section>
@@ -186,7 +356,7 @@
           <div class="card-header">
             <div class="card-title-group">
               <span class="eyebrow">MONTHLY USAGE ANALYTICS</span>
-              <h2>Switch Runtime & Analysis</h2>
+              <h2>Switch Runtime &amp; Analysis</h2>
             </div>
             <span class="info-badge" id="analyticsMonthBadge">November 2026</span>
           </div>
@@ -297,9 +467,9 @@
               </div>
             </div>
 
-            <button id="btnSaveConfig" class="glass-button btn-primary w-full" onclick="App.saveTimers()">
+            <button id="btnSaveConfig" class="glass-button btn-primary w-full" type="button" onclick="App.saveTimers()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-              <span>Save & Flash to ESP8266 Memory</span>
+              <span>Save &amp; Flash to ESP8266 Memory</span>
             </button>
           </div>
         </section>
@@ -316,7 +486,7 @@
             </div>
           </div>
 
-          <p class="card-subtext">Predefined credentials with 3 discrete privilege levels & 1-time grant flow.</p>
+          <p class="card-subtext">Predefined credentials with 3 discrete privilege levels &amp; 1-time grant flow.</p>
 
           <div class="user-table-wrap">
             <table class="user-table">
@@ -341,7 +511,7 @@
     <footer class="system-footer glass-card">
       <div class="footer-item">
         <span class="ft-label">RTOS KERNEL:</span>
-        <span class="ft-val">FreeRTOS Priority Tasks</span>
+        <span class="ft-val">FreeRTOS Tasks</span>
       </div>
       <div class="footer-item">
         <span class="ft-label">CLOUD SYNC:</span>
@@ -349,7 +519,7 @@
       </div>
       <div class="footer-item">
         <span class="ft-label">TOUCH LOCK:</span>
-        <span class="ft-val">Hardware Debounce</span>
+        <span class="ft-val">Hardware Filter</span>
       </div>
       <div class="footer-item">
         <span class="ft-label">UPTIME:</span>
@@ -371,7 +541,7 @@
           <h3>User Authorization Request</h3>
           <p class="modal-subtitle">Level 2 user <strong>Mahi_Gajjar</strong> is requesting permission.</p>
         </div>
-        <button class="close-btn" onclick="App.dismissAdminApprovalModal()">✕</button>
+        <button class="close-btn" type="button" onclick="App.dismissAdminApprovalModal()">✕</button>
       </div>
 
       <div class="modal-body">
@@ -393,7 +563,7 @@
         <form onsubmit="event.preventDefault(); App.submitAdminApproval();">
           <div class="form-group" style="margin-top: 14px;">
             <label class="text-gold">Enter Yash_Gajjar Admin Password to Grant Access:</label>
-            <input type="password" id="popupAdminPassword" placeholder="Enter Iamyashacker@17 to approve" required autofocus>
+            <input type="password" id="popupAdminPassword" placeholder="Enter password to approve" required autofocus>
           </div>
 
           <div class="modal-actions">
@@ -423,47 +593,61 @@
       <p class="modal-subtitle" style="margin: 8px auto 16px; max-width: 320px;">
         A real-time authorization popup has been sent to <strong>Yash_Gajjar</strong>. Your 1-time session will execute immediately once approved.
       </p>
-      <button class="glass-button btn-secondary" onclick="App.cancelWaitingRequest()">Cancel Request</button>
+      <button class="glass-button btn-secondary" type="button" onclick="App.cancelWaitingRequest()">Cancel Request</button>
     </div>
   </div>
 
   <!-- ========================================================================= -->
-  <!-- MODAL 3: Sign In / Switch Account Modal                                   -->
+  <!-- MODAL 3: Firebase Cloud &amp; Local Network Settings Modal                    -->
   <!-- ========================================================================= -->
-  <div id="authModal" class="modal-backdrop hidden">
+  <div id="cloudConfigModal" class="modal-backdrop hidden">
     <div class="modal-card glass-card">
       <div class="modal-header">
-        <h3>Sign In to Cyber-Relay</h3>
-        <button class="close-btn" onclick="App.closeAuthModal()">✕</button>
+        <div class="auth-icon-badge" style="background: rgba(6,182,212,0.15); color: var(--accent-cyan);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <div>
+          <h3>Network &amp; Firebase Cloud Config</h3>
+          <p class="modal-subtitle">Configure worldwide Firebase sync and Local ESP address.</p>
+        </div>
+        <button class="close-btn" type="button" onclick="App.closeCloudConfigModal()">✕</button>
       </div>
+
       <div class="modal-body">
-        <form onsubmit="event.preventDefault(); App.submitLogin();">
+        <form onsubmit="event.preventDefault(); App.saveCloudSettings();">
           <div class="form-group">
-            <label>Username</label>
-            <input type="text" id="loginUsername" placeholder="Yash_Gajjar / Mahi_Gajjar / Guest" required autocomplete="username">
-          </div>
-          <div class="form-group">
-            <label>Password</label>
-            <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+            <label for="cfgFirebaseHost">Firebase Realtime Database Host URL</label>
+            <input type="text" id="cfgFirebaseHost" placeholder="e.g. cyber-relay-rtos-default-rtdb.firebaseio.com" required>
+            <span class="field-hint">Your Firebase project database domain without https://</span>
           </div>
 
-          <div class="preset-users-chips">
-            <span class="chip-label">Quick select:</span>
-            <button type="button" class="preset-chip" onclick="App.fillPreset('yash')">Yash (Admin)</button>
-            <button type="button" class="preset-chip" onclick="App.fillPreset('mahi')">Mahi (Guarded)</button>
-            <button type="button" class="preset-chip" onclick="App.fillPreset('guest')">Guest</button>
+          <div class="form-group">
+            <label for="cfgFirebaseAuth">Firebase Database Secret / Auth Key (Optional)</label>
+            <input type="password" id="cfgFirebaseAuth" placeholder="Enter Database Secret or leave blank for open rules">
+            <span class="field-hint">Required only if Firebase Database rules require authentication.</span>
           </div>
 
-          <div class="modal-actions">
-            <button type="button" class="glass-button btn-secondary" onclick="App.closeAuthModal()">Cancel</button>
-            <button type="submit" class="glass-button btn-primary">Sign In</button>
+          <div class="form-group">
+            <label for="cfgEspHost">Local ESP8266 Host URL</label>
+            <input type="text" id="cfgEspHost" placeholder="http://192.168.4.1" required>
+            <span class="field-hint">Default SoftAP IP is http://192.168.4.1</span>
+          </div>
+
+          <div class="test-conn-row">
+            <button type="button" class="glass-button btn-secondary" onclick="App.testCloudConnection()">Test Firebase Ping</button>
+            <button type="button" class="glass-button btn-secondary" onclick="App.testLocalConnection()">Test ESP Ping</button>
+          </div>
+
+          <div class="modal-actions" style="margin-top: 18px;">
+            <button type="button" class="glass-button btn-secondary" onclick="App.closeCloudConfigModal()">Cancel</button>
+            <button type="submit" class="glass-button btn-primary">Save Settings</button>
           </div>
         </form>
       </div>
     </div>
   </div>
 
-  <!-- Toast Container -->
+  <!-- Toast Notification Container -->
   <div id="toastContainer" class="toast-container"></div>
 
   <script src="app.js"></script>

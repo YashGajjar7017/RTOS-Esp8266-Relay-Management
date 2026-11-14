@@ -16,6 +16,7 @@
         android:allowBackup="true"
         android:icon="@android:drawable/ic_dialog_alert"
         android:label="CyberRelay RTOS"
+        android:hardwareAccelerated="true"
         android:usesCleartextTraffic="true"
         android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
 
