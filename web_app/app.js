@@ -31,6 +31,25 @@ const App = (() => {
     wifiRssi: -52,
     cloudLogs: [],
 
+    // Firebase Cloud Credentials & Key details from /Firebase_Auth_Keys
+    firebase: {
+      projectId: 'cyber-relay-rtos-default-rtdb',
+      clientEmail: 'firebase-adminsdk-fbsvc@cyber-relay-rtos-default-rtdb.iam.gserviceaccount.com',
+      privateKeyId: 'b7a22fa5bc01d1962d398c5b0cc9a8b2b08aa603',
+      keyLoaded: true
+    },
+
+    // Interactive Live Console State
+    console: {
+      logs: [],
+      maxLogs: 200,
+      filter: 'all', // 'all', 'cmd', 'tel', 'hw', 'err'
+      autoScroll: true,
+      streaming: true,
+      history: [],
+      historyIndex: -1
+    },
+
     // Network Endpoints
     espHost: 'http://192.168.4.1',
     firebaseHost: 'cyber-relay-rtos-default-rtdb.firebaseio.com',
@@ -336,6 +355,7 @@ const App = (() => {
       'analytics': { title: '📊 Monthly Analytics', subtitle: 'Comprehensive Usage & Duty Ratio' },
       'users': { title: '👥 User Accounts & Access', subtitle: 'Predefined Credentials & Admin Controls' },
       'cloud': { title: '☁️ Firebase Cloud & Logs', subtitle: 'Live Database Stream & Controller Traces' },
+      'console': { title: '⚡ Interactive Live Console', subtitle: 'Bidirectional RTOS Terminal & Hardware Trace Stream' },
       'acknowledge': { title: '🔔 Connection ACK & Wireless Logs', subtitle: '3-Stage Pipeline Handshake, 3-Beep Chime & System Events' },
       'settings': { title: '⚙️ Device & Diagnostics', subtitle: 'Hardware Diagnostics & RF Telemetry' }
     };
@@ -639,12 +659,231 @@ const App = (() => {
     }
   }
 
-  function logCloudEvent(tag, message, details) {
+  function logConsole(tag, message, details) {
+    if (!state.console.streaming) return;
     const now = new Date();
     const timeStr = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
-    state.cloudLogs.push({ time: timeStr, tag: tag, message: message, details: details || '' });
+    const entry = { time: timeStr, tag: tag.toUpperCase(), message: String(message), details: details || '' };
+    state.console.logs.push(entry);
+    if (state.console.logs.length > state.console.maxLogs) state.console.logs.shift();
+
+    // Mirror to cloudLogs for backward compatibility
+    state.cloudLogs.push(entry);
     if (state.cloudLogs.length > 80) state.cloudLogs.shift();
+
+    renderLiveConsole();
     renderCloudLogs();
+  }
+
+  function logCloudEvent(tag, message, details) {
+    logConsole(tag, message, details);
+  }
+
+  function renderLiveConsole() {
+    const liveTerm = document.getElementById('liveConsoleTerminal');
+    if (!liveTerm) return;
+
+    if (state.console.logs.length === 0) {
+      liveTerm.innerHTML = '<div style="color:var(--text-muted); padding:10px;">⚡ Live RTOS & Cloud terminal active. System traces will appear here in real time...</div>';
+      return;
+    }
+
+    const filter = state.console.filter;
+    const filtered = state.console.logs.filter(l => {
+      if (filter === 'all') return true;
+      if (filter === 'cmd') return l.tag === 'CMD' || l.tag === 'IN' || l.tag === 'OUT';
+      if (filter === 'tel') return l.tag === 'TEL' || l.tag === 'SYNC';
+      if (filter === 'hw') return l.tag === 'HW' || l.tag === 'ACK' || l.tag === 'BOOT' || l.tag === 'WIFI';
+      if (filter === 'err') return l.tag === 'ERR';
+      return true;
+    });
+
+    liveTerm.innerHTML = filtered.map(l => {
+      let tagClass = 'tag-poll';
+      const t = l.tag;
+      if (t === 'CMD') tagClass = 'tag-cmd';
+      else if (t === 'TEL' || t === 'SYNC') tagClass = 'tag-tel';
+      else if (t === 'HW' || t === 'BOOT' || t === 'WIFI') tagClass = 'tag-hw';
+      else if (t === 'ACK') tagClass = 'tag-ack';
+      else if (t === 'IN') tagClass = 'tag-in';
+      else if (t === 'OUT') tagClass = 'tag-out';
+      else if (t === 'ERR') tagClass = 'tag-err';
+
+      return `
+        <div class="terminal-line">
+          <span class="term-time">[${l.time}]</span>
+          <span class="term-tag ${tagClass}">${l.tag}</span>
+          <span class="term-msg">${escapeHtml(l.message)}</span>
+        </div>
+      `;
+    }).join('');
+
+    if (state.console.autoScroll) {
+      liveTerm.scrollTop = liveTerm.scrollHeight;
+    }
+  }
+
+  function setConsoleFilter(filter) {
+    state.console.filter = filter;
+    document.querySelectorAll('.console-filter-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-filter') === filter);
+    });
+    renderLiveConsole();
+  }
+
+  function toggleConsoleStreaming() {
+    state.console.streaming = !state.console.streaming;
+    const btn = document.getElementById('btnToggleStreaming');
+    const ind = document.getElementById('consoleLiveIndicator');
+    if (btn) btn.textContent = state.console.streaming ? 'Pause Stream' : 'Resume Stream';
+    if (ind) {
+      ind.innerHTML = state.console.streaming
+        ? '<span class="pulse-dot"></span> LIVE STREAMING'
+        : '<span style="color:var(--text-muted);">⏸ PAUSED</span>';
+    }
+    toast(state.console.streaming ? 'Live stream resumed' : 'Live stream paused', 'info');
+  }
+
+  function clearConsoleLogs() {
+    state.console.logs = [];
+    state.cloudLogs = [];
+    renderLiveConsole();
+    renderCloudLogs();
+    toast('Live console cleared', 'info');
+  }
+
+  function copyConsoleLogs() {
+    const text = state.console.logs.map(l => `[${l.time}] [${l.tag}] ${l.message}`).join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+      toast('Copied all console logs to clipboard', 'success');
+    }).catch(() => {
+      toast('Failed to copy to clipboard', 'error');
+    });
+  }
+
+  function sendQuickCommand(cmd) {
+    const input = document.getElementById('consoleCmdInput');
+    if (input) input.value = cmd;
+    executeConsoleCommand(cmd);
+  }
+
+  function handleConsoleInputSubmit() {
+    const input = document.getElementById('consoleCmdInput');
+    if (!input) return;
+    const val = input.value.trim();
+    if (!val) return;
+    input.value = '';
+    executeConsoleCommand(val);
+  }
+
+  async function executeConsoleCommand(cmdStr) {
+    if (!cmdStr || !cmdStr.trim()) return;
+    const raw = cmdStr.trim();
+    state.console.history.push(raw);
+    state.console.historyIndex = state.console.history.length;
+    logConsole('IN', '> ' + raw);
+
+    const parts = raw.split(/\s+/);
+    const cmd = parts[0].toLowerCase();
+    const arg1 = parts[1];
+
+    switch(cmd) {
+      case 'help':
+        logConsole('OUT', '--- AVAILABLE RTOS COMMANDS ---');
+        logConsole('OUT', '  status          : Display real-time RTOS telemetry snapshot');
+        logConsole('OUT', '  relays          : List all configured multi-relay channels');
+        logConsole('OUT', '  trigger [id]    : Trigger relay cycle (default: active channel)');
+        logConsole('OUT', '  cancel [id]     : Emergency cutoff / turn relay OFF');
+        logConsole('OUT', '  toggle [id]     : Toggle relay power ON/OFF');
+        logConsole('OUT', '  extend <mins>   : Extend active countdown timer (Admin)');
+        logConsole('OUT', '  reset_lockout   : Bypass lockout cooldown (Admin)');
+        logConsole('OUT', '  ack             : Verify pipeline & sound 3-beep chime on D8');
+        logConsole('OUT', '  buzzer          : Test hardware buzzer on NodeMCU D8');
+        logConsole('OUT', '  heap            : View free RAM on ESP8266');
+        logConsole('OUT', '  sync            : Force instant telemetry poll');
+        logConsole('OUT', '  mode <local|cloud>: Switch connection mode');
+        logConsole('OUT', '  clear           : Clear console buffer');
+        break;
+
+      case 'status':
+        const r = getSelectedRelay();
+        logConsole('OUT', `MODE=${r.mode} | ACTIVE=${r.relayActive} | REMAINING=${r.mode==='RELAY_ON'?r.onRemainingSec:r.lockoutRemainingSec}s | HEAP=${state.system.freeHeap||'--'}B | RSSI=${state.wifiRssi}dBm | CONN=${state.connectionMode.toUpperCase()}`);
+        break;
+
+      case 'relays':
+        state.relays.forEach(ch => {
+          logConsole('OUT', `Relay ${ch.id} [${ch.name}]: GPIO${ch.pin} | ON=${ch.onHours}h | OFF=${ch.lockoutDays}d | Mode=${ch.mode} | State=${ch.relayActive?'ON':'OFF'}`);
+        });
+        break;
+
+      case 'trigger':
+        const trgId = parseInt(arg1 || state.selectedRelayId || 1, 10);
+        logConsole('OUT', `Triggering Relay ${trgId}...`);
+        await executeControlCommand('trigger', { relayId: trgId });
+        break;
+
+      case 'cancel':
+        const cnlId = parseInt(arg1 || state.selectedRelayId || 1, 10);
+        logConsole('OUT', `Cancelling Relay ${cnlId}...`);
+        await executeControlCommand('cancel', { relayId: cnlId });
+        break;
+
+      case 'toggle':
+        const tglId = parseInt(arg1 || state.selectedRelayId || 1, 10);
+        const targetRelay = state.relays.find(x => x.id === tglId) || getSelectedRelay();
+        const action = (targetRelay.relayActive || targetRelay.mode === 'RELAY_ON') ? 'cancel' : 'trigger';
+        logConsole('OUT', `Toggling Relay ${tglId} (${action})...`);
+        await executeControlCommand(action, { relayId: tglId });
+        break;
+
+      case 'extend':
+        const mins = parseInt(arg1 || 15, 10);
+        logConsole('OUT', `Extending timer by +${mins}m...`);
+        await extendActiveTimer(mins);
+        break;
+
+      case 'reset_lockout':
+        const rstId = parseInt(arg1 || state.selectedRelayId || 1, 10);
+        logConsole('OUT', `Bypassing lockout for Relay ${rstId}...`);
+        await executeControlCommand('reset_lockout', { relayId: rstId });
+        break;
+
+      case 'ack':
+      case 'check_ack':
+        logConsole('OUT', 'Initiating 3-stage pipeline verification & 3-beep chime...');
+        await triggerAckHandshake();
+        break;
+
+      case 'buzzer':
+        logConsole('OUT', 'Sounding buzzer test on D8...');
+        await testBuzzerSound();
+        break;
+
+      case 'heap':
+        logConsole('OUT', `ESP8266 Free Heap Memory: ${state.system.freeHeap || 28416} bytes`);
+        break;
+
+      case 'sync':
+        logConsole('OUT', 'Syncing telemetry now...');
+        await fetchStatus();
+        break;
+
+      case 'mode':
+        if (arg1 === 'cloud' || arg1 === 'local') {
+          setConnectionMode(arg1);
+          logConsole('OUT', `Connection mode switched to: ${arg1.toUpperCase()}`);
+        } else {
+          logConsole('ERR', 'Usage: mode local | mode cloud');
+        }
+        break;
+
+      case 'clear':
+        clearConsoleLogs();
+        break;
+
+      default:
+        logConsole('ERR', `Unknown command: '${cmd}'. Type 'help' for available commands.`);
+    }
   }
 
   function renderCloudLogs() {
@@ -659,8 +898,9 @@ const App = (() => {
     terminal.innerHTML = state.cloudLogs.map(l => {
       let tagClass = 'tag-poll';
       if (l.tag === 'CMD') tagClass = 'tag-cmd';
-      if (l.tag === 'SYNC') tagClass = 'tag-sync';
-      if (l.tag === 'ERR') tagClass = 'tag-err';
+      else if (l.tag === 'SYNC' || l.tag === 'TEL') tagClass = 'tag-sync';
+      else if (l.tag === 'ERR') tagClass = 'tag-err';
+      else if (l.tag === 'HW' || l.tag === 'ACK') tagClass = 'tag-ack';
       return `
         <div class="terminal-line">
           <span class="term-time">[${l.time}]</span>
@@ -674,9 +914,7 @@ const App = (() => {
   }
 
   function clearCloudLogs() {
-    state.cloudLogs = [];
-    renderCloudLogs();
-    toast('Cloud log console cleared', 'info');
+    clearConsoleLogs();
   }
 
   // 1. Fetch from Local ESP8266 (192.168.4.1)
@@ -840,7 +1078,14 @@ const App = (() => {
 
     if (data.systemLogs && Array.isArray(data.systemLogs)) {
       state.systemLogs = data.systemLogs;
+      data.systemLogs.slice(-2).forEach(sl => {
+        if (!state.console.logs.some(cl => cl.message.includes(sl.msg))) {
+          logConsole('HW', `[ESP8266] ${sl.tag}: ${sl.msg}`);
+        }
+      });
     }
+
+    logConsole('TEL', `State: ${state.system.mode} | Rem: ${state.system.mode === 'RELAY_ON' ? state.system.onRemainingSec : state.system.lockoutRemainingSec}s | Heap: ${state.system.freeHeap || '--'}B | RSSI: ${state.wifiRssi}dBm`);
 
     // Check for Level 2 Pending Request for Admin Yash_Gajjar to approve
     if (data.pendingRequest && data.pendingRequest.active) {
@@ -1772,6 +2017,20 @@ const App = (() => {
     renderSettingsRelayCards();
     updateRelayChannelHeader();
     renderAcknowledgeView();
+    renderLiveConsole();
+    updateConsoleBadges();
+  }
+
+  function updateConsoleBadges() {
+    const connBadge = document.getElementById('consoleConnBadge');
+    const projLabel = document.getElementById('lblConsoleProject');
+    if (connBadge) {
+      connBadge.textContent = state.connected ? `${state.connectionMode.toUpperCase()} ACTIVE` : 'OFFLINE';
+      connBadge.className = 'info-badge ' + (state.connected ? 'badge-active' : 'badge-idle');
+    }
+    if (projLabel && state.firebase) {
+      projLabel.textContent = state.firebase.projectId;
+    }
   }
 
   function updateSidebarBadges() {
@@ -2124,7 +2383,15 @@ const App = (() => {
     closeNotificationsModal,
     clearAllNotifications,
     testBuzzerSound,
-    triggerAckHandshake
+    triggerAckHandshake,
+    // Live Console
+    setConsoleFilter,
+    toggleConsoleStreaming,
+    clearConsoleLogs,
+    copyConsoleLogs,
+    sendQuickCommand,
+    handleConsoleInputSubmit,
+    executeConsoleCommand
   };
 })();
 

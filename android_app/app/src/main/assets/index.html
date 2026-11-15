@@ -302,6 +302,17 @@
           <span class="nav-badge" id="navCloudBadge">Online</span>
         </button>
 
+        <button type="button" class="nav-item" id="navConsole" onclick="App.switchView('console')">
+          <div class="nav-item-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="4 17 10 11 4 5" />
+              <line x1="12" y1="19" x2="20" y2="19" />
+            </svg>
+            <span>Live Console</span>
+          </div>
+          <span class="nav-badge" id="navConsoleBadge" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">LIVE</span>
+        </button>
+
         <button type="button" class="nav-item" id="navAcknowledge" onclick="App.switchView('acknowledge')">
           <div class="nav-item-left">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1030,6 +1041,78 @@
           </div>
         </section>
 
+        <!-- =================================================================== -->
+        <!-- VIEW 8: INTERACTIVE LIVE CONSOLE                                   -->
+        <!-- =================================================================== -->
+        <section id="viewConsole" class="view-page">
+          <div class="grid-card glass-card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="eyebrow">BIDIRECTIONAL REAL-TIME STREAM</span>
+                <h2>⚡ Interactive RTOS &amp; Cloud Live Console</h2>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="live-stream-indicator" id="consoleLiveIndicator">
+                  <span class="pulse-dot"></span> LIVE STREAMING
+                </span>
+                <span class="info-badge" id="consoleConnBadge">ESP8266 LINKED</span>
+              </div>
+            </div>
+
+            <!-- Firebase Key & Connection Info Banner -->
+            <div class="console-key-banner">
+              <div class="key-banner-icon">🔑</div>
+              <div class="key-banner-content">
+                <div class="key-banner-title">Firebase Service Account Connected: <strong id="lblConsoleProject">cyber-relay-rtos-default-rtdb</strong></div>
+                <div class="key-banner-sub">Key ID: <code>b7a22fa5...</code> | Client: <code>firebase-adminsdk-fbsvc@cyber-relay-rtos-default-rtdb.iam.gserviceaccount.com</code></div>
+              </div>
+              <button type="button" class="glass-button btn-secondary" style="font-size:0.75rem; padding:5px 10px;" onclick="App.openCloudConfigModal()">Cloud Config</button>
+            </div>
+
+            <!-- Filter and Control Bar -->
+            <div class="console-toolbar">
+              <div class="console-filters">
+                <button type="button" class="console-filter-btn active" data-filter="all" onclick="App.setConsoleFilter('all')">ALL</button>
+                <button type="button" class="console-filter-btn" data-filter="cmd" onclick="App.setConsoleFilter('cmd')">COMMANDS</button>
+                <button type="button" class="console-filter-btn" data-filter="tel" onclick="App.setConsoleFilter('tel')">TELEMETRY</button>
+                <button type="button" class="console-filter-btn" data-filter="hw" onclick="App.setConsoleFilter('hw')">HARDWARE</button>
+                <button type="button" class="console-filter-btn" data-filter="err" onclick="App.setConsoleFilter('err')">ERRORS</button>
+              </div>
+
+              <div class="console-controls">
+                <button type="button" class="glass-button btn-secondary" style="font-size:0.75rem; padding: 5px 10px;" id="btnToggleStreaming" onclick="App.toggleConsoleStreaming()">Pause Stream</button>
+                <button type="button" class="glass-button btn-secondary" style="font-size:0.75rem; padding: 5px 10px;" onclick="App.clearConsoleLogs()">Clear</button>
+                <button type="button" class="glass-button btn-secondary" style="font-size:0.75rem; padding: 5px 10px;" onclick="App.copyConsoleLogs()">Copy All</button>
+              </div>
+            </div>
+
+            <!-- Quick Command Pills -->
+            <div class="console-quick-bar">
+              <span class="quick-label">QUICK COMMANDS:</span>
+              <button type="button" class="quick-pill" onclick="App.sendQuickCommand('help')">help</button>
+              <button type="button" class="quick-pill" onclick="App.sendQuickCommand('status')">status</button>
+              <button type="button" class="quick-pill" onclick="App.sendQuickCommand('relays')">relays</button>
+              <button type="button" class="quick-pill" onclick="App.sendQuickCommand('toggle 1')">toggle 1</button>
+              <button type="button" class="quick-pill" onclick="App.sendQuickCommand('ack')">ack (3-beep)</button>
+              <button type="button" class="quick-pill" onclick="App.sendQuickCommand('buzzer')">buzzer</button>
+              <button type="button" class="quick-pill" onclick="App.sendQuickCommand('heap')">heap</button>
+              <button type="button" class="quick-pill" onclick="App.sendQuickCommand('sync')">sync</button>
+            </div>
+
+            <!-- Terminal Output Window -->
+            <div class="live-terminal-window" id="liveConsoleTerminal">
+              <!-- Dynamically populated -->
+            </div>
+
+            <!-- Interactive Command Prompt -->
+            <form class="terminal-prompt-form" onsubmit="event.preventDefault(); App.handleConsoleInputSubmit();">
+              <span class="prompt-sym">CYBER-RELAY&gt;</span>
+              <input type="text" id="consoleCmdInput" class="prompt-input" placeholder="Type command here (e.g. status, trigger 1, toggle 1, ack, buzzer, heap, help)..." autocomplete="off" spellcheck="false">
+              <button type="submit" class="glass-button btn-accent" style="padding: 8px 18px;">SEND</button>
+            </form>
+          </div>
+        </section>
+
       </main>
 
       <!-- System Footer -->
@@ -1153,6 +1236,14 @@
       </div>
 
       <div class="modal-body">
+        <div class="console-key-banner" style="margin-bottom: 14px; margin-top: 0;">
+          <div class="key-banner-icon">🔑</div>
+          <div class="key-banner-content">
+            <div class="key-banner-title">Service Account: <strong style="color:var(--color-cyan);">cyber-relay-rtos-default-rtdb</strong></div>
+            <div class="key-banner-sub">Key loaded from <code>/Firebase_Auth_Keys</code> folder.</div>
+          </div>
+          <span class="state-badge badge-active" style="font-size:0.65rem;">KEY VALIDATED</span>
+        </div>
         <form onsubmit="event.preventDefault(); App.saveCloudSettings();">
           <div class="form-group">
             <label for="cfgFirebaseHost">Firebase Realtime Database Host URL</label>

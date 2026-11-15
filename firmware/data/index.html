@@ -3094,16 +3094,370 @@ textarea,
   text-align: center;
 }
 
-.syslog-tag.tag-boot { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
-.syslog-tag.tag-wifi { background: rgba(16, 185, 129, 0.2); color: #34d399; }
-.syslog-tag.tag-ack { background: rgba(245, 158, 11, 0.25); color: #fbbf24; }
-.syslog-tag.tag-cloud { background: rgba(6, 182, 212, 0.2); color: #38bdf8; }
+.syslog-tag.tag-boot {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+.syslog-tag.tag-wifi {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+.syslog-tag.tag-ack {
+  background: rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+}
+
+.syslog-tag.tag-cloud {
+  background: rgba(6, 182, 212, 0.2);
+  color: #38bdf8;
+}
 
 .syslog-msg {
   color: var(--text-primary);
   word-break: break-all;
   flex: 1;
 }
+
+
+/* -----------------------------------------------------------------------------
+ * CONNECTION ACKNOWLEDGE & WIRELESS LOGS
+ * -------------------------------------------------------------------------- */
+.ack-pipeline-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.ack-step-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.ack-step-card.is-active {
+  border-color: rgba(6, 182, 212, 0.4);
+  background: rgba(6, 182, 212, 0.05);
+}
+
+.ack-step-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ack-step-num {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--color-cyan);
+  font-weight: 700;
+}
+
+.ack-step-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+}
+
+.ack-step-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.ack-step-detail {
+  font-size: 0.72rem;
+  color: var(--color-emerald);
+  font-weight: 600;
+}
+
+.ack-action-banner {
+  background: rgba(6, 182, 212, 0.06);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.ack-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ack-banner-icon {
+  font-size: 1.6rem;
+}
+
+.ack-banner-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+}
+
+.ack-banner-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.system-logs-container {
+  background: #060911;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  max-height: 320px;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.syslog-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.syslog-uptime {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  min-width: 55px;
+}
+
+.syslog-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  min-width: 65px;
+  text-align: center;
+}
+
+.syslog-tag.tag-boot {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+.syslog-tag.tag-wifi {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+.syslog-tag.tag-ack {
+  background: rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+}
+
+.syslog-tag.tag-cloud {
+  background: rgba(6, 182, 212, 0.2);
+  color: #38bdf8;
+}
+
+.syslog-msg {
+  color: var(--text-primary);
+  word-break: break-all;
+  flex: 1;
+}
+
+
+/* -----------------------------------------------------------------------------
+ * INTERACTIVE LIVE CONSOLE
+ * -------------------------------------------------------------------------- */
+.live-stream-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+}
+
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  background-color: #34d399;
+  border-radius: 50%;
+  animation: pulseDotAnim 1.6s infinite ease-in-out;
+}
+
+@keyframes pulseDotAnim {
+  0% { transform: scale(0.9); opacity: 0.5; box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7); }
+  50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 0 5px rgba(52, 211, 153, 0); }
+  100% { transform: scale(0.9); opacity: 0.5; box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+}
+
+.console-key-banner {
+  background: rgba(6, 182, 212, 0.06);
+  border: 1px solid rgba(6, 182, 212, 0.22);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.key-banner-icon { font-size: 1.4rem; }
+.key-banner-content { flex: 1; font-size: 0.8rem; }
+.key-banner-title { color: var(--text-primary); }
+.key-banner-sub { color: var(--text-muted); font-size: 0.72rem; font-family: var(--font-mono); margin-top: 2px; }
+.key-banner-sub code { color: var(--color-cyan); }
+
+.console-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.console-filters {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.console-filter-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-glass);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.console-filter-btn.active, .console-filter-btn:hover {
+  background: rgba(6, 182, 212, 0.2);
+  color: var(--color-cyan);
+  border-color: rgba(6, 182, 212, 0.45);
+}
+
+.console-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.console-quick-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.quick-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.quick-pill {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.quick-pill:hover {
+  background: rgba(6, 182, 212, 0.15);
+  color: var(--color-cyan);
+  border-color: rgba(6, 182, 212, 0.35);
+}
+
+.live-terminal-window {
+  background: #04060d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  height: 420px;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  line-height: 1.6;
+  color: #e2e8f0;
+  margin-top: 10px;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.85);
+}
+
+.terminal-prompt-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  background: #080c18;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+}
+
+.prompt-sym {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: var(--color-cyan);
+  white-space: nowrap;
+}
+
+.prompt-input {
+  flex: 1;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  padding: 4px 6px;
+}
+
+.prompt-input::placeholder {
+  color: var(--text-muted);
+}
+
+.term-tag.tag-tel { background: rgba(59, 130, 246, 0.25); color: #60a5fa; }
+.term-tag.tag-hw { background: rgba(168, 85, 247, 0.25); color: #c084fc; }
+.term-tag.tag-in { background: rgba(245, 158, 11, 0.25); color: #fbbf24; }
+.term-tag.tag-out { background: rgba(16, 185, 129, 0.25); color: #34d399; }
+.term-tag.tag-ack { background: rgba(234, 179, 8, 0.3); color: #fde047; }
 
 </style>
 </head>
@@ -3399,6 +3753,17 @@ textarea,
             <span>Firebase Cloud &amp; Logs</span>
           </div>
           <span class="nav-badge" id="navCloudBadge">Online</span>
+        </button>
+
+        <button type="button" class="nav-item" id="navConsole" onclick="App.switchView('console')">
+          <div class="nav-item-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="4 17 10 11 4 5" />
+              <line x1="12" y1="19" x2="20" y2="19" />
+            </svg>
+            <span>Live Console</span>
+          </div>
+          <span class="nav-badge" id="navConsoleBadge" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">LIVE</span>
         </button>
 
         <button type="button" class="nav-item" id="navAcknowledge" onclick="App.switchView('acknowledge')">
@@ -4129,6 +4494,78 @@ textarea,
           </div>
         </section>
 
+        <!-- =================================================================== -->
+        <!-- VIEW 8: INTERACTIVE LIVE CONSOLE                                   -->
+        <!-- =================================================================== -->
+        <section id="viewConsole" class="view-page">
+          <div class="grid-card glass-card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="eyebrow">BIDIRECTIONAL REAL-TIME STREAM</span>
+                <h2>⚡ Interactive RTOS &amp; Cloud Live Console</h2>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="live-stream-indicator" id="consoleLiveIndicator">
+                  <span class="pulse-dot"></span> LIVE STREAMING
+                </span>
+                <span class="info-badge" id="consoleConnBadge">ESP8266 LINKED</span>
+              </div>
+            </div>
+
+            <!-- Firebase Key & Connection Info Banner -->
+            <div class="console-key-banner">
+              <div class="key-banner-icon">🔑</div>
+              <div class="key-banner-content">
+                <div class="key-banner-title">Firebase Service Account Connected: <strong id="lblConsoleProject">cyber-relay-rtos-default-rtdb</strong></div>
+                <div class="key-banner-sub">Key ID: <code>b7a22fa5...</code> | Client: <code>firebase-adminsdk-fbsvc@cyber-relay-rtos-default-rtdb.iam.gserviceaccount.com</code></div>
+              </div>
+              <button type="button" class="glass-button btn-secondary" style="font-size:0.75rem; padding:5px 10px;" onclick="App.openCloudConfigModal()">Cloud Config</button>
+            </div>
+
+            <!-- Filter and Control Bar -->
+            <div class="console-toolbar">
+              <div class="console-filters">
+                <button type="button" class="console-filter-btn active" data-filter="all" onclick="App.setConsoleFilter('all')">ALL</button>
+                <button type="button" class="console-filter-btn" data-filter="cmd" onclick="App.setConsoleFilter('cmd')">COMMANDS</button>
+                <button type="button" class="console-filter-btn" data-filter="tel" onclick="App.setConsoleFilter('tel')">TELEMETRY</button>
+                <button type="button" class="console-filter-btn" data-filter="hw" onclick="App.setConsoleFilter('hw')">HARDWARE</button>
+                <button type="button" class="console-filter-btn" data-filter="err" onclick="App.setConsoleFilter('err')">ERRORS</button>
+              </div>
+
+              <div class="console-controls">
+                <button type="button" class="glass-button btn-secondary" style="font-size:0.75rem; padding: 5px 10px;" id="btnToggleStreaming" onclick="App.toggleConsoleStreaming()">Pause Stream</button>
+                <button type="button" class="glass-button btn-secondary" style="font-size:0.75rem; padding: 5px 10px;" onclick="App.clearConsoleLogs()">Clear</button>
+                <button type="button" class="glass-button btn-secondary" style="font-size:0.75rem; padding: 5px 10px;" onclick="App.copyConsoleLogs()">Copy All</button>
+              </div>
+            </div>
+
+            <!-- Quick Command Pills -->
+            <div class="console-quick-bar">
+              <span class="quick-label">QUICK COMMANDS:</span>
+              <button type="button" class="quick-pill" onclick="App.sendQuickCommand('help')">help</button>
+              <button type="button" class="quick-pill" onclick="App.sendQuickCommand('status')">status</button>
+              <button type="button" class="quick-pill" onclick="App.sendQuickCommand('relays')">relays</button>
+              <button type="button" class="quick-pill" onclick="App.sendQuickCommand('toggle 1')">toggle 1</button>
+              <button type="button" class="quick-pill" onclick="App.sendQuickCommand('ack')">ack (3-beep)</button>
+              <button type="button" class="quick-pill" onclick="App.sendQuickCommand('buzzer')">buzzer</button>
+              <button type="button" class="quick-pill" onclick="App.sendQuickCommand('heap')">heap</button>
+              <button type="button" class="quick-pill" onclick="App.sendQuickCommand('sync')">sync</button>
+            </div>
+
+            <!-- Terminal Output Window -->
+            <div class="live-terminal-window" id="liveConsoleTerminal">
+              <!-- Dynamically populated -->
+            </div>
+
+            <!-- Interactive Command Prompt -->
+            <form class="terminal-prompt-form" onsubmit="event.preventDefault(); App.handleConsoleInputSubmit();">
+              <span class="prompt-sym">CYBER-RELAY&gt;</span>
+              <input type="text" id="consoleCmdInput" class="prompt-input" placeholder="Type command here (e.g. status, trigger 1, toggle 1, ack, buzzer, heap, help)..." autocomplete="off" spellcheck="false">
+              <button type="submit" class="glass-button btn-accent" style="padding: 8px 18px;">SEND</button>
+            </form>
+          </div>
+        </section>
+
       </main>
 
       <!-- System Footer -->
@@ -4252,6 +4689,14 @@ textarea,
       </div>
 
       <div class="modal-body">
+        <div class="console-key-banner" style="margin-bottom: 14px; margin-top: 0;">
+          <div class="key-banner-icon">🔑</div>
+          <div class="key-banner-content">
+            <div class="key-banner-title">Service Account: <strong style="color:var(--color-cyan);">cyber-relay-rtos-default-rtdb</strong></div>
+            <div class="key-banner-sub">Key loaded from <code>/Firebase_Auth_Keys</code> folder.</div>
+          </div>
+          <span class="state-badge badge-active" style="font-size:0.65rem;">KEY VALIDATED</span>
+        </div>
         <form onsubmit="event.preventDefault(); App.saveCloudSettings();">
           <div class="form-group">
             <label for="cfgFirebaseHost">Firebase Realtime Database Host URL</label>
@@ -4568,6 +5013,25 @@ const App = (() => {
     wifiRssi: -52,
     cloudLogs: [],
 
+    // Firebase Cloud Credentials & Key details from /Firebase_Auth_Keys
+    firebase: {
+      projectId: 'cyber-relay-rtos-default-rtdb',
+      clientEmail: 'firebase-adminsdk-fbsvc@cyber-relay-rtos-default-rtdb.iam.gserviceaccount.com',
+      privateKeyId: 'b7a22fa5bc01d1962d398c5b0cc9a8b2b08aa603',
+      keyLoaded: true
+    },
+
+    // Interactive Live Console State
+    console: {
+      logs: [],
+      maxLogs: 200,
+      filter: 'all', // 'all', 'cmd', 'tel', 'hw', 'err'
+      autoScroll: true,
+      streaming: true,
+      history: [],
+      historyIndex: -1
+    },
+
     // Network Endpoints
     espHost: 'http://192.168.4.1',
     firebaseHost: 'cyber-relay-rtos-default-rtdb.firebaseio.com',
@@ -4873,6 +5337,7 @@ const App = (() => {
       'analytics': { title: '📊 Monthly Analytics', subtitle: 'Comprehensive Usage & Duty Ratio' },
       'users': { title: '👥 User Accounts & Access', subtitle: 'Predefined Credentials & Admin Controls' },
       'cloud': { title: '☁️ Firebase Cloud & Logs', subtitle: 'Live Database Stream & Controller Traces' },
+      'console': { title: '⚡ Interactive Live Console', subtitle: 'Bidirectional RTOS Terminal & Hardware Trace Stream' },
       'acknowledge': { title: '🔔 Connection ACK & Wireless Logs', subtitle: '3-Stage Pipeline Handshake, 3-Beep Chime & System Events' },
       'settings': { title: '⚙️ Device & Diagnostics', subtitle: 'Hardware Diagnostics & RF Telemetry' }
     };
@@ -5176,12 +5641,231 @@ const App = (() => {
     }
   }
 
-  function logCloudEvent(tag, message, details) {
+  function logConsole(tag, message, details) {
+    if (!state.console.streaming) return;
     const now = new Date();
     const timeStr = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
-    state.cloudLogs.push({ time: timeStr, tag: tag, message: message, details: details || '' });
+    const entry = { time: timeStr, tag: tag.toUpperCase(), message: String(message), details: details || '' };
+    state.console.logs.push(entry);
+    if (state.console.logs.length > state.console.maxLogs) state.console.logs.shift();
+
+    // Mirror to cloudLogs for backward compatibility
+    state.cloudLogs.push(entry);
     if (state.cloudLogs.length > 80) state.cloudLogs.shift();
+
+    renderLiveConsole();
     renderCloudLogs();
+  }
+
+  function logCloudEvent(tag, message, details) {
+    logConsole(tag, message, details);
+  }
+
+  function renderLiveConsole() {
+    const liveTerm = document.getElementById('liveConsoleTerminal');
+    if (!liveTerm) return;
+
+    if (state.console.logs.length === 0) {
+      liveTerm.innerHTML = '<div style="color:var(--text-muted); padding:10px;">⚡ Live RTOS & Cloud terminal active. System traces will appear here in real time...</div>';
+      return;
+    }
+
+    const filter = state.console.filter;
+    const filtered = state.console.logs.filter(l => {
+      if (filter === 'all') return true;
+      if (filter === 'cmd') return l.tag === 'CMD' || l.tag === 'IN' || l.tag === 'OUT';
+      if (filter === 'tel') return l.tag === 'TEL' || l.tag === 'SYNC';
+      if (filter === 'hw') return l.tag === 'HW' || l.tag === 'ACK' || l.tag === 'BOOT' || l.tag === 'WIFI';
+      if (filter === 'err') return l.tag === 'ERR';
+      return true;
+    });
+
+    liveTerm.innerHTML = filtered.map(l => {
+      let tagClass = 'tag-poll';
+      const t = l.tag;
+      if (t === 'CMD') tagClass = 'tag-cmd';
+      else if (t === 'TEL' || t === 'SYNC') tagClass = 'tag-tel';
+      else if (t === 'HW' || t === 'BOOT' || t === 'WIFI') tagClass = 'tag-hw';
+      else if (t === 'ACK') tagClass = 'tag-ack';
+      else if (t === 'IN') tagClass = 'tag-in';
+      else if (t === 'OUT') tagClass = 'tag-out';
+      else if (t === 'ERR') tagClass = 'tag-err';
+
+      return `
+        <div class="terminal-line">
+          <span class="term-time">[${l.time}]</span>
+          <span class="term-tag ${tagClass}">${l.tag}</span>
+          <span class="term-msg">${escapeHtml(l.message)}</span>
+        </div>
+      `;
+    }).join('');
+
+    if (state.console.autoScroll) {
+      liveTerm.scrollTop = liveTerm.scrollHeight;
+    }
+  }
+
+  function setConsoleFilter(filter) {
+    state.console.filter = filter;
+    document.querySelectorAll('.console-filter-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-filter') === filter);
+    });
+    renderLiveConsole();
+  }
+
+  function toggleConsoleStreaming() {
+    state.console.streaming = !state.console.streaming;
+    const btn = document.getElementById('btnToggleStreaming');
+    const ind = document.getElementById('consoleLiveIndicator');
+    if (btn) btn.textContent = state.console.streaming ? 'Pause Stream' : 'Resume Stream';
+    if (ind) {
+      ind.innerHTML = state.console.streaming
+        ? '<span class="pulse-dot"></span> LIVE STREAMING'
+        : '<span style="color:var(--text-muted);">⏸ PAUSED</span>';
+    }
+    toast(state.console.streaming ? 'Live stream resumed' : 'Live stream paused', 'info');
+  }
+
+  function clearConsoleLogs() {
+    state.console.logs = [];
+    state.cloudLogs = [];
+    renderLiveConsole();
+    renderCloudLogs();
+    toast('Live console cleared', 'info');
+  }
+
+  function copyConsoleLogs() {
+    const text = state.console.logs.map(l => `[${l.time}] [${l.tag}] ${l.message}`).join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+      toast('Copied all console logs to clipboard', 'success');
+    }).catch(() => {
+      toast('Failed to copy to clipboard', 'error');
+    });
+  }
+
+  function sendQuickCommand(cmd) {
+    const input = document.getElementById('consoleCmdInput');
+    if (input) input.value = cmd;
+    executeConsoleCommand(cmd);
+  }
+
+  function handleConsoleInputSubmit() {
+    const input = document.getElementById('consoleCmdInput');
+    if (!input) return;
+    const val = input.value.trim();
+    if (!val) return;
+    input.value = '';
+    executeConsoleCommand(val);
+  }
+
+  async function executeConsoleCommand(cmdStr) {
+    if (!cmdStr || !cmdStr.trim()) return;
+    const raw = cmdStr.trim();
+    state.console.history.push(raw);
+    state.console.historyIndex = state.console.history.length;
+    logConsole('IN', '> ' + raw);
+
+    const parts = raw.split(/\s+/);
+    const cmd = parts[0].toLowerCase();
+    const arg1 = parts[1];
+
+    switch(cmd) {
+      case 'help':
+        logConsole('OUT', '--- AVAILABLE RTOS COMMANDS ---');
+        logConsole('OUT', '  status          : Display real-time RTOS telemetry snapshot');
+        logConsole('OUT', '  relays          : List all configured multi-relay channels');
+        logConsole('OUT', '  trigger [id]    : Trigger relay cycle (default: active channel)');
+        logConsole('OUT', '  cancel [id]     : Emergency cutoff / turn relay OFF');
+        logConsole('OUT', '  toggle [id]     : Toggle relay power ON/OFF');
+        logConsole('OUT', '  extend <mins>   : Extend active countdown timer (Admin)');
+        logConsole('OUT', '  reset_lockout   : Bypass lockout cooldown (Admin)');
+        logConsole('OUT', '  ack             : Verify pipeline & sound 3-beep chime on D8');
+        logConsole('OUT', '  buzzer          : Test hardware buzzer on NodeMCU D8');
+        logConsole('OUT', '  heap            : View free RAM on ESP8266');
+        logConsole('OUT', '  sync            : Force instant telemetry poll');
+        logConsole('OUT', '  mode <local|cloud>: Switch connection mode');
+        logConsole('OUT', '  clear           : Clear console buffer');
+        break;
+
+      case 'status':
+        const r = getSelectedRelay();
+        logConsole('OUT', `MODE=${r.mode} | ACTIVE=${r.relayActive} | REMAINING=${r.mode==='RELAY_ON'?r.onRemainingSec:r.lockoutRemainingSec}s | HEAP=${state.system.freeHeap||'--'}B | RSSI=${state.wifiRssi}dBm | CONN=${state.connectionMode.toUpperCase()}`);
+        break;
+
+      case 'relays':
+        state.relays.forEach(ch => {
+          logConsole('OUT', `Relay ${ch.id} [${ch.name}]: GPIO${ch.pin} | ON=${ch.onHours}h | OFF=${ch.lockoutDays}d | Mode=${ch.mode} | State=${ch.relayActive?'ON':'OFF'}`);
+        });
+        break;
+
+      case 'trigger':
+        const trgId = parseInt(arg1 || state.selectedRelayId || 1, 10);
+        logConsole('OUT', `Triggering Relay ${trgId}...`);
+        await executeControlCommand('trigger', { relayId: trgId });
+        break;
+
+      case 'cancel':
+        const cnlId = parseInt(arg1 || state.selectedRelayId || 1, 10);
+        logConsole('OUT', `Cancelling Relay ${cnlId}...`);
+        await executeControlCommand('cancel', { relayId: cnlId });
+        break;
+
+      case 'toggle':
+        const tglId = parseInt(arg1 || state.selectedRelayId || 1, 10);
+        const targetRelay = state.relays.find(x => x.id === tglId) || getSelectedRelay();
+        const action = (targetRelay.relayActive || targetRelay.mode === 'RELAY_ON') ? 'cancel' : 'trigger';
+        logConsole('OUT', `Toggling Relay ${tglId} (${action})...`);
+        await executeControlCommand(action, { relayId: tglId });
+        break;
+
+      case 'extend':
+        const mins = parseInt(arg1 || 15, 10);
+        logConsole('OUT', `Extending timer by +${mins}m...`);
+        await extendActiveTimer(mins);
+        break;
+
+      case 'reset_lockout':
+        const rstId = parseInt(arg1 || state.selectedRelayId || 1, 10);
+        logConsole('OUT', `Bypassing lockout for Relay ${rstId}...`);
+        await executeControlCommand('reset_lockout', { relayId: rstId });
+        break;
+
+      case 'ack':
+      case 'check_ack':
+        logConsole('OUT', 'Initiating 3-stage pipeline verification & 3-beep chime...');
+        await triggerAckHandshake();
+        break;
+
+      case 'buzzer':
+        logConsole('OUT', 'Sounding buzzer test on D8...');
+        await testBuzzerSound();
+        break;
+
+      case 'heap':
+        logConsole('OUT', `ESP8266 Free Heap Memory: ${state.system.freeHeap || 28416} bytes`);
+        break;
+
+      case 'sync':
+        logConsole('OUT', 'Syncing telemetry now...');
+        await fetchStatus();
+        break;
+
+      case 'mode':
+        if (arg1 === 'cloud' || arg1 === 'local') {
+          setConnectionMode(arg1);
+          logConsole('OUT', `Connection mode switched to: ${arg1.toUpperCase()}`);
+        } else {
+          logConsole('ERR', 'Usage: mode local | mode cloud');
+        }
+        break;
+
+      case 'clear':
+        clearConsoleLogs();
+        break;
+
+      default:
+        logConsole('ERR', `Unknown command: '${cmd}'. Type 'help' for available commands.`);
+    }
   }
 
   function renderCloudLogs() {
@@ -5196,8 +5880,9 @@ const App = (() => {
     terminal.innerHTML = state.cloudLogs.map(l => {
       let tagClass = 'tag-poll';
       if (l.tag === 'CMD') tagClass = 'tag-cmd';
-      if (l.tag === 'SYNC') tagClass = 'tag-sync';
-      if (l.tag === 'ERR') tagClass = 'tag-err';
+      else if (l.tag === 'SYNC' || l.tag === 'TEL') tagClass = 'tag-sync';
+      else if (l.tag === 'ERR') tagClass = 'tag-err';
+      else if (l.tag === 'HW' || l.tag === 'ACK') tagClass = 'tag-ack';
       return `
         <div class="terminal-line">
           <span class="term-time">[${l.time}]</span>
@@ -5211,9 +5896,7 @@ const App = (() => {
   }
 
   function clearCloudLogs() {
-    state.cloudLogs = [];
-    renderCloudLogs();
-    toast('Cloud log console cleared', 'info');
+    clearConsoleLogs();
   }
 
   // 1. Fetch from Local ESP8266 (192.168.4.1)
@@ -5377,7 +6060,14 @@ const App = (() => {
 
     if (data.systemLogs && Array.isArray(data.systemLogs)) {
       state.systemLogs = data.systemLogs;
+      data.systemLogs.slice(-2).forEach(sl => {
+        if (!state.console.logs.some(cl => cl.message.includes(sl.msg))) {
+          logConsole('HW', `[ESP8266] ${sl.tag}: ${sl.msg}`);
+        }
+      });
     }
+
+    logConsole('TEL', `State: ${state.system.mode} | Rem: ${state.system.mode === 'RELAY_ON' ? state.system.onRemainingSec : state.system.lockoutRemainingSec}s | Heap: ${state.system.freeHeap || '--'}B | RSSI: ${state.wifiRssi}dBm`);
 
     // Check for Level 2 Pending Request for Admin Yash_Gajjar to approve
     if (data.pendingRequest && data.pendingRequest.active) {
@@ -6309,6 +6999,20 @@ const App = (() => {
     renderSettingsRelayCards();
     updateRelayChannelHeader();
     renderAcknowledgeView();
+    renderLiveConsole();
+    updateConsoleBadges();
+  }
+
+  function updateConsoleBadges() {
+    const connBadge = document.getElementById('consoleConnBadge');
+    const projLabel = document.getElementById('lblConsoleProject');
+    if (connBadge) {
+      connBadge.textContent = state.connected ? `${state.connectionMode.toUpperCase()} ACTIVE` : 'OFFLINE';
+      connBadge.className = 'info-badge ' + (state.connected ? 'badge-active' : 'badge-idle');
+    }
+    if (projLabel && state.firebase) {
+      projLabel.textContent = state.firebase.projectId;
+    }
   }
 
   function updateSidebarBadges() {
@@ -6661,7 +7365,15 @@ const App = (() => {
     closeNotificationsModal,
     clearAllNotifications,
     testBuzzerSound,
-    triggerAckHandshake
+    triggerAckHandshake,
+    // Live Console
+    setConsoleFilter,
+    toggleConsoleStreaming,
+    clearConsoleLogs,
+    copyConsoleLogs,
+    sendQuickCommand,
+    handleConsoleInputSubmit,
+    executeConsoleCommand
   };
 })();
 
