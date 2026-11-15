@@ -285,3 +285,20 @@ RTOS-Esp8266-Relay-Management/
 3. Launch **CyberRelay RTOS**.
 4. Select your account (e.g., Quick Select `Yash_Gajjar`), keep **"Remember session forever"** checked, and tap **SIGN IN & CONNECT**.
 5. Switch effortlessly between **AP** (Local) and **Cloud** (Worldwide Firebase)!
+
+
+
+
+
+
+1. if the relay countdown timer was off then on the ON button was enable else it was disbale or say that turn off the relay now, if it was ON postion
+2. also make the wireless log where the device restart & connection to the cloud & whole log present onto app & make the acknowlde tab where the device got login to ap then it was going to connection to cloud then it was send the ack & responce to check the buzzer 3 times where it check the connection to wifi then firebase connection was ok
+3. also disable the wifi port 80 when the user connect then there is popup by the esp & it makes load to the device so just disbale that line not to remove that line of code
+
+
+
+1. 3 line buttons where hide under the AP button just fix that css into app
+2. also there is buzzer onto D8, when the relay was turn on or off then also make the notification to app menu also
+3. after the countdown of the relay was ended then another timer was started of the 8Days but i can see anything onto off, currently all relay state to OFF
+4. also when i hold the app then any popup menu was open then it says the ON/OFF button directly cames over that menu
+5. also into setting there is addition the dynamic adding of another relay where also there is speapreate countdown & all things separete like while was key binding from esp to relay

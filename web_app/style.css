@@ -1029,16 +1029,19 @@ body {
 
 /* Modals */
 .modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 16px;
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(6, 8, 12, 0.92) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 999999 !important;
+  isolation: isolate !important;
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
+  padding: 16px !important;
 }
 
 .modal-backdrop.hidden {
@@ -1046,6 +1049,10 @@ body {
 }
 
 .modal-card {
+  position: relative !important;
+  z-index: 1000000 !important;
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
   width: 100%;
   max-width: 490px;
   padding: 28px;
@@ -1053,6 +1060,7 @@ body {
   flex-direction: column;
   gap: 18px;
   animation: modalIn 0.25s ease-out;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 30px rgba(245, 158, 11, 0.15);
 }
 
 @keyframes modalIn {
@@ -1288,7 +1296,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  z-index: 2000;
+  z-index: 1000001 !important;
 }
 
 .toast {
@@ -1955,26 +1963,42 @@ body {
     justify-content: space-between;
   }
 
-  /* Compact Top Bar for normal mobile phones */
+  /* Compact Top Bar for normal mobile phones (Prevents AP Button from covering 3-line hamburger) */
   .main-top-bar {
     padding: 6px 10px;
-    height: 50px;
-    min-height: 50px;
-    gap: 6px;
+    height: 52px;
+    min-height: 52px;
+    gap: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     flex-wrap: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 80;
   }
 
   .top-bar-left {
-    gap: 6px;
-    min-width: 0;
-    flex-shrink: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0 !important;
+    min-width: auto !important;
+    z-index: 10;
   }
 
   .btn-toggle-sidebar {
-    padding: 6px;
-    width: 34px;
-    height: 34px;
-    flex-shrink: 0;
+    display: inline-flex !important;
+    padding: 7px;
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    flex-shrink: 0 !important;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    z-index: 20;
   }
 
   .view-heading-group {
@@ -1982,7 +2006,7 @@ body {
   }
 
   .view-heading-group h1 {
-    font-size: 0.96rem;
+    font-size: 0.95rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1990,22 +2014,27 @@ body {
   }
 
   .top-bar-right {
-    gap: 5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
     flex-wrap: nowrap;
-    flex-shrink: 0;
+    flex-shrink: 1;
+    min-width: 0;
+    justify-content: flex-end;
   }
 
   .conn-mode-switcher {
     padding: 2px;
+    flex-shrink: 0;
   }
 
   .mode-btn {
-    padding: 3px 6px;
-    font-size: 0.65rem;
+    padding: 4px 8px;
+    font-size: 0.68rem;
   }
 
   .btn-quick-log {
-    padding: 5px 7px;
+    display: none !important;
   }
 
   .btn-log-text {
@@ -2017,18 +2046,14 @@ body {
   }
 
   .status-pill {
-    padding: 3px 7px;
+    padding: 4px 8px;
     font-size: 0.65rem;
     gap: 4px;
+    flex-shrink: 0;
   }
 
   .telemetry-beacon-group {
-    display: flex !important;
-  }
-
-  .telemetry-beacon-group .diag-pill {
-    padding: 3px 5px;
-    font-size: 0.65rem;
+    display: none !important;
   }
 }
 
@@ -2380,6 +2405,7 @@ body {
     opacity: 0;
     transform: translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -2530,10 +2556,25 @@ body {
   flex-shrink: 0;
 }
 
-.tag-poll { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
-.tag-cmd  { background: rgba(245, 158, 11, 0.25); color: #fbbf24; }
-.tag-sync { background: rgba(16, 185, 129, 0.2); color: #34d399; }
-.tag-err  { background: rgba(244, 63, 94, 0.25); color: #fb7185; }
+.tag-poll {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+.tag-cmd {
+  background: rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+}
+
+.tag-sync {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+.tag-err {
+  background: rgba(244, 63, 94, 0.25);
+  color: #fb7185;
+}
 
 .term-msg {
   flex: 1;
@@ -2635,4 +2676,277 @@ body {
   .telemetry-beacon-group {
     display: none;
   }
+}
+
+/* ========================================================================= */
+/* GLOBAL TOUCH-HOLD & CONTEXT MENU PREVENTION                               */
+/* Prevents browser text-selection & context popup from rendering over UI    */
+/* ========================================================================= */
+*,
+*::before,
+*::after {
+  -webkit-touch-callout: none;
+}
+
+html,
+body {
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
+input,
+textarea,
+[contenteditable="true"] {
+  -webkit-touch-callout: default !important;
+  -webkit-user-select: text !important;
+  user-select: text !important;
+}
+
+/* ========================================================================= */
+/* DYNAMIC MULTI-RELAY CHANNEL TABS & INDEPENDENT COUNTDOWNS                 */
+/* ========================================================================= */
+.relay-channels-nav {
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.relay-tabs-scroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px 8px;
+  scrollbar-width: thin;
+}
+
+.relay-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.relay-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.relay-tab-btn.active {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.15));
+  border-color: var(--accent-amber);
+  color: var(--accent-amber);
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.25);
+}
+
+.relay-tab-pin-tag {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--text-muted);
+}
+
+.relay-tab-btn.active .relay-tab-pin-tag {
+  background: rgba(245, 158, 11, 0.3);
+  color: #fff;
+}
+
+.btn-add-relay-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--accent-cyan);
+  font-size: 0.76rem;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.btn-add-relay-pill:hover {
+  border-color: var(--accent-cyan);
+  background: rgba(6, 182, 212, 0.1);
+}
+
+/* Direct Power Toggle Button */
+.btn-power-toggle {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-color: rgba(16, 185, 129, 0.6);
+  color: #fff !important;
+  font-weight: 800;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35);
+  padding: 12px 20px;
+}
+
+.btn-power-toggle.is-active {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border-color: rgba(239, 68, 68, 0.6);
+  box-shadow: 0 4px 18px rgba(239, 68, 68, 0.35);
+}
+
+/* Notification Bell & Drawer */
+.btn-quick-log {
+  position: relative;
+}
+
+.notif-badge-pill {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: var(--radius-full);
+  border: 1px solid #07090e;
+  line-height: 1.2;
+}
+
+.notifications-list {
+  max-height: 360px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 4px;
+}
+
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.notif-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.notif-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.notif-content {
+  flex: 1;
+}
+
+.notif-title {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.notif-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.notif-time {
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.notif-empty {
+  text-align: center;
+  padding: 30px 10px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* Dynamic Relay Management Section in Settings */
+.relay-mgmt-card {
+  margin-top: 20px;
+}
+
+.relay-card-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.relay-card-item {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.relay-card-item.is-active {
+  border-color: rgba(16, 185, 129, 0.5);
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.relay-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.relay-card-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.relay-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+}
+
+.relay-card-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.relay-card-label {
+  color: var(--text-muted);
+  font-size: 0.64rem;
+}
+
+.relay-card-val {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.relay-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
 }

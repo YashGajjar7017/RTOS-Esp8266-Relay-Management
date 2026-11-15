@@ -31,6 +31,9 @@ private:
   void handleAuthRegister();
   void handleAuthResetPassword();
   void handleDeleteUser();
+  void handleAddRelay();
+  void handleUpdateRelay();
+  void handleDeleteRelay();
   void handleNotFound();
 };
 

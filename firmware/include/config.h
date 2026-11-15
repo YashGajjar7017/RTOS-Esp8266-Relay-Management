@@ -21,6 +21,10 @@
 // Touch Sensor Pin (TTP223 Capacitive Touch Module)
 #define PIN_TOUCH            4    // GPIO4 (NodeMCU D2)
 
+// Buzzer Output Pin (NodeMCU D8 = GPIO15)
+#define PIN_BUZZER           15   // GPIO15 (NodeMCU D8) - Beep on Relay ON/OFF switch
+#define MAX_RELAYS           4    // Dynamic multi-relay capacity (Relay 1 to 4)
+
 // Relay Logic (Active LOW or Active HIGH)
 #define RELAY_ACTIVE_LEVEL   LOW
 #define RELAY_INACTIVE_LEVEL HIGH

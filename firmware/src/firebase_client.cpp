@@ -149,16 +149,20 @@ void FirebaseClient::pollFirebaseCommands() {
 
           Serial.printf("[FIREBASE] Received Cloud Command: %s (from %s)\n", action, requestedBy);
 
+          uint8_t relayId = doc["relayId"] | 1;
+
           if (strcmp(action, "TRIGGER") == 0) {
-            stateManager.triggerCycle(requestedBy, oneTimeToken);
+            stateManager.triggerRelay(relayId, requestedBy, oneTimeToken);
           } else if (strcmp(action, "CANCEL") == 0) {
-            stateManager.cancelCycle(requestedBy);
+            stateManager.cancelRelay(relayId, requestedBy);
+          } else if (strcmp(action, "TOGGLE") == 0) {
+            stateManager.toggleRelay(relayId, requestedBy);
           } else if (strcmp(action, "RESET_LOCKOUT") == 0) {
-            stateManager.resetLockout(requestedBy);
+            stateManager.resetRelayLockout(relayId, requestedBy);
           } else if (strcmp(action, "EXTEND") == 0) {
             int extraMinutes = doc["minutes"] | (doc["seconds"] | 0) / 60;
             if (extraMinutes <= 0) extraMinutes = 15;
-            stateManager.extendActiveTimer((uint32_t)extraMinutes * 60);
+            stateManager.extendRelayTimer(relayId, (uint32_t)extraMinutes * 60);
           } else if (strcmp(action, "SET_USER_STATUS") == 0) {
             const char* target = doc["targetUsername"] | "";
             const char* status = doc["status"] | "disabled";

@@ -38,6 +38,9 @@ void WebServerAPI::setupRoutes() {
   _server.on("/api/ping", HTTP_OPTIONS, sendCORS);
   _server.on("/api/config", HTTP_OPTIONS, sendCORS);
   _server.on("/api/control", HTTP_OPTIONS, sendCORS);
+  _server.on("/api/relay/add", HTTP_OPTIONS, sendCORS);
+  _server.on("/api/relay/update", HTTP_OPTIONS, sendCORS);
+  _server.on("/api/relay/delete", HTTP_OPTIONS, sendCORS);
   _server.on("/api/auth/login", HTTP_OPTIONS, sendCORS);
   _server.on("/api/auth/reset_password", HTTP_OPTIONS, sendCORS);
   _server.on("/api/auth/request_grant", HTTP_OPTIONS, sendCORS);
@@ -69,6 +72,9 @@ void WebServerAPI::setupRoutes() {
   _server.on("/api/status", HTTP_GET, std::bind(&WebServerAPI::handleGetStatus, this));
   _server.on("/api/config", HTTP_POST, std::bind(&WebServerAPI::handlePostConfig, this));
   _server.on("/api/control", HTTP_POST, std::bind(&WebServerAPI::handlePostControl, this));
+  _server.on("/api/relay/add", HTTP_POST, std::bind(&WebServerAPI::handleAddRelay, this));
+  _server.on("/api/relay/update", HTTP_POST, std::bind(&WebServerAPI::handleUpdateRelay, this));
+  _server.on("/api/relay/delete", HTTP_POST, std::bind(&WebServerAPI::handleDeleteRelay, this));
   _server.on("/api/auth/login", HTTP_POST, std::bind(&WebServerAPI::handleAuthLogin, this));
   _server.on("/api/auth/reset_password", HTTP_POST, std::bind(&WebServerAPI::handleAuthResetPassword, this));
   
@@ -243,17 +249,23 @@ void WebServerAPI::handlePostControl() {
     }
   }
 
+  uint8_t relayId = doc["relayId"] | 1;
+
   if (strcmp(action, "trigger") == 0) {
-    if (stateManager.triggerCycle("APP", oneTimeToken)) {
+    if (stateManager.triggerRelay(relayId, "APP", oneTimeToken)) {
       sendJsonResponse(200, "{\"success\":true,\"message\":\"Relay cycle triggered\"}");
     } else {
-      sendError(400, "Cannot trigger: system is not in IDLE state, or 1-time token invalid.");
+      sendError(400, "Cannot trigger: relay is not in IDLE state, or 1-time token invalid.");
     }
   } 
   else if (strcmp(action, "cancel") == 0) {
-    stateManager.cancelCycle("APP");
+    stateManager.cancelRelay(relayId, "APP");
     sendJsonResponse(200, "{\"success\":true,\"message\":\"Cycle cancelled\"}");
   } 
+  else if (strcmp(action, "toggle") == 0) {
+    stateManager.toggleRelay(relayId, "APP");
+    sendJsonResponse(200, "{\"success\":true,\"message\":\"Relay state toggled\"}");
+  }
   else if (strcmp(action, "extend") == 0) {
     // Admin can extend active running relay timer
     if (strcmp(userRole, "admin") != 0) {
@@ -263,11 +275,10 @@ void WebServerAPI::handlePostControl() {
     int extraMinutes = doc["minutes"] | (doc["seconds"] | 0) / 60;
     if (extraMinutes <= 0) extraMinutes = 15;
     uint32_t extraSec = (uint32_t)extraMinutes * 60;
-    if (stateManager.extendActiveTimer(extraSec)) {
+    if (stateManager.extendRelayTimer(relayId, extraSec)) {
       StaticJsonDocument<128> resp;
       resp["success"] = true;
       resp["message"] = String("Timer extended by ") + extraMinutes + " minutes";
-      resp["onRemainingSec"] = stateManager.getOnRemainingSec();
       String s;
       serializeJson(resp, s);
       sendJsonResponse(200, s);
@@ -303,10 +314,10 @@ void WebServerAPI::handlePostControl() {
       return;
     }
 
-    if (stateManager.resetLockout("ADMIN_APP")) {
+    if (stateManager.resetRelayLockout(relayId, "ADMIN_APP")) {
       sendJsonResponse(200, "{\"success\":true,\"message\":\"Lockout bypassed by Admin\"}");
     } else {
-      sendError(400, "Lockout reset failed: system is not in lockout");
+      sendError(400, "Lockout reset failed: relay is not in lockout");
     }
   } 
   else {
@@ -362,6 +373,91 @@ void WebServerAPI::handleAuthResetPassword() {
     sendJsonResponse(200, out);
   } else {
     sendError(400, err);
+  }
+}
+
+void WebServerAPI::handleAddRelay() {
+  if (!_server.hasArg("plain")) {
+    sendError(400, "Missing payload");
+    return;
+  }
+  StaticJsonDocument<384> doc;
+  DeserializationError err = deserializeJson(doc, _server.arg("plain"));
+  if (err) {
+    sendError(400, "Invalid JSON");
+    return;
+  }
+  const char* callerRole = doc["userRole"] | "";
+  if (strcmp(callerRole, "admin") != 0) {
+    sendError(403, "Only Administrator can configure new relays.");
+    return;
+  }
+
+  const char* name = doc["name"] | "Relay";
+  int8_t pin = doc["pin"] | -1;
+  uint8_t activeLevel = doc["activeLevel"] | 0;
+  float onHours = doc["onHours"] | 8.0f;
+  float lockoutDays = doc["lockoutDays"] | 8.0f;
+
+  String errMsg;
+  if (stateManager.addRelay(name, pin, activeLevel, onHours, lockoutDays, errMsg)) {
+    sendJsonResponse(200, "{\"success\":true,\"message\":\"Relay channel added successfully\"}");
+  } else {
+    sendError(400, errMsg);
+  }
+}
+
+void WebServerAPI::handleUpdateRelay() {
+  if (!_server.hasArg("plain")) {
+    sendError(400, "Missing payload");
+    return;
+  }
+  StaticJsonDocument<384> doc;
+  DeserializationError err = deserializeJson(doc, _server.arg("plain"));
+  if (err) {
+    sendError(400, "Invalid JSON");
+    return;
+  }
+  const char* callerRole = doc["userRole"] | "";
+  if (strcmp(callerRole, "admin") != 0) {
+    sendError(403, "Only Administrator can edit relay configurations.");
+    return;
+  }
+
+  uint8_t id = doc["id"] | 1;
+  const char* name = doc["name"] | "";
+  int8_t pin = doc["pin"] | -1;
+  uint8_t activeLevel = doc["activeLevel"] | 0;
+  float onHours = doc["onHours"] | -1.0f;
+  float lockoutDays = doc["lockoutDays"] | -1.0f;
+
+  String errMsg;
+  if (stateManager.updateRelay(id, name, pin, activeLevel, onHours, lockoutDays, errMsg)) {
+    sendJsonResponse(200, "{\"success\":true,\"message\":\"Relay updated successfully\"}");
+  } else {
+    sendError(400, errMsg);
+  }
+}
+
+void WebServerAPI::handleDeleteRelay() {
+  if (!_server.hasArg("plain")) {
+    sendError(400, "Missing payload");
+    return;
+  }
+  StaticJsonDocument<256> doc;
+  deserializeJson(doc, _server.arg("plain"));
+  const char* callerRole = doc["userRole"] | "";
+  if (strcmp(callerRole, "admin") != 0) {
+    sendError(403, "Only Administrator can remove relay channels.");
+    return;
+  }
+
+  uint8_t id = doc["id"] | 0;
+  String errMsg;
+  if (stateManager.deleteRelay(id, errMsg)) {
+    sendJsonResponse(200, "{\"success\":true,\"message\":\"Relay deleted\"}");
+  } else {
+    sendError(400, errMsg);
   }
 }
 
