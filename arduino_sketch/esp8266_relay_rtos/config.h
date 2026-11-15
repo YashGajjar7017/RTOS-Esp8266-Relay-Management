@@ -45,16 +45,16 @@
 // -------------------------------------------------------------------------
 // 3. WI-FI ACCESS POINT & INTERNET STATION CONFIGURATION
 // -------------------------------------------------------------------------
-#define WIFI_AP_SSID              "CYBER-RELAY-HUB"
-#define WIFI_AP_PASSWORD          "cyber8266"      // SoftAP password
+#define WIFI_AP_SSID              "Xenithra_Tech_Wifi"
+#define WIFI_AP_PASSWORD          "XenOS@123"      // SoftAP password
 #define WIFI_AP_CHANNEL           1
 #define WIFI_AP_MAX_CONN          8
 #define HTTP_SERVER_PORT          80
 
 // Station mode to connect ESP8266 to Home/Internet Wi-Fi for Firebase Cloud Control
 #define ENABLE_INTERNET_WIFI      true
-#define WIFI_STA_SSID             "Home_WiFi_Name"  // Set your local router SSID
-#define WIFI_STA_PASSWORD         "Home_WiFi_Pass"  // Set your local router Password
+#define WIFI_STA_SSID             "Asha"  // Set your local router SSID
+#define WIFI_STA_PASSWORD         "1111122418"  // Set your local router Password
 
 // -------------------------------------------------------------------------
 // 4. FIREBASE CLOUD REALTIME DATABASE CONFIGURATION
