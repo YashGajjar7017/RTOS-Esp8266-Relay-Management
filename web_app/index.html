@@ -302,6 +302,17 @@
           <span class="nav-badge" id="navCloudBadge">Online</span>
         </button>
 
+        <button type="button" class="nav-item" id="navAcknowledge" onclick="App.switchView('acknowledge')">
+          <div class="nav-item-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="m9 12 2 2 4-4"/>
+            </svg>
+            <span>Connection ACK &amp; Logs</span>
+          </div>
+          <span class="nav-badge" id="navAckBadge">READY</span>
+        </button>
+
         <button type="button" class="nav-item" id="navNotifications" onclick="App.openNotificationsModal()">
           <div class="nav-item-left">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -932,6 +943,89 @@
               </button>
               <span style="font-size: 0.75rem; color: var(--text-muted);">Plays immediate acoustic chime for hardware
                 verification.</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- VIEW 7: CONNECTION ACKNOWLEDGE & WIRELESS LOGS                      -->
+        <!-- =================================================================== -->
+        <section id="viewAcknowledge" class="view-page">
+          <div class="grid-card glass-card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="eyebrow">PIPELINE VERIFICATION &amp; HARDWARE BUZZER</span>
+                <h2>Connection Acknowledge (3-Beep Chime)</h2>
+              </div>
+              <span class="state-badge badge-active" id="ackVerifiedBadge">ACK READY</span>
+            </div>
+
+            <!-- 3-Stage Handshake Pipeline Visualizer -->
+            <div class="ack-pipeline-grid">
+              <div class="ack-step-card is-active" id="ackStep1">
+                <div class="ack-step-header">
+                  <span class="ack-step-num">STAGE 1</span>
+                  <span class="status-dot dot-active" id="ackStep1Dot"></span>
+                </div>
+                <div class="ack-step-title">🔌 Device Boot &amp; Restart</div>
+                <div class="ack-step-desc" id="ackStep1Desc">Boot Reason: Power On</div>
+                <div class="ack-step-detail" id="ackStep1Detail">System RTOS Initialized</div>
+              </div>
+
+              <div class="ack-step-card is-active" id="ackStep2">
+                <div class="ack-step-header">
+                  <span class="ack-step-num">STAGE 2</span>
+                  <span class="status-dot dot-active" id="ackStep2Dot"></span>
+                </div>
+                <div class="ack-step-title">📶 SoftAP &amp; Wi-Fi Network</div>
+                <div class="ack-step-desc" id="ackStep2Desc">AP: CYBER-RELAY-HUB</div>
+                <div class="ack-step-detail" id="ackStep2Detail">IP: 192.168.4.1</div>
+              </div>
+
+              <div class="ack-step-card is-active" id="ackStep3">
+                <div class="ack-step-header">
+                  <span class="ack-step-num">STAGE 3</span>
+                  <span class="status-dot dot-active" id="ackStep3Dot"></span>
+                </div>
+                <div class="ack-step-title">☁️ Firebase Cloud Sync</div>
+                <div class="ack-step-desc" id="ackStep3Desc">Realtime Stream Active</div>
+                <div class="ack-step-detail" id="ackStep3Detail">3-Beep Audio Handshake</div>
+              </div>
+            </div>
+
+            <!-- Handshake Action Banner -->
+            <div class="ack-action-banner">
+              <div class="ack-banner-left">
+                <div class="ack-banner-icon">🔔</div>
+                <div>
+                  <div class="ack-banner-title" id="ackBannerStatusTitle">Handshake Acknowledged &amp; Confirmed</div>
+                  <div class="ack-banner-subtitle" id="ackBannerStatusSub">ESP8266 sounds D8 buzzer 3 times when device joins Wi-Fi and connects to Firebase.</div>
+                </div>
+              </div>
+              <button class="glass-button btn-accent" id="btnTestAckHandshake" type="button" onclick="App.triggerAckHandshake()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                </svg>
+                <span>Verify &amp; Sound 3-Beep ACK</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Wireless & Device System Logs Card -->
+          <div class="grid-card glass-card" style="margin-top: 20px;">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="eyebrow">HARDWARE EVENT STREAM</span>
+                <h2>Wireless &amp; Device System Logs</h2>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="glass-button btn-secondary" style="font-size:0.75rem; padding: 6px 12px;" type="button" onclick="App.fetchStatus()">Refresh Logs</button>
+              </div>
+            </div>
+
+            <div class="system-logs-container" id="systemLogsList">
+              <div class="terminal-line" style="color:var(--text-muted);">Awaiting device system events...</div>
             </div>
           </div>
         </section>

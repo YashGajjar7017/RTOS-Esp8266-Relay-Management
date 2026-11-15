@@ -13,16 +13,16 @@ WebServerAPI::WebServerAPI() : _server(HTTP_SERVER_PORT) {}
 
 void WebServerAPI::begin() {
   IPAddress apIP = WiFi.softAPIP();
-  _dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
-  _dnsServer.start(DNS_PORT, "*", apIP);
+  // _dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
+  // _dnsServer.start(DNS_PORT, "*", apIP); // DISABLED: Prevents mobile device captive portal popup & heavy webserver load
 
   setupRoutes();
   _server.begin();
-  Serial.printf("[WEB] Web Server & Captive Portal listening on http://%s\n", apIP.toString().c_str());
+  Serial.printf("[WEB] Web Server listening on http://%s\n", apIP.toString().c_str());
 }
 
 void WebServerAPI::handleClient() {
-  _dnsServer.processNextRequest();
+  // _dnsServer.processNextRequest(); // DISABLED: Captive DNS redirect disabled
   _server.handleClient();
 }
 
@@ -63,10 +63,10 @@ void WebServerAPI::setupRoutes() {
     sendJsonResponse(200, out);
   });
 
-  // Captive Portal detectors
-  _server.on("/generate_204", HTTP_GET, std::bind(&WebServerAPI::handleCaptivePortal, this));
-  _server.on("/hotspot-detect.html", HTTP_GET, std::bind(&WebServerAPI::handleCaptivePortal, this));
-  _server.on("/ncsi.txt", HTTP_GET, std::bind(&WebServerAPI::handleCaptivePortal, this));
+  // Captive Portal detectors - DISABLED: Prevents mobile device port 80 popup on Wi-Fi connect
+  // _server.on("/generate_204", HTTP_GET, std::bind(&WebServerAPI::handleCaptivePortal, this));
+  // _server.on("/hotspot-detect.html", HTTP_GET, std::bind(&WebServerAPI::handleCaptivePortal, this));
+  // _server.on("/ncsi.txt", HTTP_GET, std::bind(&WebServerAPI::handleCaptivePortal, this));
 
   // REST API routes
   _server.on("/api/status", HTTP_GET, std::bind(&WebServerAPI::handleGetStatus, this));
@@ -320,6 +320,18 @@ void WebServerAPI::handlePostControl() {
       sendError(400, "Lockout reset failed: relay is not in lockout");
     }
   } 
+  else if (strcmp(action, "buzzer_test") == 0) {
+    stateManager.soundBuzzer(true);
+    delay(300);
+    stateManager.soundBuzzer(false);
+    sendJsonResponse(200, "{\"success\":true,\"message\":\"Buzzer test fired on D8\"}");
+  }
+  else if (strcmp(action, "check_ack") == 0 || strcmp(action, "sound_ack") == 0) {
+    stateManager.soundAckBuzzer();
+    stateManager.setAckVerified(true);
+    stateManager.addSystemLog("ACK_TEST", "User verified ACK handshake. 3-beep buzzer sounded on D8.");
+    sendJsonResponse(200, "{\"success\":true,\"message\":\"ACK Verified: 3-beep audio confirmation sounded on D8\"}");
+  }
   else {
     sendError(400, "Unknown action");
   }
@@ -475,9 +487,9 @@ bool WebServerAPI::extractSessionUser(String& username, String& role) {
 
 void WebServerAPI::handleNotFound() {
   String host = _server.hostHeader();
-  if (host != WiFi.softAPIP().toString()) {
-    handleCaptivePortal();
-    return;
-  }
+  // if (host != WiFi.softAPIP().toString()) {
+  //   handleCaptivePortal(); // DISABLED: Prevents mobile device port 80 popup on Wi-Fi connect
+  //   return;
+  // }
   sendError(404, "Endpoint not found");
 }

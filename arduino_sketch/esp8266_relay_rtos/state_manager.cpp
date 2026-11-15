@@ -11,7 +11,9 @@ StateManager::StateManager() :
   _lastDebounceTime(0),
   _touchTriggered(false),
   _lastPersistMillis(0),
-  _uptimeSeconds(0)
+  _uptimeSeconds(0),
+  _logCount(0),
+  _ackVerified(false)
 {
   memset(_relays, 0, sizeof(_relays));
 
@@ -56,7 +58,43 @@ void StateManager::soundBuzzer(bool turningOn) {
   }
 }
 
+void StateManager::soundAckBuzzer() {
+  pinMode(PIN_BUZZER, OUTPUT);
+  // 3 distinct short beeps to acknowledge WiFi + Firebase connection
+  for (int i = 0; i < 3; i++) {
+    digitalWrite(PIN_BUZZER, HIGH);
+    delay(90);
+    digitalWrite(PIN_BUZZER, LOW);
+    if (i < 2) delay(110);
+  }
+}
+
+void StateManager::addSystemLog(const char* tag, const char* msg) {
+  if (!tag || !msg) return;
+  if (_logCount < MAX_SYSTEM_LOGS) {
+    _systemLogs[_logCount].uptime = _uptimeSeconds;
+    strncpy(_systemLogs[_logCount].tag, tag, sizeof(_systemLogs[_logCount].tag) - 1);
+    _systemLogs[_logCount].tag[sizeof(_systemLogs[_logCount].tag) - 1] = '\0';
+    strncpy(_systemLogs[_logCount].msg, msg, sizeof(_systemLogs[_logCount].msg) - 1);
+    _systemLogs[_logCount].msg[sizeof(_systemLogs[_logCount].msg) - 1] = '\0';
+    _logCount++;
+  } else {
+    for (int i = 0; i < MAX_SYSTEM_LOGS - 1; i++) {
+      _systemLogs[i] = _systemLogs[i + 1];
+    }
+    _systemLogs[MAX_SYSTEM_LOGS - 1].uptime = _uptimeSeconds;
+    strncpy(_systemLogs[MAX_SYSTEM_LOGS - 1].tag, tag, sizeof(_systemLogs[MAX_SYSTEM_LOGS - 1].tag) - 1);
+    _systemLogs[MAX_SYSTEM_LOGS - 1].tag[sizeof(_systemLogs[MAX_SYSTEM_LOGS - 1].tag) - 1] = '\0';
+    strncpy(_systemLogs[MAX_SYSTEM_LOGS - 1].msg, msg, sizeof(_systemLogs[MAX_SYSTEM_LOGS - 1].msg) - 1);
+    _systemLogs[MAX_SYSTEM_LOGS - 1].msg[sizeof(_systemLogs[MAX_SYSTEM_LOGS - 1].msg) - 1] = '\0';
+  }
+  Serial.printf("[SYSLOG][%s] %s\n", tag, msg);
+}
+
 void StateManager::begin() {
+  // Record device boot in wireless/system event log
+  addSystemLog("RESTART", (String("Boot reason: ") + ESP.getResetReason()).c_str());
+
   // Initialize Buzzer on D8 (GPIO15)
   pinMode(PIN_BUZZER, OUTPUT);
   digitalWrite(PIN_BUZZER, LOW);
@@ -664,6 +702,25 @@ String StateManager::getStatusJson(const char* currentUsername, const char* user
       uObj["status"] = u.status;
       uObj["created"] = u.created;
     }
+  }
+
+  // Handshake ACK & Connection Pipeline Status
+  JsonObject ackObj = doc.createNestedObject("ack");
+  ackObj["verified"] = _ackVerified;
+  ackObj["bootReason"] = ESP.getResetReason();
+  ackObj["wifiConnected"] = (WiFi.status() == WL_CONNECTED);
+  ackObj["softApSsid"] = WIFI_AP_SSID;
+  ackObj["softApIp"] = WiFi.softAPIP().toString();
+  ackObj["staIp"] = (WiFi.status() == WL_CONNECTED) ? WiFi.localIP().toString() : "0.0.0.0";
+  ackObj["buzzerChimes"] = 3;
+
+  // System & Wireless Event Logs
+  JsonArray logsArr = doc.createNestedArray("systemLogs");
+  for (int i = 0; i < _logCount; i++) {
+    JsonObject lObj = logsArr.createNestedObject();
+    lObj["uptime"] = _systemLogs[i].uptime;
+    lObj["tag"] = _systemLogs[i].tag;
+    lObj["msg"] = _systemLogs[i].msg;
   }
 
   String output;

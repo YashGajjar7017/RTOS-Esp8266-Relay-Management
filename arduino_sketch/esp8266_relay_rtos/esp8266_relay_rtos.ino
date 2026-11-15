@@ -66,12 +66,14 @@ void setup() {
   if (apStarted) {
     Serial.printf("[WIFI] Access Point '%s' initialized.\n", WIFI_AP_SSID);
     Serial.printf("[WIFI] Connect to Wi-Fi and browse to: http://%s\n", WiFi.softAPIP().toString().c_str());
+    stateManager.addSystemLog("AP_START", (String("SoftAP '") + WIFI_AP_SSID + "' up on " + WiFi.softAPIP().toString()).c_str());
   }
 
   #if ENABLE_INTERNET_WIFI
     if (strlen(WIFI_STA_SSID) > 0 && strcmp(WIFI_STA_SSID, "Home_WiFi_Name") != 0) {
       WiFi.begin(WIFI_STA_SSID, WIFI_STA_PASSWORD);
       Serial.printf("[WIFI] Connecting to Internet Router: %s\n", WIFI_STA_SSID);
+      stateManager.addSystemLog("WIFI_STA", (String("Connecting to ") + WIFI_STA_SSID).c_str());
     }
   #endif
 

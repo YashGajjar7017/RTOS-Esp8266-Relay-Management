@@ -30,6 +30,14 @@ struct RelayChannel {
   bool relayActive;
 };
 
+struct SystemLogEntry {
+  uint32_t uptime;
+  char tag[12];
+  char msg[64];
+};
+
+#define MAX_SYSTEM_LOGS 16
+
 class StateManager {
 public:
   StateManager();
@@ -62,6 +70,17 @@ public:
 
   // Hardware Buzzer Feedback on NodeMCU D8 (GPIO15)
   void soundBuzzer(bool turningOn);
+  void soundAckBuzzer(); // 3-beep audio acknowledge confirmation
+
+  // System & Wireless Log
+  void addSystemLog(const char* tag, const char* msg);
+  int getSystemLogCount() const { return _logCount; }
+  const SystemLogEntry* getSystemLog(int idx) const {
+    if (idx >= 0 && idx < _logCount) return &_systemLogs[idx];
+    return nullptr;
+  }
+  bool isAckVerified() const { return _ackVerified; }
+  void setAckVerified(bool v) { _ackVerified = v; }
 
   // Status Getters (Primary Channel 1)
   SystemMode getMode() const { return _relays[0].mode; }
@@ -95,6 +114,11 @@ private:
   // Persistence timing
   unsigned long _lastPersistMillis;
   uint32_t _uptimeSeconds;
+
+  // System & Wireless Event Logs
+  SystemLogEntry _systemLogs[MAX_SYSTEM_LOGS];
+  int _logCount;
+  bool _ackVerified;
 
   void applyRelayHardware(int index, bool active);
   void transitionRelayTo(int index, SystemMode newMode);

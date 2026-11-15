@@ -9,6 +9,7 @@
 
 static const char PAGE_INDEX[] PROGMEM = R"rawliteral(<!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -1046,16 +1047,19 @@ body {
 
 /* Modals */
 .modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 16px;
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(6, 8, 12, 0.92) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 999999 !important;
+  isolation: isolate !important;
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
+  padding: 16px !important;
 }
 
 .modal-backdrop.hidden {
@@ -1063,6 +1067,10 @@ body {
 }
 
 .modal-card {
+  position: relative !important;
+  z-index: 1000000 !important;
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
   width: 100%;
   max-width: 490px;
   padding: 28px;
@@ -1070,6 +1078,7 @@ body {
   flex-direction: column;
   gap: 18px;
   animation: modalIn 0.25s ease-out;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 30px rgba(245, 158, 11, 0.15);
 }
 
 @keyframes modalIn {
@@ -1305,7 +1314,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  z-index: 2000;
+  z-index: 1000001 !important;
 }
 
 .toast {
@@ -1972,26 +1981,42 @@ body {
     justify-content: space-between;
   }
 
-  /* Compact Top Bar for normal mobile phones */
+  /* Compact Top Bar for normal mobile phones (Prevents AP Button from covering 3-line hamburger) */
   .main-top-bar {
     padding: 6px 10px;
-    height: 50px;
-    min-height: 50px;
-    gap: 6px;
+    height: 52px;
+    min-height: 52px;
+    gap: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     flex-wrap: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 80;
   }
 
   .top-bar-left {
-    gap: 6px;
-    min-width: 0;
-    flex-shrink: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0 !important;
+    min-width: auto !important;
+    z-index: 10;
   }
 
   .btn-toggle-sidebar {
-    padding: 6px;
-    width: 34px;
-    height: 34px;
-    flex-shrink: 0;
+    display: inline-flex !important;
+    padding: 7px;
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    flex-shrink: 0 !important;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    z-index: 20;
   }
 
   .view-heading-group {
@@ -1999,7 +2024,7 @@ body {
   }
 
   .view-heading-group h1 {
-    font-size: 0.96rem;
+    font-size: 0.95rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2007,22 +2032,27 @@ body {
   }
 
   .top-bar-right {
-    gap: 5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
     flex-wrap: nowrap;
-    flex-shrink: 0;
+    flex-shrink: 1;
+    min-width: 0;
+    justify-content: flex-end;
   }
 
   .conn-mode-switcher {
     padding: 2px;
+    flex-shrink: 0;
   }
 
   .mode-btn {
-    padding: 3px 6px;
-    font-size: 0.65rem;
+    padding: 4px 8px;
+    font-size: 0.68rem;
   }
 
   .btn-quick-log {
-    padding: 5px 7px;
+    display: none !important;
   }
 
   .btn-log-text {
@@ -2034,18 +2064,14 @@ body {
   }
 
   .status-pill {
-    padding: 3px 7px;
+    padding: 4px 8px;
     font-size: 0.65rem;
     gap: 4px;
+    flex-shrink: 0;
   }
 
   .telemetry-beacon-group {
-    display: flex !important;
-  }
-
-  .telemetry-beacon-group .diag-pill {
-    padding: 3px 5px;
-    font-size: 0.65rem;
+    display: none !important;
   }
 }
 
@@ -2397,6 +2423,7 @@ body {
     opacity: 0;
     transform: translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -2547,10 +2574,25 @@ body {
   flex-shrink: 0;
 }
 
-.tag-poll { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
-.tag-cmd  { background: rgba(245, 158, 11, 0.25); color: #fbbf24; }
-.tag-sync { background: rgba(16, 185, 129, 0.2); color: #34d399; }
-.tag-err  { background: rgba(244, 63, 94, 0.25); color: #fb7185; }
+.tag-poll {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+.tag-cmd {
+  background: rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+}
+
+.tag-sync {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+.tag-err {
+  background: rgba(244, 63, 94, 0.25);
+  color: #fb7185;
+}
 
 .term-msg {
   flex: 1;
@@ -2654,8 +2696,427 @@ body {
   }
 }
 
+/* ========================================================================= */
+/* GLOBAL TOUCH-HOLD & CONTEXT MENU PREVENTION                               */
+/* Prevents browser text-selection & context popup from rendering over UI    */
+/* ========================================================================= */
+*,
+*::before,
+*::after {
+  -webkit-touch-callout: none;
+}
+
+html,
+body {
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
+input,
+textarea,
+[contenteditable="true"] {
+  -webkit-touch-callout: default !important;
+  -webkit-user-select: text !important;
+  user-select: text !important;
+}
+
+/* ========================================================================= */
+/* DYNAMIC MULTI-RELAY CHANNEL TABS & INDEPENDENT COUNTDOWNS                 */
+/* ========================================================================= */
+.relay-channels-nav {
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.relay-tabs-scroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px 8px;
+  scrollbar-width: thin;
+}
+
+.relay-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.relay-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.relay-tab-btn.active {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.15));
+  border-color: var(--accent-amber);
+  color: var(--accent-amber);
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.25);
+}
+
+.relay-tab-pin-tag {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--text-muted);
+}
+
+.relay-tab-btn.active .relay-tab-pin-tag {
+  background: rgba(245, 158, 11, 0.3);
+  color: #fff;
+}
+
+.btn-add-relay-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--accent-cyan);
+  font-size: 0.76rem;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.btn-add-relay-pill:hover {
+  border-color: var(--accent-cyan);
+  background: rgba(6, 182, 212, 0.1);
+}
+
+/* Direct Power Toggle Button */
+.btn-power-toggle {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-color: rgba(16, 185, 129, 0.6);
+  color: #fff !important;
+  font-weight: 800;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35);
+  padding: 12px 20px;
+}
+
+.btn-power-toggle.is-active {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border-color: rgba(239, 68, 68, 0.6);
+  box-shadow: 0 4px 18px rgba(239, 68, 68, 0.35);
+}
+
+/* Notification Bell & Drawer */
+.btn-quick-log {
+  position: relative;
+}
+
+.notif-badge-pill {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: var(--radius-full);
+  border: 1px solid #07090e;
+  line-height: 1.2;
+}
+
+.notifications-list {
+  max-height: 360px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 4px;
+}
+
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.notif-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.notif-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.notif-content {
+  flex: 1;
+}
+
+.notif-title {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.notif-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.notif-time {
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.notif-empty {
+  text-align: center;
+  padding: 30px 10px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* Dynamic Relay Management Section in Settings */
+.relay-mgmt-card {
+  margin-top: 20px;
+}
+
+.relay-card-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.relay-card-item {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.relay-card-item.is-active {
+  border-color: rgba(16, 185, 129, 0.5);
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.relay-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.relay-card-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.relay-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+}
+
+.relay-card-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.relay-card-label {
+  color: var(--text-muted);
+  font-size: 0.64rem;
+}
+
+.relay-card-val {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.relay-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+
+/* -----------------------------------------------------------------------------
+ * CONNECTION ACKNOWLEDGE & WIRELESS LOGS
+ * -------------------------------------------------------------------------- */
+.ack-pipeline-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.ack-step-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.ack-step-card.is-active {
+  border-color: rgba(6, 182, 212, 0.4);
+  background: rgba(6, 182, 212, 0.05);
+}
+
+.ack-step-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ack-step-num {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--color-cyan);
+  font-weight: 700;
+}
+
+.ack-step-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+}
+
+.ack-step-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.ack-step-detail {
+  font-size: 0.72rem;
+  color: var(--color-emerald);
+  font-weight: 600;
+}
+
+.ack-action-banner {
+  background: rgba(6, 182, 212, 0.06);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.ack-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ack-banner-icon {
+  font-size: 1.6rem;
+}
+
+.ack-banner-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+}
+
+.ack-banner-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.system-logs-container {
+  background: #060911;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  max-height: 320px;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.syslog-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.syslog-uptime {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  min-width: 55px;
+}
+
+.syslog-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  min-width: 65px;
+  text-align: center;
+}
+
+.syslog-tag.tag-boot { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+.syslog-tag.tag-wifi { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+.syslog-tag.tag-ack { background: rgba(245, 158, 11, 0.25); color: #fbbf24; }
+.syslog-tag.tag-cloud { background: rgba(6, 182, 212, 0.2); color: #38bdf8; }
+
+.syslog-msg {
+  color: var(--text-primary);
+  word-break: break-all;
+  flex: 1;
+}
+
 </style>
 </head>
+
 <body>
   <!-- Ambient background glow elements -->
   <div class="ambient-glow glow-1"></div>
@@ -2667,12 +3128,12 @@ body {
   <!-- ========================================================================= -->
   <div id="loginSection" class="auth-wrapper">
     <div class="auth-card glass-card">
-      
+
       <!-- Brand & Header -->
       <div class="auth-brand">
         <div class="auth-logo-badge">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </div>
         <h1 class="auth-title">CYBER-RELAY <span class="badge-rtos">RTOS v3.0</span></h1>
@@ -2683,19 +3144,28 @@ body {
       <div class="auth-conn-bar">
         <span class="auth-bar-label">Target Network:</span>
         <div class="conn-mode-switcher compact">
-          <button id="authBtnLocal" class="mode-btn active" type="button" onclick="App.setConnectionMode('local')">Local AP</button>
-          <button id="authBtnCloud" class="mode-btn" type="button" onclick="App.setConnectionMode('cloud')">Firebase Cloud</button>
+          <button id="authBtnLocal" class="mode-btn active" type="button" onclick="App.setConnectionMode('local')">Local
+            AP</button>
+          <button id="authBtnCloud" class="mode-btn" type="button" onclick="App.setConnectionMode('cloud')">Firebase
+            Cloud</button>
         </div>
       </div>
 
       <!-- Tabs: Sign In / Register -->
       <div class="auth-tabs">
         <button id="tabBtnSignIn" class="auth-tab-btn active" type="button" onclick="App.switchAuthTab('signin')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" />
+          </svg>
           <span>Sign In</span>
         </button>
         <button id="tabBtnRegister" class="auth-tab-btn" type="button" onclick="App.switchAuthTab('register')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="8.5" cy="7" r="4" />
+            <line x1="20" y1="8" x2="20" y2="14" />
+            <line x1="23" y1="11" x2="17" y2="11" />
+          </svg>
           <span>Register New</span>
         </button>
       </div>
@@ -2706,17 +3176,20 @@ body {
         <div class="role-select-section">
           <span class="role-select-label">Choose Account to Sign In:</span>
           <div class="role-select-grid">
-            <button type="button" id="btnSelectAdmin" class="role-select-btn btn-admin selected" onclick="App.selectRoleLogin('admin')">
+            <button type="button" id="btnSelectAdmin" class="role-select-btn btn-admin selected"
+              onclick="App.selectRoleLogin('admin')">
               <span class="btn-icon">🛡️</span>
               <span class="btn-title">Admin Login</span>
               <span class="btn-user">Yash_Gajjar</span>
             </button>
-            <button type="button" id="btnSelectUser" class="role-select-btn btn-user" onclick="App.selectRoleLogin('user')">
+            <button type="button" id="btnSelectUser" class="role-select-btn btn-user"
+              onclick="App.selectRoleLogin('user')">
               <span class="btn-icon">⚡</span>
               <span class="btn-title">User Login</span>
               <span class="btn-user">Mahi_Gajjar</span>
             </button>
-            <button type="button" id="btnSelectGuest" class="role-select-btn btn-guest" onclick="App.selectRoleLogin('guest')">
+            <button type="button" id="btnSelectGuest" class="role-select-btn btn-guest"
+              onclick="App.selectRoleLogin('guest')">
               <span class="btn-icon">👁️</span>
               <span class="btn-title">Guest Login</span>
               <span class="btn-user">Analytics Only</span>
@@ -2728,17 +3201,26 @@ body {
           <div class="form-group">
             <label for="inputUsername">Username</label>
             <div class="input-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              <input type="text" id="inputUsername" value="Yash_Gajjar" placeholder="e.g. Yash_Gajjar" required autocomplete="username">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              <input type="text" id="inputUsername" value="Yash_Gajjar" placeholder="e.g. Yash_Gajjar" required
+                autocomplete="username">
             </div>
           </div>
 
           <div class="form-group">
             <label for="inputPassword">Password</label>
             <div class="input-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              <input type="password" id="inputPassword" placeholder="Enter password to sign in" required autocomplete="current-password">
-              <button type="button" class="btn-toggle-eye" onclick="App.togglePasswordVisibility('inputPassword')" title="Show/Hide Password">👁️</button>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              <input type="password" id="inputPassword" placeholder="Enter password to sign in" required
+                autocomplete="current-password">
+              <button type="button" class="btn-toggle-eye" onclick="App.togglePasswordVisibility('inputPassword')"
+                title="Show/Hide Password">👁️</button>
             </div>
           </div>
 
@@ -2752,11 +3234,14 @@ body {
                 <span class="checkbox-subtext">Auto-login on app launch</span>
               </span>
             </label>
-            <button type="button" class="btn-link-forgot" onclick="App.openForgotPasswordModal()">Forgot Password?</button>
+            <button type="button" class="btn-link-forgot" onclick="App.openForgotPasswordModal()">Forgot
+              Password?</button>
           </div>
 
           <button type="submit" id="btnSubmitSignIn" class="glass-button btn-accent w-full auth-submit-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
             <span>SIGN IN &amp; CONNECT</span>
           </button>
         </form>
@@ -2768,7 +3253,10 @@ body {
           <div class="form-group">
             <label for="regUsername">Desired Username</label>
             <div class="input-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
               <input type="text" id="regUsername" placeholder="e.g. Operator_1" required autocomplete="off">
             </div>
           </div>
@@ -2776,16 +3264,24 @@ body {
           <div class="form-group">
             <label for="regPassword">Create Password</label>
             <div class="input-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              <input type="password" id="regPassword" placeholder="Min. 6 characters" required autocomplete="new-password">
-              <button type="button" class="btn-toggle-eye" onclick="App.togglePasswordVisibility('regPassword')">👁️</button>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              <input type="password" id="regPassword" placeholder="Min. 6 characters" required
+                autocomplete="new-password">
+              <button type="button" class="btn-toggle-eye"
+                onclick="App.togglePasswordVisibility('regPassword')">👁️</button>
             </div>
           </div>
 
           <div class="form-group">
             <label for="regRole">Privilege Tier</label>
             <div class="input-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
               <select id="regRole" class="custom-select">
                 <option value="admin">Level 1: Super Administrator (Full Control &amp; Bypasses)</option>
                 <option value="guarded_operator" selected>Level 2: Guarded Operator (1-Time Session Grants)</option>
@@ -2805,7 +3301,11 @@ body {
           </div>
 
           <button type="submit" id="btnSubmitRegister" class="glass-button btn-primary w-full auth-submit-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="8.5" cy="7" r="4" />
+              <polyline points="17 11 19 13 23 9" />
+            </svg>
             <span>ENROLL &amp; ENTER SYSTEM</span>
           </button>
         </form>
@@ -2826,7 +3326,7 @@ body {
   <!-- 2. MAIN CYBER-RELAY RTOS APP SHELL (SIDEBAR + MULTI-VIEW ARCHITECTURE)    -->
   <!-- ========================================================================= -->
   <div id="dashboardSection" class="app-shell hidden" style="display: none;">
-    
+
     <!-- Mobile Sidebar Backdrop Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="App.closeSidebar()"></div>
 
@@ -2836,7 +3336,7 @@ body {
         <div class="sidebar-brand">
           <div class="brand-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </div>
           <div>
@@ -2844,7 +3344,8 @@ body {
             <span class="brand-tag">RTOS v3.0 PRISM</span>
           </div>
         </div>
-        <button class="btn-close-sidebar" type="button" onclick="App.closeSidebar()" aria-label="Close Sidebar">✕</button>
+        <button class="btn-close-sidebar" type="button" onclick="App.closeSidebar()"
+          aria-label="Close Sidebar">✕</button>
       </div>
 
       <!-- Navigation Links -->
@@ -2853,7 +3354,9 @@ body {
 
         <button type="button" class="nav-item active" id="navControl" onclick="App.switchView('control')">
           <div class="nav-item-left">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+            </svg>
             <span>Relay Control</span>
           </div>
           <span class="nav-badge" id="navRelayBadge">READY</span>
@@ -2861,7 +3364,10 @@ body {
 
         <button type="button" class="nav-item" id="navTimers" onclick="App.switchView('timers')">
           <div class="nav-item-left">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
             <span>Timer Calibrations</span>
           </div>
           <span class="nav-badge" id="navTimersBadge">8h / 6d</span>
@@ -2871,7 +3377,9 @@ body {
 
         <button type="button" class="nav-item" id="navAnalytics" onclick="App.switchView('analytics')">
           <div class="nav-item-left">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 20V10M12 20V4M6 20v-6" />
+            </svg>
             <span>Monthly Analytics</span>
           </div>
           <span class="nav-badge" id="navDutyBadge">16.8%</span>
@@ -2879,7 +3387,12 @@ body {
 
         <button type="button" class="nav-item" id="navUsers" onclick="App.switchView('users')">
           <div class="nav-item-left">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
             <span>User Accounts</span>
           </div>
           <span class="nav-badge" id="navUsersBadge">3 Active</span>
@@ -2889,15 +3402,43 @@ body {
 
         <button type="button" class="nav-item" id="navCloud" onclick="App.switchView('cloud')">
           <div class="nav-item-left">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+            </svg>
             <span>Firebase Cloud &amp; Logs</span>
           </div>
           <span class="nav-badge" id="navCloudBadge">Online</span>
         </button>
 
+        <button type="button" class="nav-item" id="navAcknowledge" onclick="App.switchView('acknowledge')">
+          <div class="nav-item-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="m9 12 2 2 4-4"/>
+            </svg>
+            <span>Connection ACK &amp; Logs</span>
+          </div>
+          <span class="nav-badge" id="navAckBadge">READY</span>
+        </button>
+
+        <button type="button" class="nav-item" id="navNotifications" onclick="App.openNotificationsModal()">
+          <div class="nav-item-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            <span>Alerts &amp; Notifications</span>
+          </div>
+          <span class="nav-badge" id="navNotifBadge">0 New</span>
+        </button>
+
         <button type="button" class="nav-item" id="navSettings" onclick="App.switchView('settings')">
           <div class="nav-item-left">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
             <span>Device Diagnostics</span>
           </div>
           <span class="nav-badge" id="navPingBadge">-- ms</span>
@@ -2916,8 +3457,11 @@ body {
               <span id="sidebarUserRole" class="role-tag">SUPER ADMIN</span>
             </div>
           </div>
-          <button id="sidebarLogoutBtn" class="logout-btn-styled" title="Log Out / Switch Account" type="button" onclick="App.logout()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          <button id="sidebarLogoutBtn" class="logout-btn-styled" title="Log Out / Switch Account" type="button"
+            onclick="App.logout()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+            </svg>
             <span class="logout-text">Exit</span>
           </button>
         </div>
@@ -2926,12 +3470,17 @@ body {
 
     <!-- Main Content Canvas -->
     <div class="app-main-content">
-      
+
       <!-- Top Dynamic Header Bar with Real Diagnostics & Mode Switcher -->
       <header class="main-top-bar glass-card">
         <div class="top-bar-left">
-          <button type="button" class="btn-toggle-sidebar" id="btnToggleSidebar" onclick="App.openSidebar()" aria-label="Toggle Navigation">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          <button type="button" class="btn-toggle-sidebar" id="btnToggleSidebar" onclick="App.openSidebar()"
+            aria-label="Toggle Navigation">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
           </button>
           <div class="view-heading-group">
             <h1 id="headerViewTitle">Relay Control</h1>
@@ -2942,8 +3491,10 @@ body {
         <div class="top-bar-right">
           <!-- Connection Mode Switcher (Local AP vs Firebase Cloud) -->
           <div class="conn-mode-switcher" title="Toggle Connection Mode">
-            <button id="btnModeLocal" class="mode-btn active" type="button" onclick="App.setConnectionMode('local')">AP</button>
-            <button id="btnModeCloud" class="mode-btn" type="button" onclick="App.setConnectionMode('cloud')">Cloud</button>
+            <button id="btnModeLocal" class="mode-btn active" type="button"
+              onclick="App.setConnectionMode('local')">AP</button>
+            <button id="btnModeCloud" class="mode-btn" type="button"
+              onclick="App.setConnectionMode('cloud')">Cloud</button>
           </div>
 
           <!-- Real Telemetry Diagnostic Group (Real Ping & RSSI) -->
@@ -2952,16 +3503,30 @@ body {
               <span>⚡</span>
               <span id="headerPingVal">-- ms</span>
             </div>
-            <div class="diag-pill rssi-good" id="headerRssiPill" title="Wi-Fi RSSI Signal Strength" style="display: none;">
+            <div class="diag-pill rssi-good" id="headerRssiPill" title="Wi-Fi RSSI Signal Strength"
+              style="display: none;">
               <span>📶</span>
               <span id="headerRssiVal">-- dBm</span>
             </div>
           </div>
 
           <!-- Cloud Log Launcher Button -->
-          <button id="btnOpenCloudLog" class="btn-quick-log" type="button" title="Firebase Logs" onclick="App.switchView('cloud')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+          <button id="btnOpenCloudLog" class="btn-quick-log" type="button" title="Firebase Logs"
+            onclick="App.switchView('cloud')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+            </svg>
             <span class="btn-log-text">Logs</span>
+          </button>
+
+          <!-- Notifications Bell Button -->
+          <button id="btnTopNotifications" class="btn-quick-log" type="button" title="Switch Alerts &amp; Notifications"
+            onclick="App.openNotificationsModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            <span class="notif-badge-pill" id="topNotifBadge" style="display:none;">0</span>
           </button>
 
           <!-- Status Pill -->
@@ -2979,19 +3544,30 @@ body {
           <span id="connNoticeText">Connecting to ESP8266 Local AP (192.168.4.1)...</span>
         </div>
         <div class="conn-banner-actions">
-          <button type="button" class="btn-banner-action" onclick="App.setConnectionMode('cloud')">Switch to Firebase Cloud</button>
+          <button type="button" class="btn-banner-action" onclick="App.setConnectionMode('cloud')">Switch to Firebase
+            Cloud</button>
           <button type="button" class="btn-banner-dismiss" onclick="App.dismissConnNotice()">✕</button>
         </div>
       </div>
 
       <div id="guestNoticeBanner" class="role-banner guest-banner hidden">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-        <span><strong>Guest Mode Active:</strong> You have read-only access to view live countdowns and Monthly Switch Analytics. Hardware controls and calibrations are disabled.</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="16" x2="12" y2="12" />
+          <line x1="12" y1="8" x2="12.01" y2="8" />
+        </svg>
+        <span><strong>Guest Mode Active:</strong> You have read-only access to view live countdowns and Monthly Switch
+          Analytics. Hardware controls and calibrations are disabled.</span>
       </div>
 
       <div id="guardedNoticeBanner" class="role-banner guarded-banner hidden">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span><strong>Guarded Operator (Mahi_Gajjar):</strong> Any trigger or system write requires instant 1-time approval from Yash_Gajjar (Admin). Session destroys after 1 use.</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <span><strong>Guarded Operator (Mahi_Gajjar):</strong> Any trigger or system write requires instant 1-time
+          approval from Yash_Gajjar (Admin). Session destroys after 1 use.</span>
       </div>
 
       <!-- VIEWS CONTAINER -->
@@ -3001,11 +3577,18 @@ body {
         <!-- VIEW 1: RELAY CONTROL & EXTEND TIMER                                 -->
         <!-- =================================================================== -->
         <section id="viewControl" class="view-page active">
+          <!-- Multi-Relay Channel Selector Navigation Tabs -->
+          <div class="relay-channels-nav" id="relayTabsContainer">
+            <div class="relay-tabs-scroll" id="relayTabsList">
+              <!-- Dynamically populated relay channels -->
+            </div>
+          </div>
+
           <div class="grid-card glass-card state-hero-card">
             <div class="card-header">
               <div class="card-title-group">
-                <span class="eyebrow">SYSTEM MONITOR</span>
-                <h2>Live Operational State</h2>
+                <span class="eyebrow" id="relayChannelBadge">CHANNEL 1 // PIN D1 (GPIO5)</span>
+                <h2 id="relayCardTitle">Relay 1 Operational State</h2>
               </div>
               <div id="sysStateBadge" class="state-badge badge-idle">
                 <span class="state-icon">●</span>
@@ -3038,7 +3621,8 @@ body {
               <div class="radial-center-content">
                 <div class="relay-bulb-indicator" id="relayBulb">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                    <path
+                      d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
                   </svg>
                 </div>
                 <div class="countdown-label" id="countdownLabel">READY FOR TOUCH</div>
@@ -3084,16 +3668,36 @@ body {
 
             <!-- Action Controls -->
             <div class="action-buttons-group" id="controlsGroup">
-              <button id="btnManualTrigger" class="glass-button btn-accent" type="button" onclick="App.handleTriggerClick()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <!-- Direct ON/OFF Master Toggle Button -->
+              <button id="btnDirectToggle" class="glass-button btn-power-toggle" type="button"
+                onclick="App.handleToggleClick()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18.36 6.64a9 9 0 1 1-12.73 0" />
+                  <line x1="12" y1="2" x2="12" y2="12" />
+                </svg>
+                <span id="directToggleText">Switch Relay ON</span>
+              </button>
+
+              <button id="btnManualTrigger" class="glass-button btn-accent" type="button"
+                onclick="App.handleTriggerClick()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
                 <span id="triggerBtnText">Trigger Relay Cycle Now</span>
               </button>
-              <button id="btnCancelCycle" class="glass-button btn-danger" type="button" onclick="App.cancelCycle()" disabled>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
+              <button id="btnCancelCycle" class="glass-button btn-danger" type="button" onclick="App.cancelCycle()"
+                disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                </svg>
                 <span>Emergency Cutoff</span>
               </button>
-              <button id="btnResetLockout" class="glass-button btn-warning" type="button" onclick="App.resetLockout()" disabled title="Admin Only">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              <button id="btnResetLockout" class="glass-button btn-warning" type="button" onclick="App.resetLockout()"
+                disabled title="Admin Only">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" />
+                </svg>
                 <span>Bypass Lockout (Admin Only)</span>
               </button>
             </div>
@@ -3102,12 +3706,16 @@ body {
             <div id="adminExtendPanel" class="extend-timer-panel">
               <div class="extend-header">
                 <span class="extend-title">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 10"/></svg>
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 14 10" />
+                  </svg>
                   <span>Admin Extend Active Relay Timer</span>
                 </span>
                 <span class="badge-single-use">Live Sync</span>
               </div>
-              <p class="card-subtext" style="margin-bottom: 10px;">Add extra running time to the active relay without restarting the cycle.</p>
+              <p class="card-subtext" style="margin-bottom: 10px;">Add extra running time to the active relay without
+                restarting the cycle.</p>
               <div class="extend-chips-grid">
                 <button type="button" class="btn-extend-chip" onclick="App.extendActiveTimer(15)">+15 min</button>
                 <button type="button" class="btn-extend-chip" onclick="App.extendActiveTimer(30)">+30 min</button>
@@ -3115,8 +3723,10 @@ body {
                 <button type="button" class="btn-extend-chip" onclick="App.extendActiveTimer(120)">+2 hours</button>
               </div>
               <div class="extend-custom-row">
-                <input type="number" id="inputCustomExtendMinutes" placeholder="Custom minutes (e.g. 45)" min="1" max="1440">
-                <button type="button" class="glass-button btn-primary" onclick="App.extendActiveTimerCustom()">+ Add Time</button>
+                <input type="number" id="inputCustomExtendMinutes" placeholder="Custom minutes (e.g. 45)" min="1"
+                  max="1440">
+                <button type="button" class="glass-button btn-primary" onclick="App.extendActiveTimerCustom()">+ Add
+                  Time</button>
               </div>
             </div>
 
@@ -3149,7 +3759,8 @@ body {
                   </div>
                 </div>
                 <div class="slider-wrapper">
-                  <input type="range" id="onHoursSlider" min="1" max="24" step="0.5" value="8" oninput="App.onTimerInput('on')">
+                  <input type="range" id="onHoursSlider" min="1" max="24" step="0.5" value="8"
+                    oninput="App.onTimerInput('on')">
                   <div class="slider-ticks">
                     <span>1h</span>
                     <span>7h</span>
@@ -3172,7 +3783,8 @@ body {
                   </div>
                 </div>
                 <div class="slider-wrapper">
-                  <input type="range" id="lockoutDaysSlider" min="1" max="30" step="0.5" value="6" oninput="App.onTimerInput('lockout')">
+                  <input type="range" id="lockoutDaysSlider" min="1" max="30" step="0.5" value="6"
+                    oninput="App.onTimerInput('lockout')">
                   <div class="slider-ticks">
                     <span>1d</span>
                     <span>5d</span>
@@ -3183,8 +3795,13 @@ body {
                 </div>
               </div>
 
-              <button id="btnSaveConfig" class="glass-button btn-primary w-full" type="button" onclick="App.saveTimers()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              <button id="btnSaveConfig" class="glass-button btn-primary w-full" type="button"
+                onclick="App.saveTimers()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
                 <span>Save &amp; Flash to ESP8266 Memory</span>
               </button>
             </div>
@@ -3269,7 +3886,8 @@ body {
               </div>
             </div>
 
-            <p class="card-subtext">Predefined credentials with 3 discrete privilege levels. Administrators have authority to temporarily disable or enable user accounts.</p>
+            <p class="card-subtext">Predefined credentials with 3 discrete privilege levels. Administrators have
+              authority to temporarily disable or enable user accounts.</p>
 
             <div class="user-table-wrap">
               <table class="user-table">
@@ -3307,11 +3925,14 @@ body {
               <div class="cloud-target-box">
                 <div>
                   <span class="eyebrow">ACTIVE FIREBASE ENDPOINT</span>
-                  <div class="cloud-target-url" id="lblFirebaseTarget">https://cyber-relay-rtos-default-rtdb.firebaseio.com/esp8266_relay</div>
+                  <div class="cloud-target-url" id="lblFirebaseTarget">
+                    https://cyber-relay-rtos-default-rtdb.firebaseio.com/esp8266_relay</div>
                 </div>
                 <div style="display:flex; gap:8px;">
-                  <button type="button" class="glass-button btn-secondary" onclick="App.testCloudConnection()">Test Ping</button>
-                  <button type="button" class="glass-button btn-primary" onclick="App.openCloudConfigModal()">Edit Config</button>
+                  <button type="button" class="glass-button btn-secondary" onclick="App.testCloudConnection()">Test
+                    Ping</button>
+                  <button type="button" class="glass-button btn-primary" onclick="App.openCloudConfigModal()">Edit
+                    Config</button>
                 </div>
               </div>
 
@@ -3322,10 +3943,13 @@ body {
 
               <!-- Terminal actions -->
               <div class="cloud-log-actions">
-                <span class="card-subtext">Live feed of read/write sync operations, controller origins, and command latency.</span>
+                <span class="card-subtext">Live feed of read/write sync operations, controller origins, and command
+                  latency.</span>
                 <div style="display:flex; gap:8px;">
-                  <button type="button" class="glass-button btn-secondary" onclick="App.clearCloudLogs()">Clear Console</button>
-                  <button type="button" class="glass-button btn-primary" onclick="App.fetchStatus()">Force Sync Now</button>
+                  <button type="button" class="glass-button btn-secondary" onclick="App.clearCloudLogs()">Clear
+                    Console</button>
+                  <button type="button" class="glass-button btn-primary" onclick="App.fetchStatus()">Force Sync
+                    Now</button>
                 </div>
               </div>
             </div>
@@ -3376,10 +4000,140 @@ body {
 
             <div class="config-controls" style="margin-top: 18px;">
               <div class="test-conn-row">
-                <button type="button" class="glass-button btn-secondary" onclick="App.testLocalConnection()">Test ESP Ping</button>
-                <button type="button" class="glass-button btn-secondary" onclick="App.testCloudConnection()">Test Firebase Ping</button>
-                <button type="button" class="glass-button btn-warning" onclick="App.openCloudConfigModal()">Network Settings</button>
+                <button type="button" class="glass-button btn-secondary" onclick="App.testLocalConnection()">Test ESP
+                  Ping</button>
+                <button type="button" class="glass-button btn-secondary" onclick="App.testCloudConnection()">Test
+                  Firebase Ping</button>
+                <button type="button" class="glass-button btn-warning" onclick="App.openCloudConfigModal()">Network
+                  Settings</button>
               </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Multi-Relay Configuration Card -->
+          <div class="grid-card glass-card relay-mgmt-card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="eyebrow">HARDWARE EXTENSION</span>
+                <h2>Dynamic Multi-Relay &amp; Pin Bindings</h2>
+                <p class="card-subtext">Add separate relays with dedicated ESP8266 GPIO pins, independent ON timers, and
+                  custom lockout durations.</p>
+              </div>
+              <button type="button" class="glass-button btn-primary" onclick="App.openAddRelayModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                <span>Add Relay</span>
+              </button>
+            </div>
+
+            <div class="relay-card-list" id="settingsRelaysList">
+              <!-- Dynamically populated relay cards -->
+            </div>
+          </div>
+
+          <!-- Hardware Alarm Buzzer Feedback Card -->
+          <div class="grid-card glass-card" style="margin-top: 20px;">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="eyebrow">ACOUSTIC TELEMETRY</span>
+                <h2>Hardware Alarm Buzzer (NodeMCU D8 / GPIO15)</h2>
+                <p class="card-subtext">Audible feedback sounds on D8 whenever any relay switches ON (double beep) or
+                  OFF (single long tone).</p>
+              </div>
+              <span class="state-badge badge-active">BUZZER ON D8</span>
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 12px;">
+              <button type="button" class="glass-button btn-secondary" onclick="App.testBuzzerSound()">
+                <span>🔊 Test Buzzer Sound</span>
+              </button>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Plays immediate acoustic chime for hardware
+                verification.</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- VIEW 7: CONNECTION ACKNOWLEDGE & WIRELESS LOGS                      -->
+        <!-- =================================================================== -->
+        <section id="viewAcknowledge" class="view-page">
+          <div class="grid-card glass-card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="eyebrow">PIPELINE VERIFICATION &amp; HARDWARE BUZZER</span>
+                <h2>Connection Acknowledge (3-Beep Chime)</h2>
+              </div>
+              <span class="state-badge badge-active" id="ackVerifiedBadge">ACK READY</span>
+            </div>
+
+            <!-- 3-Stage Handshake Pipeline Visualizer -->
+            <div class="ack-pipeline-grid">
+              <div class="ack-step-card is-active" id="ackStep1">
+                <div class="ack-step-header">
+                  <span class="ack-step-num">STAGE 1</span>
+                  <span class="status-dot dot-active" id="ackStep1Dot"></span>
+                </div>
+                <div class="ack-step-title">🔌 Device Boot &amp; Restart</div>
+                <div class="ack-step-desc" id="ackStep1Desc">Boot Reason: Power On</div>
+                <div class="ack-step-detail" id="ackStep1Detail">System RTOS Initialized</div>
+              </div>
+
+              <div class="ack-step-card is-active" id="ackStep2">
+                <div class="ack-step-header">
+                  <span class="ack-step-num">STAGE 2</span>
+                  <span class="status-dot dot-active" id="ackStep2Dot"></span>
+                </div>
+                <div class="ack-step-title">📶 SoftAP &amp; Wi-Fi Network</div>
+                <div class="ack-step-desc" id="ackStep2Desc">AP: CYBER-RELAY-HUB</div>
+                <div class="ack-step-detail" id="ackStep2Detail">IP: 192.168.4.1</div>
+              </div>
+
+              <div class="ack-step-card is-active" id="ackStep3">
+                <div class="ack-step-header">
+                  <span class="ack-step-num">STAGE 3</span>
+                  <span class="status-dot dot-active" id="ackStep3Dot"></span>
+                </div>
+                <div class="ack-step-title">☁️ Firebase Cloud Sync</div>
+                <div class="ack-step-desc" id="ackStep3Desc">Realtime Stream Active</div>
+                <div class="ack-step-detail" id="ackStep3Detail">3-Beep Audio Handshake</div>
+              </div>
+            </div>
+
+            <!-- Handshake Action Banner -->
+            <div class="ack-action-banner">
+              <div class="ack-banner-left">
+                <div class="ack-banner-icon">🔔</div>
+                <div>
+                  <div class="ack-banner-title" id="ackBannerStatusTitle">Handshake Acknowledged &amp; Confirmed</div>
+                  <div class="ack-banner-subtitle" id="ackBannerStatusSub">ESP8266 sounds D8 buzzer 3 times when device joins Wi-Fi and connects to Firebase.</div>
+                </div>
+              </div>
+              <button class="glass-button btn-accent" id="btnTestAckHandshake" type="button" onclick="App.triggerAckHandshake()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                </svg>
+                <span>Verify &amp; Sound 3-Beep ACK</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Wireless & Device System Logs Card -->
+          <div class="grid-card glass-card" style="margin-top: 20px;">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="eyebrow">HARDWARE EVENT STREAM</span>
+                <h2>Wireless &amp; Device System Logs</h2>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="glass-button btn-secondary" style="font-size:0.75rem; padding: 6px 12px;" type="button" onclick="App.fetchStatus()">Refresh Logs</button>
+              </div>
+            </div>
+
+            <div class="system-logs-container" id="systemLogsList">
+              <div class="terminal-line" style="color:var(--text-muted);">Awaiting device system events...</div>
             </div>
           </div>
         </section>
@@ -3415,7 +4169,11 @@ body {
     <div class="modal-card glass-card modal-highlight-gold">
       <div class="modal-header">
         <div class="auth-icon-badge">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
         </div>
         <div>
           <h3>User Authorization Request</h3>
@@ -3447,9 +4205,12 @@ body {
           </div>
 
           <div class="modal-actions">
-            <button type="button" class="glass-button btn-secondary" onclick="App.rejectAdminApproval()">Deny Access</button>
+            <button type="button" class="glass-button btn-secondary" onclick="App.rejectAdminApproval()">Deny
+              Access</button>
             <button type="submit" class="glass-button btn-gold">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
               <span>Grant 1-Time Access</span>
             </button>
           </div>
@@ -3471,9 +4232,11 @@ body {
       </div>
       <h3 style="margin-top: 16px;">Waiting for Admin Confirmation</h3>
       <p class="modal-subtitle" style="margin: 8px auto 16px; max-width: 320px;">
-        A real-time authorization popup has been sent to <strong>Yash_Gajjar</strong>. Your 1-time session will execute immediately once approved.
+        A real-time authorization popup has been sent to <strong>Yash_Gajjar</strong>. Your 1-time session will execute
+        immediately once approved.
       </p>
-      <button class="glass-button btn-secondary" type="button" onclick="App.cancelWaitingRequest()">Cancel Request</button>
+      <button class="glass-button btn-secondary" type="button" onclick="App.cancelWaitingRequest()">Cancel
+        Request</button>
     </div>
   </div>
 
@@ -3484,7 +4247,11 @@ body {
     <div class="modal-card glass-card">
       <div class="modal-header">
         <div class="auth-icon-badge" style="background: rgba(6,182,212,0.15); color: var(--accent-cyan);">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
         </div>
         <div>
           <h3>Network &amp; Firebase Cloud Config</h3>
@@ -3497,13 +4264,15 @@ body {
         <form onsubmit="event.preventDefault(); App.saveCloudSettings();">
           <div class="form-group">
             <label for="cfgFirebaseHost">Firebase Realtime Database Host URL</label>
-            <input type="text" id="cfgFirebaseHost" placeholder="e.g. cyber-relay-rtos-default-rtdb.firebaseio.com" required>
+            <input type="text" id="cfgFirebaseHost" placeholder="e.g. cyber-relay-rtos-default-rtdb.firebaseio.com"
+              required>
             <span class="field-hint">Your Firebase project database domain without https://</span>
           </div>
 
           <div class="form-group">
             <label for="cfgFirebaseAuth">Firebase Database Secret / Auth Key (Optional)</label>
-            <input type="password" id="cfgFirebaseAuth" placeholder="Enter Database Secret or leave blank for open rules">
+            <input type="password" id="cfgFirebaseAuth"
+              placeholder="Enter Database Secret or leave blank for open rules">
             <span class="field-hint">Required only if Firebase Database rules require authentication.</span>
           </div>
 
@@ -3514,12 +4283,15 @@ body {
           </div>
 
           <div class="test-conn-row">
-            <button type="button" class="glass-button btn-secondary" onclick="App.testCloudConnection()">Test Firebase Ping</button>
-            <button type="button" class="glass-button btn-secondary" onclick="App.testLocalConnection()">Test ESP Ping</button>
+            <button type="button" class="glass-button btn-secondary" onclick="App.testCloudConnection()">Test Firebase
+              Ping</button>
+            <button type="button" class="glass-button btn-secondary" onclick="App.testLocalConnection()">Test ESP
+              Ping</button>
           </div>
 
           <div class="modal-actions" style="margin-top: 18px;">
-            <button type="button" class="glass-button btn-secondary" onclick="App.closeCloudConfigModal()">Cancel</button>
+            <button type="button" class="glass-button btn-secondary"
+              onclick="App.closeCloudConfigModal()">Cancel</button>
             <button type="submit" class="glass-button btn-primary">Save Settings</button>
           </div>
         </form>
@@ -3532,22 +4304,32 @@ body {
   <!-- ========================================================================= -->
   <div id="localWifiPromptModal" class="modal-backdrop hidden">
     <div class="modal-card glass-card text-center" style="max-width: 440px;">
-      <div class="auth-icon-badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; margin: 0 auto 12px; width: 62px; height: 62px;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 32px; height: 32px;"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+      <div class="auth-icon-badge"
+        style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; margin: 0 auto 12px; width: 62px; height: 62px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 32px; height: 32px;">
+          <path d="M5 12.55a11 11 0 0 1 14.08 0" />
+          <path d="M1.42 9a16 16 0 0 1 21.16 0" />
+          <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+          <line x1="12" y1="20" x2="12.01" y2="20" />
+        </svg>
       </div>
       <h3 style="font-size: 1.25rem;">Connect Device Wi-Fi First</h3>
       <p class="modal-subtitle" style="margin: 10px auto 16px; font-size: 0.85rem; line-height: 1.5;">
         Your device is not connected to the ESP8266 local Wi-Fi hotspot (<strong>CYBER-RELAY-HUB</strong>).
-        Please connect to <strong>CYBER-RELAY-HUB</strong> first before doing changes, or switch to <strong>Firebase Cloud</strong> mode.
+        Please connect to <strong>CYBER-RELAY-HUB</strong> first before doing changes, or switch to <strong>Firebase
+          Cloud</strong> mode.
       </p>
-      <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 18px; text-align: left; font-size: 0.76rem; font-family: var(--font-mono);">
+      <div
+        style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 18px; text-align: left; font-size: 0.76rem; font-family: var(--font-mono);">
         <div>• Wi-Fi SSID: <strong style="color:var(--accent-amber)">CYBER-RELAY-HUB</strong></div>
         <div>• Password: <strong style="color:var(--accent-amber)">cyber8266</strong></div>
         <div>• Gateway IP: <strong style="color:var(--accent-cyan)">http://192.168.4.1</strong></div>
       </div>
       <div class="modal-actions" style="justify-content: center; gap: 8px;">
-        <button type="button" class="glass-button btn-primary" onclick="App.setConnectionMode('cloud'); App.closeLocalWifiModal();">Switch to Cloud</button>
-        <button type="button" class="glass-button btn-secondary" onclick="App.retryLocalConnection()">Retry Connection</button>
+        <button type="button" class="glass-button btn-primary"
+          onclick="App.setConnectionMode('cloud'); App.closeLocalWifiModal();">Switch to Cloud</button>
+        <button type="button" class="glass-button btn-secondary" onclick="App.retryLocalConnection()">Retry
+          Connection</button>
         <button type="button" class="glass-button" onclick="App.closeLocalWifiModal()">Dismiss</button>
       </div>
     </div>
@@ -3560,7 +4342,10 @@ body {
     <div class="modal-card glass-card" style="max-width: 480px;">
       <div class="modal-header">
         <div class="auth-icon-badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
         </div>
         <div>
           <h3>Reset Password</h3>
@@ -3574,7 +4359,10 @@ body {
           <div class="form-group">
             <label for="resetTargetUser">Select Account to Recover</label>
             <div class="input-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
               <select id="resetTargetUser" class="custom-select" onchange="App.onResetUserChange()">
                 <option value="Yash_Gajjar">Yash_Gajjar (Super Admin)</option>
                 <option value="Mahi_Gajjar">Mahi_Gajjar (Guarded Operator)</option>
@@ -3586,35 +4374,168 @@ body {
           <div class="form-group">
             <label for="resetAuthKey" id="lblResetAuthKey">Admin Password or Master Recovery PIN</label>
             <div class="input-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              <input type="password" id="resetAuthKey" placeholder="Admin password or PIN (CYBER-8266-ROOT)" required autocomplete="off">
-              <button type="button" class="btn-toggle-eye" onclick="App.togglePasswordVisibility('resetAuthKey')">👁️</button>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+              <input type="password" id="resetAuthKey" placeholder="Admin password or PIN (CYBER-8266-ROOT)" required
+                autocomplete="off">
+              <button type="button" class="btn-toggle-eye"
+                onclick="App.togglePasswordVisibility('resetAuthKey')">👁️</button>
             </div>
-            <p class="input-helper-text" id="resetAuthKeyHelp" style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Master PIN: <code>CYBER-8266-ROOT</code> or Admin password</p>
+            <p class="input-helper-text" id="resetAuthKeyHelp"
+              style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Master PIN:
+              <code>CYBER-8266-ROOT</code> or Admin password</p>
           </div>
 
           <div class="form-group">
             <label for="resetNewPassword">New Password</label>
             <div class="input-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              <input type="password" id="resetNewPassword" placeholder="Minimum 6 characters" required autocomplete="new-password">
-              <button type="button" class="btn-toggle-eye" onclick="App.togglePasswordVisibility('resetNewPassword')">👁️</button>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              <input type="password" id="resetNewPassword" placeholder="Minimum 6 characters" required
+                autocomplete="new-password">
+              <button type="button" class="btn-toggle-eye"
+                onclick="App.togglePasswordVisibility('resetNewPassword')">👁️</button>
             </div>
           </div>
 
           <div class="form-group">
             <label for="resetConfirmPassword">Confirm New Password</label>
             <div class="input-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              <input type="password" id="resetConfirmPassword" placeholder="Re-enter new password" required autocomplete="new-password">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <input type="password" id="resetConfirmPassword" placeholder="Re-enter new password" required
+                autocomplete="new-password">
             </div>
           </div>
 
           <div class="modal-actions" style="margin-top: 18px;">
-            <button type="button" class="glass-button btn-secondary" onclick="App.closeForgotPasswordModal()">Cancel</button>
+            <button type="button" class="glass-button btn-secondary"
+              onclick="App.closeForgotPasswordModal()">Cancel</button>
             <button type="submit" class="glass-button btn-primary" id="btnSubmitPasswordReset">Save on ESP Chip</button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 6: Dynamic Multi-Relay Configuration & Hardware Pin Binding Modal   -->
+  <!-- ========================================================================= -->
+  <div id="addRelayModal" class="modal-backdrop hidden">
+    <div class="modal-card glass-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <div class="auth-icon-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+            <path d="M12 8v8M8 12h8" />
+          </svg>
+        </div>
+        <div>
+          <h3 id="relayModalTitle">Configure Relay Channel</h3>
+          <p class="modal-subtitle">Bind ESP8266 GPIO pins with independent timer countdowns</p>
+        </div>
+        <button class="close-btn" type="button" onclick="App.closeAddRelayModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <form onsubmit="event.preventDefault(); App.handleRelayFormSubmit();">
+          <input type="hidden" id="relayFormId" value="0">
+
+          <div class="form-group">
+            <label for="relayFormName">Relay Label / Device Name</label>
+            <div class="input-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+              </svg>
+              <input type="text" id="relayFormName" placeholder="e.g. Relay 2 (Water Pump)" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="relayFormPin">ESP8266 Hardware GPIO Pin Binding</label>
+            <div class="input-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0" />
+              </svg>
+              <select id="relayFormPin" class="custom-select" required>
+                <option value="14">GPIO14 (NodeMCU D5) [Recommended Safe Output]</option>
+                <option value="12">GPIO12 (NodeMCU D6) [Recommended Safe Output]</option>
+                <option value="13">GPIO13 (NodeMCU D7) [Recommended Safe Output]</option>
+                <option value="16">GPIO16 (NodeMCU D0) [Standard Output]</option>
+                <option value="5">GPIO5 (NodeMCU D1) [Primary Relay default]</option>
+                <option value="4">GPIO4 (NodeMCU D2) [Touch Sensor / GPIO]</option>
+                <option value="0">GPIO0 (NodeMCU D3) [Boot Pull-up]</option>
+                <option value="2">GPIO2 (NodeMCU D4) [LED / Pull-up]</option>
+              </select>
+            </div>
+            <p style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px;">
+              * Note: GPIO15 (D8) is reserved for the hardware acoustic buzzer.
+            </p>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group">
+              <label for="relayFormOnHours">ON Duration (Hours)</label>
+              <input type="number" id="relayFormOnHours" min="0.1" max="72" step="0.5" value="8.0" required>
+            </div>
+            <div class="form-group">
+              <label for="relayFormLockoutDays">Lockout/OFF Duration (Days)</label>
+              <input type="number" id="relayFormLockoutDays" min="0" max="365" step="0.5" value="8.0" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="relayFormActiveLevel">Relay Trigger Logic Level</label>
+            <select id="relayFormActiveLevel" class="custom-select">
+              <option value="0">Active LOW (Standard Relay Modules - Recommended)</option>
+              <option value="1">Active HIGH (High-trigger SSR / Transistor)</option>
+            </select>
+          </div>
+
+          <div class="modal-actions" style="margin-top: 18px;">
+            <button type="button" class="glass-button btn-secondary" onclick="App.closeAddRelayModal()">Cancel</button>
+            <button type="submit" class="glass-button btn-primary" id="btnSaveRelayConfig">Save Relay Hardware</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 7: App Alerts & Notifications Center Drawer Modal                   -->
+  <!-- ========================================================================= -->
+  <div id="notificationsModal" class="modal-backdrop hidden">
+    <div class="modal-card glass-card" style="max-width: 500px;">
+      <div class="modal-header">
+        <div class="auth-icon-badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+        </div>
+        <div>
+          <h3>Switch Alerts &amp; Notifications</h3>
+          <p class="modal-subtitle">Real-time log of relay ON/OFF transitions &amp; buzzer triggers</p>
+        </div>
+        <button class="close-btn" type="button" onclick="App.closeNotificationsModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="notifications-list" id="notificationsList">
+          <!-- Populated dynamically -->
+        </div>
+
+        <div class="modal-actions" style="margin-top: 14px; justify-content: space-between;">
+          <button type="button" class="glass-button btn-secondary" onclick="App.clearAllNotifications()">Clear
+            Log</button>
+          <button type="button" class="glass-button btn-primary" onclick="App.closeNotificationsModal()">Done</button>
+        </div>
       </div>
     </div>
   </div>
@@ -3686,13 +4607,46 @@ const App = (() => {
     // Timer Calibration Config
     config: {
       onHours: 8.0,
-      lockoutDays: 6.0
+      lockoutDays: 8.0
     },
+
+    // Dynamic Multi-Relay Channels & Pin Bindings
+    selectedRelayId: 1,
+    relays: [
+      {
+        id: 1,
+        name: 'Relay 1 (Main)',
+        pin: 5,
+        activeLevel: 0,
+        onHours: 8.0,
+        lockoutDays: 8.0,
+        mode: 'IDLE',
+        relayActive: false,
+        onRemainingSec: 0,
+        totalOnSec: 8 * 3600,
+        lockoutRemainingSec: 0,
+        totalLockoutSec: 8 * 86400,
+        enabled: true
+      }
+    ],
+    prevRelayStates: {},
 
     // Current User Session
     currentUser: null,
     users: [...PREDEFINED_USERS],
     oneTimeToken: '',
+
+    // Handshake ACK & System Logs
+    ack: {
+      verified: false,
+      bootReason: 'Power On',
+      wifiConnected: false,
+      softApSsid: 'CYBER-RELAY-HUB',
+      softApIp: '192.168.4.1',
+      staIp: '0.0.0.0',
+      buzzerChimes: 3
+    },
+    systemLogs: [],
 
     // One-time session tracking for Mahi_Gajjar
     pendingRequest: {
@@ -3800,13 +4754,13 @@ const App = (() => {
     try {
       localStorage.setItem('cyberrelay_session', JSON.stringify(sessionPayload));
       localStorage.setItem('cyberrelay_keep_logged_in', 'true');
-    } catch (ignored) {}
+    } catch (ignored) { }
 
     // Save to Android Native SharedPreferences
     if (window.AndroidNative && typeof window.AndroidNative.saveSession === 'function') {
       try {
         window.AndroidNative.saveSession(user.username, user.role, sessionPayload.token);
-      } catch (ignored) {}
+      } catch (ignored) { }
     }
   }
 
@@ -3815,12 +4769,12 @@ const App = (() => {
     try {
       localStorage.removeItem('cyberrelay_session');
       localStorage.removeItem('cyberrelay_keep_logged_in');
-    } catch (ignored) {}
+    } catch (ignored) { }
 
     if (window.AndroidNative && typeof window.AndroidNative.clearSession === 'function') {
       try {
         window.AndroidNative.clearSession();
-      } catch (ignored) {}
+      } catch (ignored) { }
     }
   }
 
@@ -3834,7 +4788,7 @@ const App = (() => {
         const h = localStorage.getItem('cyberrelay_esp_host');
         if (h) state.espHost = h;
       }
-    } catch (ignored) {}
+    } catch (ignored) { }
 
     // Load Firebase Config
     try {
@@ -3851,7 +4805,7 @@ const App = (() => {
         if (fh) state.firebaseHost = fh;
         if (fa) state.firebaseAuth = fa;
       }
-    } catch (ignored) {}
+    } catch (ignored) { }
 
     // Load preferred connection mode
     const savedMode = localStorage.getItem('cyberrelay_conn_mode');
@@ -3878,7 +4832,7 @@ const App = (() => {
           }
         });
       }
-    } catch (ignored) {}
+    } catch (ignored) { }
   }
 
   function findUser(username) {
@@ -3928,6 +4882,7 @@ const App = (() => {
       'analytics': { title: '📊 Monthly Analytics', subtitle: 'Comprehensive Usage & Duty Ratio' },
       'users': { title: '👥 User Accounts & Access', subtitle: 'Predefined Credentials & Admin Controls' },
       'cloud': { title: '☁️ Firebase Cloud & Logs', subtitle: 'Live Database Stream & Controller Traces' },
+      'acknowledge': { title: '🔔 Connection ACK & Wireless Logs', subtitle: '3-Stage Pipeline Handshake, 3-Beep Chime & System Events' },
       'settings': { title: '⚙️ Device & Diagnostics', subtitle: 'Hardware Diagnostics & RF Telemetry' }
     };
 
@@ -4116,7 +5071,7 @@ const App = (() => {
       if (window.AndroidNative && typeof window.AndroidNative.saveUsersJson === 'function') {
         window.AndroidNative.saveUsersJson(JSON.stringify(customOnly));
       }
-    } catch (ignored) {}
+    } catch (ignored) { }
 
     vibrate(80);
     toast(`Account '${username}' created successfully!`, 'success');
@@ -4147,7 +5102,7 @@ const App = (() => {
     state.connectionMode = mode;
     try {
       localStorage.setItem('cyberrelay_conn_mode', mode);
-    } catch (ignored) {}
+    } catch (ignored) { }
 
     updateConnectionModeButtons();
 
@@ -4420,6 +5375,19 @@ const App = (() => {
       state.analytics.dutyPercent = total > 0 ? ((state.analytics.totalOnHours / total) * 100).toFixed(1) : 0;
     }
 
+    if (data.relays && Array.isArray(data.relays)) {
+      state.relays = data.relays;
+      checkRelayStateTransitions(data.relays);
+    }
+
+    if (data.ack) {
+      state.ack = { ...state.ack, ...data.ack };
+    }
+
+    if (data.systemLogs && Array.isArray(data.systemLogs)) {
+      state.systemLogs = data.systemLogs;
+    }
+
     // Check for Level 2 Pending Request for Admin Yash_Gajjar to approve
     if (data.pendingRequest && data.pendingRequest.active) {
       state.pendingRequest = data.pendingRequest;
@@ -4436,6 +5404,292 @@ const App = (() => {
   }
 
   // ---------------------------------------------------------------------------
+  // HELPER: GET SELECTED RELAY CHANNEL
+  // ---------------------------------------------------------------------------
+  function getSelectedRelay() {
+    return state.relays.find(r => r.id === state.selectedRelayId) || state.relays[0] || {
+      id: 1, name: 'Relay 1', pin: 5,
+      mode: state.system.mode,
+      relayActive: state.system.relayActive,
+      onRemainingSec: state.system.onRemainingSec,
+      totalOnSec: state.system.totalOnSec,
+      lockoutRemainingSec: state.system.lockoutRemainingSec,
+      totalLockoutSec: state.system.totalLockoutSec,
+      onHours: state.config.onHours,
+      lockoutDays: state.config.lockoutDays,
+      enabled: true
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // NOTIFICATION STORE & RELAY STATE TRANSITION DETECTION
+  // ---------------------------------------------------------------------------
+  const notifications = [];
+
+  function formatSeconds(secs) {
+    secs = Math.max(0, Math.floor(secs));
+    const d = Math.floor(secs / 86400);
+    const h = Math.floor((secs % 86400) / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    if (d > 0) return `${d}d ${h}h`;
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m`;
+  }
+
+  function pushNotification(icon, title, desc) {
+    const time = new Date().toLocaleTimeString();
+    notifications.unshift({ icon, title, desc, time });
+    if (notifications.length > 50) notifications.pop();
+    updateNotifBadge();
+  }
+
+  function updateNotifBadge() {
+    const badge = document.getElementById('topNotifBadge');
+    const navBadge = document.getElementById('navNotifBadge');
+    const count = notifications.length;
+    if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'inline-block' : 'none'; }
+    if (navBadge) navBadge.textContent = `${Math.min(count, 99)} New`;
+  }
+
+  function checkRelayStateTransitions(relays) {
+    if (!relays || !Array.isArray(relays)) return;
+    relays.forEach(r => {
+      const prev = state.prevRelayStates[r.id];
+      const isActive = r.relayActive || r.mode === 'RELAY_ON';
+      const wasActive = prev ? (prev.relayActive || prev.mode === 'RELAY_ON') : null;
+      if (wasActive !== null && isActive !== wasActive) {
+        const title = isActive
+          ? `🔔 ${r.name} Switched ON`
+          : `🔕 ${r.name} Switched OFF`;
+        const desc = isActive
+          ? `Relay energized — buzzer double-beeped on D8. Countdown: ${formatSeconds(r.totalOnSec)}.`
+          : `Relay de-energized — buzzer long-beeped on D8. Lockout: ${formatSeconds(r.totalLockoutSec)}.`;
+        pushNotification(isActive ? '⚡' : '🛑', title, desc);
+        toast(title, isActive ? 'success' : 'info');
+        vibrate(isActive ? [30, 20, 30] : [80]);
+      }
+      state.prevRelayStates[r.id] = { relayActive: r.relayActive, mode: r.mode };
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // NOTIFICATION MODAL
+  // ---------------------------------------------------------------------------
+  function openNotificationsModal() {
+    renderNotificationsList();
+    const m = document.getElementById('notificationsModal');
+    if (m) m.classList.remove('hidden');
+  }
+
+  function closeNotificationsModal() {
+    const m = document.getElementById('notificationsModal');
+    if (m) m.classList.add('hidden');
+  }
+
+  function clearAllNotifications() {
+    notifications.length = 0;
+    updateNotifBadge();
+    renderNotificationsList();
+    toast('All notifications cleared', 'info');
+  }
+
+  function renderNotificationsList() {
+    const list = document.getElementById('notificationsList');
+    if (!list) return;
+    if (notifications.length === 0) {
+      list.innerHTML = '<div class="notif-empty">🔔 No relay events yet. Switch a relay ON or OFF to see alerts here.</div>';
+      return;
+    }
+    list.innerHTML = notifications.map(n => `
+      <div class="notif-item">
+        <span class="notif-icon">${n.icon}</span>
+        <div class="notif-content">
+          <div class="notif-title">${escapeHtml(n.title)}</div>
+          <div class="notif-desc">${escapeHtml(n.desc)}</div>
+          <div class="notif-time">${n.time}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ---------------------------------------------------------------------------
+  // RELAY CHANNEL TAB BAR
+  // ---------------------------------------------------------------------------
+  function renderRelayTabs() {
+    const list = document.getElementById('relayTabsList');
+    if (!list) return;
+    const isAdmin = state.currentUser && state.currentUser.role === 'admin';
+    if (!state.relays.length) return;
+    list.innerHTML = state.relays.map(r => `
+      <button class="relay-tab-btn ${r.id === state.selectedRelayId ? 'active' : ''}"
+        type="button" onclick="App.selectRelayTab(${r.id})">
+        ${escapeHtml(r.name)}
+        <span class="relay-tab-pin-tag">GPIO${r.pin || '?'}</span>
+      </button>
+    `).join('') + (isAdmin && state.relays.length < 4 ? `
+      <button class="btn-add-relay-pill" type="button" onclick="App.openAddRelayModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Add Relay
+      </button>
+    ` : '');
+  }
+
+  function selectRelayTab(id) {
+    state.selectedRelayId = id;
+    renderRelayTabs();
+    updateRelayChannelHeader();
+    updateRadialGauge();
+    updateActionButtons();
+  }
+
+  function updateRelayChannelHeader() {
+    const r = getSelectedRelay();
+    const badge = document.getElementById('relayChannelBadge');
+    const title = document.getElementById('relayCardTitle');
+    if (badge) badge.textContent = `CHANNEL ${r.id} // GPIO${r.pin || '?'}`;
+    if (title) title.textContent = `${r.name} Operational State`;
+  }
+
+  // ---------------------------------------------------------------------------
+  // SETTINGS: RELAY CHANNEL CARDS
+  // ---------------------------------------------------------------------------
+  function renderSettingsRelayCards() {
+    const list = document.getElementById('settingsRelaysList');
+    if (!list) return;
+    const isAdmin = state.currentUser && state.currentUser.role === 'admin';
+    if (!state.relays.length) {
+      list.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem;">No relay channels configured.</p>';
+      return;
+    }
+    list.innerHTML = state.relays.map(r => `
+      <div class="relay-card-item ${r.relayActive ? 'is-active' : ''}">
+        <div class="relay-card-head">
+          <span class="relay-card-name">
+            <span class="status-dot ${r.relayActive ? 'dot-active' : 'dot-off'}"></span>
+            ${escapeHtml(r.name)}
+          </span>
+          <span class="state-badge ${r.mode === 'RELAY_ON' ? 'badge-active' : (r.mode === 'LOCKOUT' ? 'badge-lockout' : 'badge-idle')}" style="font-size:0.68rem;">${r.mode}</span>
+        </div>
+        <div class="relay-card-grid">
+          <div class="relay-card-row"><span class="relay-card-label">GPIO PIN</span><span class="relay-card-val">GPIO${r.pin}</span></div>
+          <div class="relay-card-row"><span class="relay-card-label">ON TIMER</span><span class="relay-card-val">${r.onHours}h</span></div>
+          <div class="relay-card-row"><span class="relay-card-label">LOCKOUT</span><span class="relay-card-val">${r.lockoutDays}d</span></div>
+          <div class="relay-card-row"><span class="relay-card-label">REMAINING</span><span class="relay-card-val">${formatSeconds(r.mode === 'RELAY_ON' ? r.onRemainingSec : r.lockoutRemainingSec)}</span></div>
+        </div>
+        ${isAdmin ? `<div class="relay-card-actions">
+          <button class="glass-button btn-secondary" style="font-size:0.72rem;padding:5px 10px;" type="button" onclick="App.openEditRelayModal(${r.id})">Edit</button>
+          ${r.id > 1 ? `<button class="glass-button btn-danger" style="font-size:0.72rem;padding:5px 10px;" type="button" onclick="App.deleteRelay(${r.id})">Remove</button>` : ''}
+        </div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  // ---------------------------------------------------------------------------
+  // ADD / EDIT RELAY MODAL
+  // ---------------------------------------------------------------------------
+  function openAddRelayModal() {
+    document.getElementById('relayFormId').value = '0';
+    document.getElementById('relayModalTitle').textContent = 'Add New Relay Channel';
+    document.getElementById('relayFormName').value = '';
+    document.getElementById('relayFormPin').value = '4';
+    document.getElementById('relayFormOnHours').value = '8.0';
+    document.getElementById('relayFormLockoutDays').value = '8.0';
+    document.getElementById('relayFormActiveLevel').value = '0';
+    const m = document.getElementById('addRelayModal');
+    if (m) m.classList.remove('hidden');
+  }
+
+  function openEditRelayModal(id) {
+    const r = state.relays.find(x => x.id === id);
+    if (!r) return;
+    document.getElementById('relayFormId').value = String(id);
+    document.getElementById('relayModalTitle').textContent = `Edit ${r.name}`;
+    document.getElementById('relayFormName').value = r.name;
+    document.getElementById('relayFormPin').value = String(r.pin);
+    document.getElementById('relayFormOnHours').value = String(r.onHours);
+    document.getElementById('relayFormLockoutDays').value = String(r.lockoutDays);
+    document.getElementById('relayFormActiveLevel').value = String(r.activeLevel || 0);
+    const m = document.getElementById('addRelayModal');
+    if (m) m.classList.remove('hidden');
+  }
+
+  function closeAddRelayModal() {
+    const m = document.getElementById('addRelayModal');
+    if (m) m.classList.add('hidden');
+  }
+
+  async function handleRelayFormSubmit() {
+    const id = parseInt(document.getElementById('relayFormId').value, 10);
+    const name = (document.getElementById('relayFormName').value || '').trim();
+    const pin = parseInt(document.getElementById('relayFormPin').value, 10);
+    const onHours = parseFloat(document.getElementById('relayFormOnHours').value);
+    const lockoutDays = parseFloat(document.getElementById('relayFormLockoutDays').value);
+    const activeLevel = parseInt(document.getElementById('relayFormActiveLevel').value, 10);
+
+    if (!name) { toast('Please enter a relay name', 'error'); return; }
+    if (isNaN(pin) || pin < 0) { toast('Invalid GPIO pin', 'error'); return; }
+
+    const url = `${state.espHost.replace(/\/+$/, '')}/api/relay/${id === 0 ? 'add' : 'update'}`;
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, name, pin, onHours, lockoutDays, activeLevel,
+          userRole: state.currentUser ? state.currentUser.role : '' })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed');
+      toast(data.message || 'Relay saved', 'success');
+      closeAddRelayModal();
+      fetchStatus();
+    } catch (e) {
+      toast('Error: ' + e.message, 'error');
+    }
+  }
+
+  async function deleteRelay(id) {
+    if (!confirm(`Remove Relay channel ${id} from hardware? The GPIO pin will be released.`)) return;
+    const url = `${state.espHost.replace(/\/+$/, '')}/api/relay/delete`;
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, userRole: state.currentUser ? state.currentUser.role : '' })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed');
+      toast('Relay removed', 'success');
+      if (state.selectedRelayId === id) state.selectedRelayId = 1;
+      fetchStatus();
+    } catch (e) {
+      toast('Delete failed: ' + e.message, 'error');
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // BUZZER TEST
+  // ---------------------------------------------------------------------------
+  async function testBuzzerSound() {
+    toast('Sending buzzer test to ESP8266...', 'info');
+    try {
+      const res = await fetch(`${state.espHost.replace(/\/+$/, '')}/api/control`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'buzzer_test',
+          userRole: state.currentUser ? state.currentUser.role : ''
+        })
+      });
+      if (res.ok) toast('Buzzer test sent! Listen for D8 beep.', 'success');
+      else toast('Buzzer test failed — check ESP connection.', 'error');
+    } catch (e) {
+      toast('Could not reach ESP. Check connection.', 'error');
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // CONTROL COMMAND EXECUTION (LOCAL AP & FIREBASE WORLDWIDE)
   // ---------------------------------------------------------------------------
   async function handleTriggerClick() {
@@ -4443,31 +5697,49 @@ const App = (() => {
       toast('Please sign in first', 'error');
       return;
     }
-
-    // Protection: Device Wi-Fi check
-    if (!checkLocalWifiBeforeAction('Trigger Relay')) return;
-
-    // Tier 3: Guest is read-only
+    if (!checkLocalWifiBeforeAction('Relay Power Control')) return;
     if (state.currentUser.role === 'guest_analytics') {
       vibrate(200);
       toast('Access Denied: Guest accounts are read-only', 'error');
       return;
     }
 
-    // Tier 2: Mahi_Gajjar requires 1-time admin grant
+    const r = getSelectedRelay();
+    // If relay is currently ON (countdown running), clicking turns it OFF!
+    if (r.relayActive || r.mode === 'RELAY_ON') {
+      await cancelCycle();
+      return;
+    }
+
     if (state.currentUser.role === 'guarded_operator') {
       if (!state.oneTimeToken) {
         requestOneTimeAccess('TRIGGER_RELAY');
         return;
       }
     }
-
-    // Send trigger command
-    await executeControlCommand('trigger');
+    await executeControlCommand('trigger', { relayId: state.selectedRelayId || 1 });
   }
 
-  async function executeControlCommand(action) {
+  async function handleToggleClick() {
+    if (!state.currentUser) {
+      toast('Please sign in first', 'error');
+      return;
+    }
+    if (!checkLocalWifiBeforeAction('Toggle Relay Power')) return;
+    if (state.currentUser.role === 'guest_analytics') {
+      vibrate(200);
+      toast('Access Denied: Guest accounts are read-only', 'error');
+      return;
+    }
+    const r = getSelectedRelay();
+    const action = (r.relayActive || r.mode === 'RELAY_ON') ? 'cancel' : 'trigger';
+    await executeControlCommand(action, { relayId: r.id });
+  }
+
+  async function executeControlCommand(action, extraParams = {}) {
     vibrate(40);
+    const relayId = extraParams.relayId !== undefined ? extraParams.relayId : (state.selectedRelayId || 1);
+    const params = { relayId, ...extraParams };
 
     if (state.simulated) {
       handleSimulatedAction(action);
@@ -4475,13 +5747,13 @@ const App = (() => {
     }
 
     if (state.connectionMode === 'cloud') {
-      await sendFirebaseCommand(action.toUpperCase());
+      await sendFirebaseCommand(action.toUpperCase(), params);
     } else {
-      await sendLocalEspCommand(action);
+      await sendLocalEspCommand(action, params);
     }
   }
 
-  async function sendLocalEspCommand(action) {
+  async function sendLocalEspCommand(action, extraParams = {}) {
     const url = `${state.espHost.replace(/\/+$/, '')}/api/control`;
     try {
       const res = await fetch(url, {
@@ -4490,16 +5762,16 @@ const App = (() => {
         body: JSON.stringify({
           action: action,
           userRole: state.currentUser ? state.currentUser.role : '',
-          oneTimeToken: state.oneTimeToken || ''
+          oneTimeToken: state.oneTimeToken || '',
+          relayId: state.selectedRelayId || 1,
+          ...extraParams
         })
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'ESP execution failed');
-
       toast(data.message || `Command ${action} executed`, 'success');
-      logCloudEvent('CMD', `POST /api/control -> ${action} (HTTP 200)`);
-      state.oneTimeToken = ''; // Destroy token after 1 use
+      logCloudEvent('CMD', `POST /api/control -> ${action} (Relay ${extraParams.relayId || 1}) (HTTP 200)`);
+      state.oneTimeToken = '';
       fetchStatus();
     } catch (e) {
       toast(e.message || 'Command failed', 'error');
@@ -4529,9 +5801,7 @@ const App = (() => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(commandPayload)
       });
-
       if (!res.ok) throw new Error(`Firebase Error HTTP ${res.status}`);
-
       toast(`Cloud Command '${actionName}' dispatched worldwide`, 'success');
       logCloudEvent('CMD', `PUT /commands.json -> ${actionName} by ${state.currentUser ? state.currentUser.username : 'USER'}`);
       state.oneTimeToken = '';
@@ -4548,8 +5818,9 @@ const App = (() => {
       toast('Access Denied: Guest accounts are read-only', 'error');
       return;
     }
-    if (confirm('Cancel active relay cycle and enter lockout?')) {
-      await executeControlCommand('cancel');
+    const r = getSelectedRelay();
+    if (confirm(`Emergency Cutoff: Turn off ${r.name} now?`)) {
+      await executeControlCommand('cancel', { relayId: r.id });
     }
   }
 
@@ -4560,8 +5831,9 @@ const App = (() => {
       toast('Strict Admin Protection: Only Yash_Gajjar can bypass lockout', 'error');
       return;
     }
-    if (confirm('Bypass lockout cooldown and re-enable touch sensor?')) {
-      await executeControlCommand('reset_lockout');
+    const r = getSelectedRelay();
+    if (confirm(`Bypass lockout cooldown on ${r.name}?`)) {
+      await executeControlCommand('reset_lockout', { relayId: r.id });
     }
   }
 
@@ -4570,17 +5842,14 @@ const App = (() => {
   // ---------------------------------------------------------------------------
   async function extendActiveTimer(minutes) {
     if (!checkLocalWifiBeforeAction('Extend Timer')) return;
-
     if (!state.currentUser || state.currentUser.role !== 'admin') {
       toast('Admin Authority Required: Only Super Administrator can extend active timer', 'error');
       return;
     }
-
     if (state.system.mode !== 'RELAY_ON') {
       toast('Cannot extend: Relay is not actively energized', 'error');
       return;
     }
-
     vibrate(40);
     const extraSec = minutes * 60;
 
@@ -4603,11 +5872,7 @@ const App = (() => {
         const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'extend',
-            minutes: minutes,
-            userRole: state.currentUser.role
-          })
+          body: JSON.stringify({ action: 'extend', minutes: minutes, userRole: state.currentUser.role })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Failed to extend timer');
@@ -4638,271 +5903,156 @@ const App = (() => {
   // ---------------------------------------------------------------------------
   async function toggleUserStatus(targetUsername, newStatus) {
     if (!checkLocalWifiBeforeAction('User Management')) return;
-
     if (!state.currentUser || state.currentUser.role !== 'admin') {
       toast('Only Administrator can change account status', 'error');
       return;
     }
-
     if (targetUsername.toLowerCase() === 'yash_gajjar' && newStatus === 'disabled') {
       if (!confirm('Warning: Disabling Yash_Gajjar will lock out the primary Master Administrator. Are you sure?')) {
         return;
       }
     }
-
     vibrate(50);
-    
-    // Update in-memory user
     const u = state.users.find(x => x.username.toLowerCase() === targetUsername.toLowerCase());
-    if (u) {
-      u.status = newStatus;
-    }
+    if (u) u.status = newStatus;
 
-    // Persist in localStorage
     const disabledList = JSON.parse(localStorage.getItem('cyberrelay_disabled_accounts') || '[]');
     if (newStatus === 'disabled') {
       if (!disabledList.includes(targetUsername)) disabledList.push(targetUsername);
     } else {
       const idx = disabledList.indexOf(targetUsername);
-      if (idx !== -1) disabledList.splice(idx, 1);
+      if (idx >= 0) disabledList.splice(idx, 1);
     }
     localStorage.setItem('cyberrelay_disabled_accounts', JSON.stringify(disabledList));
-
-    toast(`User '${targetUsername}' status set to ${newStatus.toUpperCase()}`, 'success');
-    logCloudEvent('CMD', `Admin Yash_Gajjar changed status of '${targetUsername}' to ${newStatus}`);
-
-    renderUserTable();
-
-    // Sync to ESP8266 or Cloud
-    if (state.connectionMode === 'local') {
-      try {
-        await fetch(`${state.espHost.replace(/\/+$/, '')}/api/control`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'set_user_status',
-            targetUsername: targetUsername,
-            status: newStatus,
-            userRole: state.currentUser.role,
-            adminPassword: state.currentUser.password || 'Iamyashacker@17'
-          })
-        });
-      } catch (ignored) {}
-    } else {
-      try {
-        let host = state.firebaseHost.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
-        let url = `https://${host}/esp8266_relay/accounts_status/${targetUsername}.json`;
-        await fetch(url, { method: 'PUT', body: JSON.stringify(newStatus) });
-      } catch (ignored) {}
-    }
+    toast(`Account ${targetUsername} ${newStatus === 'disabled' ? 'disabled' : 'enabled'}`, 'success');
+    updateUserProfile();
   }
 
   // ---------------------------------------------------------------------------
-  // 1-TIME GRANT FLOW FOR MAHI_GAJJAR & ADMIN CONFIRMATION POPUP
+  // ONE-TIME TOKEN / ACCESS REQUEST (MAHI_GAJJAR GUARDED_OPERATOR FLOW)
   // ---------------------------------------------------------------------------
-  async function requestOneTimeAccess(action) {
+  function requestOneTimeAccess(action) {
+    const requestId = 'REQ_' + Math.random().toString(36).substr(2, 8).toUpperCase();
+    state.pendingRequest = { active: true, requestId, username: state.currentUser.username, action };
     state.waitingForApproval = true;
-    showWaitingModal();
 
-    if (state.connectionMode === 'cloud') {
-      let host = state.firebaseHost.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
-      let url = `https://${host}/esp8266_relay/telemetry/pendingRequest.json`;
-      if (state.firebaseAuth && state.firebaseAuth.trim().length > 0) {
-        url += `?auth=${encodeURIComponent(state.firebaseAuth.trim())}`;
-      }
-      try {
-        await fetch(url, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            active: true,
-            requestId: `REQ-${Date.now()}`,
-            username: state.currentUser.username,
-            action: action,
-            requestedAt: Math.floor(Date.now() / 1000)
-          })
-        });
-        toast('1-Time Request sent to Admin Yash_Gajjar over Firebase Cloud', 'info');
-      } catch (e) {
-        toast('Failed to post request to Cloud', 'error');
-      }
-    } else {
-      const url = `${state.espHost.replace(/\/+$/, '')}/api/auth/request_grant`;
-      try {
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            username: state.currentUser.username,
-            action: action
-          })
-        });
-        const d = await res.json();
-        if (!res.ok) throw new Error(d.message);
-        toast('1-Time Request sent. Waiting for Admin confirmation popup.', 'info');
-      } catch (e) {
-        toast(e.message || 'Failed to submit grant request', 'error');
-      }
-    }
+    sendFirebaseCommand('REQUEST_ACCESS', {
+      requestId, action,
+      requestedBy: state.currentUser.username
+    });
+
+    showWaitingModal(requestId);
+    toast('Request sent to Admin for one-time approval', 'info');
   }
 
-  function showAdminApprovalModal(username, action) {
-    const modal = document.getElementById('adminOneTimeApprovalModal');
-    const u = document.getElementById('popupReqUser');
-    const a = document.getElementById('popupReqAction');
-    const p = document.getElementById('popupAdminPassword');
-
-    if (u) u.textContent = username || 'Mahi_Gajjar';
-    if (a) a.textContent = action || 'Trigger Relay Active Cycle';
-    if (p) p.value = '';
-    if (modal) modal.classList.remove('hidden');
-
-    vibrate(100);
-  }
-
-  function dismissAdminApprovalModal() {
-    const modal = document.getElementById('adminOneTimeApprovalModal');
-    if (modal) modal.classList.add('hidden');
-  }
-
-  async function submitAdminApproval() {
-    const pwd = document.getElementById('popupAdminPassword').value;
-    if (pwd !== 'Iamyashacker@17') {
-      vibrate(200);
-      toast('Incorrect Admin Password! Grant Denied.', 'error');
-      return;
-    }
-
-    const token = `ONE-TIME-GRANT-${Date.now()}`;
-
-    if (state.connectionMode === 'cloud') {
-      let host = state.firebaseHost.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
-      let clearReqUrl = `https://${host}/esp8266_relay/telemetry/pendingRequest.json`;
-      let cmdUrl = `https://${host}/esp8266_relay/commands.json`;
-      if (state.firebaseAuth && state.firebaseAuth.trim().length > 0) {
-        const authP = `?auth=${encodeURIComponent(state.firebaseAuth.trim())}`;
-        clearReqUrl += authP;
-        cmdUrl += authP;
-      }
-
-      await fetch(clearReqUrl, { method: 'PUT', body: JSON.stringify({ active: false }) });
-      await fetch(cmdUrl, {
-        method: 'PUT',
-        body: JSON.stringify({
-          action: 'TRIGGER',
-          requestedBy: 'Mahi_Gajjar (Authorized by Yash)',
-          userRole: 'guarded_operator',
-          oneTimeToken: token,
-          timestamp: Math.floor(Date.now() / 1000)
-        })
-      });
-
-      toast('Admin Yash_Gajjar approved 1-time grant! Trigger executed.', 'success');
-    } else {
-      const url = `${state.espHost.replace(/\/+$/, '')}/api/auth/approve_grant`;
-      try {
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ adminPassword: pwd })
-        });
-        const d = await res.json();
-        if (!res.ok) throw new Error(d.message);
-        toast('Admin Authorized 1-Time Session Successfully', 'success');
-      } catch (e) {
-        toast('Approval failed', 'error');
-      }
-    }
-
-    dismissAdminApprovalModal();
-    fetchStatus();
-  }
-
-  async function rejectAdminApproval() {
-    if (state.connectionMode === 'cloud') {
-      let host = state.firebaseHost.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
-      let url = `https://${host}/esp8266_relay/telemetry/pendingRequest.json`;
-      if (state.firebaseAuth && state.firebaseAuth.trim().length > 0) {
-        url += `?auth=${encodeURIComponent(state.firebaseAuth.trim())}`;
-      }
-      await fetch(url, { method: 'PUT', body: JSON.stringify({ active: false }) });
-    } else {
-      await fetch(`${state.espHost.replace(/\/+$/, '')}/api/auth/reject_grant`, { method: 'POST' });
-    }
-    toast('Access Request Denied & Dismissed', 'info');
-    dismissAdminApprovalModal();
-  }
-
-  function showWaitingModal() {
-    const modal = document.getElementById('userWaitingApprovalModal');
-    if (modal) modal.classList.remove('hidden');
+  function showWaitingModal(requestId) {
+    const m = document.getElementById('waitingApprovalModal');
+    const reqEl = document.getElementById('waitingRequestId');
+    if (m) m.classList.remove('hidden');
+    if (reqEl) reqEl.textContent = requestId;
   }
 
   function closeWaitingModal() {
-    const modal = document.getElementById('userWaitingApprovalModal');
-    if (modal) modal.classList.add('hidden');
+    const m = document.getElementById('waitingApprovalModal');
+    if (m) m.classList.add('hidden');
   }
 
-  function cancelWaitingRequest() {
+  async function cancelWaitingRequest() {
     state.waitingForApproval = false;
+    state.pendingRequest.active = false;
+    state.oneTimeToken = '';
     closeWaitingModal();
-    rejectAdminApproval();
+    toast('Access request cancelled', 'info');
+  }
+
+  function showAdminApprovalModal(username, action) {
+    const m = document.getElementById('adminApprovalModal');
+    const unEl = document.getElementById('approvalRequestUser');
+    const actEl = document.getElementById('approvalRequestAction');
+    if (m) m.classList.remove('hidden');
+    if (unEl) unEl.textContent = username;
+    if (actEl) actEl.textContent = action;
+  }
+
+  function dismissAdminApprovalModal() {
+    const m = document.getElementById('adminApprovalModal');
+    if (m) m.classList.add('hidden');
+  }
+
+  async function submitAdminApproval() {
+    if (!state.pendingRequest.active) return;
+    const token = 'TOK_' + Math.random().toString(36).substr(2, 12).toUpperCase();
+    await sendFirebaseCommand('GRANT_ACCESS', {
+      requestId: state.pendingRequest.requestId,
+      token,
+      grantedTo: state.pendingRequest.username,
+      grantedBy: state.currentUser.username
+    });
+    dismissAdminApprovalModal();
+    toast(`One-time token granted to ${state.pendingRequest.username}`, 'success');
+    state.pendingRequest.active = false;
+  }
+
+  async function rejectAdminApproval() {
+    await sendFirebaseCommand('REJECT_ACCESS', {
+      requestId: state.pendingRequest.requestId,
+      rejectedBy: state.currentUser.username
+    });
+    dismissAdminApprovalModal();
+    state.pendingRequest.active = false;
+    toast('Access request rejected', 'info');
   }
 
   // ---------------------------------------------------------------------------
-  // TIMING CALIBRATION
+  // TIMER CONFIG / SETTINGS
   // ---------------------------------------------------------------------------
-  function onTimerInput(type) {
-    if (type === 'on') {
-      const val = parseFloat(document.getElementById('onHoursSlider').value);
-      document.getElementById('onHoursDisplay').textContent = val.toFixed(1);
-      state.config.onHours = val;
-    } else {
-      const val = parseFloat(document.getElementById('lockoutDaysSlider').value);
-      document.getElementById('lockoutDaysDisplay').textContent = val.toFixed(1);
-      state.config.lockoutDays = val;
+  function onTimerInput() {
+    const hrs = parseFloat(document.getElementById('inputOnHours')?.value || 0);
+    const days = parseFloat(document.getElementById('inputLockoutDays')?.value || 0);
+    const preview = document.getElementById('timerPreviewText');
+    if (preview) {
+      preview.textContent = `ON for ${hrs}h → Lockout ${days}d (${(days * 24).toFixed(0)}h)`;
     }
   }
 
   async function saveTimers() {
+    if (!checkLocalWifiBeforeAction('Save Timer Config')) return;
     if (!state.currentUser || state.currentUser.role !== 'admin') {
-      toast('Access Denied: Only Yash_Gajjar can modify timing calibrations', 'error');
+      toast('Admin access required to change timer settings', 'error');
+      return;
+    }
+    const hrs = parseFloat(document.getElementById('inputOnHours')?.value || 8);
+    const days = parseFloat(document.getElementById('inputLockoutDays')?.value || 8);
+    if (isNaN(hrs) || hrs <= 0 || isNaN(days) || days <= 0) {
+      toast('Invalid timer values', 'error');
+      return;
+    }
+    state.config.onHours = hrs;
+    state.config.lockoutDays = days;
+
+    if (state.simulated) {
+      state.system.totalOnSec = hrs * 3600;
+      state.system.totalLockoutSec = days * 86400;
+      toast('Timer config saved (Simulation)', 'success');
+      updateUI();
       return;
     }
 
-    vibrate(40);
-
     if (state.connectionMode === 'cloud') {
-      await sendFirebaseCommand('UPDATE_CONFIG');
-      let host = state.firebaseHost.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
-      let url = `https://${host}/esp8266_relay/telemetry/config.json`;
-      if (state.firebaseAuth && state.firebaseAuth.trim().length > 0) {
-        url += `?auth=${encodeURIComponent(state.firebaseAuth.trim())}`;
-      }
-      await fetch(url, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          onHours: state.config.onHours,
-          lockoutDays: state.config.lockoutDays
-        })
-      });
-      toast('Timing calibrated and synchronized to Cloud', 'success');
+      await sendFirebaseCommand('UPDATE_CONFIG', { onHours: hrs, lockoutDays: days });
+      toast('Config dispatched via Firebase', 'success');
     } else {
-      const url = `${state.espHost.replace(/\/+$/, '')}/api/config`;
+      const url = `${state.espHost.replace(/\/+$/, '')}/api/settings`;
       try {
         const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            onHours: state.config.onHours,
-            lockoutDays: state.config.lockoutDays,
-            userRole: state.currentUser.role
-          })
+          body: JSON.stringify({ onHours: hrs, lockoutDays: days, userRole: state.currentUser.role })
         });
-        const d = await res.json();
-        if (!res.ok) throw new Error(d.message);
-        toast('Timing saved to ESP8266 Flash memory', 'success');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Save failed');
+        toast('Timer config saved on ESP8266', 'success');
+        fetchStatus();
       } catch (e) {
         toast('Failed to save config: ' + e.message, 'error');
       }
@@ -4910,190 +6060,249 @@ const App = (() => {
   }
 
   // ---------------------------------------------------------------------------
-  // CLOUD & NETWORK CONFIGURATION MODAL
+  // CLOUD CONFIG MODAL
   // ---------------------------------------------------------------------------
   function openCloudConfigModal() {
-    document.getElementById('cfgFirebaseHost').value = state.firebaseHost;
-    document.getElementById('cfgFirebaseAuth').value = state.firebaseAuth;
-    document.getElementById('cfgEspHost').value = state.espHost;
-    document.getElementById('cloudConfigModal').classList.remove('hidden');
+    const m = document.getElementById('cloudConfigModal');
+    const hInput = document.getElementById('cfgFirebaseHost');
+    const aInput = document.getElementById('cfgFirebaseAuth');
+    if (hInput) hInput.value = state.firebaseHost;
+    if (aInput) aInput.value = state.firebaseAuth;
+    if (m) m.classList.remove('hidden');
   }
 
   function closeCloudConfigModal() {
-    document.getElementById('cloudConfigModal').classList.add('hidden');
+    const m = document.getElementById('cloudConfigModal');
+    if (m) m.classList.add('hidden');
   }
 
-  function saveCloudSettings() {
-    const fHost = document.getElementById('cfgFirebaseHost').value.trim();
-    const fAuth = document.getElementById('cfgFirebaseAuth').value.trim();
-    const eHost = document.getElementById('cfgEspHost').value.trim();
-
-    if (fHost) state.firebaseHost = fHost;
-    state.firebaseAuth = fAuth;
-    if (eHost) state.espHost = eHost;
-
-    // Persist to localStorage
-    try {
-      localStorage.setItem('cyberrelay_firebase_host', state.firebaseHost);
-      localStorage.setItem('cyberrelay_firebase_auth', state.firebaseAuth);
-      localStorage.setItem('cyberrelay_esp_host', state.espHost);
-    } catch (ignored) {}
-
-    // Persist to Android Native
-    if (window.AndroidNative) {
-      if (typeof window.AndroidNative.saveFirebaseConfig === 'function') {
-        window.AndroidNative.saveFirebaseConfig(state.firebaseHost, state.firebaseAuth);
-      }
-      if (typeof window.AndroidNative.saveEspHost === 'function') {
-        window.AndroidNative.saveEspHost(state.espHost);
-      }
-    }
-
-    toast('Network & Firebase configurations saved', 'success');
+  async function saveCloudSettings() {
+    const host = (document.getElementById('cfgFirebaseHost')?.value || '').trim();
+    const auth = (document.getElementById('cfgFirebaseAuth')?.value || '').trim();
+    if (!host) { toast('Firebase host is required', 'error'); return; }
+    state.firebaseHost = host;
+    state.firebaseAuth = auth;
+    localStorage.setItem('cyberrelay_firebase_host', host);
+    localStorage.setItem('cyberrelay_firebase_auth', auth);
     closeCloudConfigModal();
-    fetchStatus();
+    toast('Cloud config saved', 'success');
   }
 
   async function testCloudConnection() {
-    const fHost = document.getElementById('cfgFirebaseHost').value.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
-    const fAuth = document.getElementById('cfgFirebaseAuth').value.trim();
-    let url = `https://${fHost}/esp8266_relay/telemetry.json`;
-    if (fAuth) url += `?auth=${encodeURIComponent(fAuth)}`;
-
-    toast('Pinging Firebase Realtime Cloud...', 'info');
-    const start = Date.now();
+    let host = state.firebaseHost.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
+    let url = `https://${host}/esp8266_relay/status.json`;
+    if (state.firebaseAuth && state.firebaseAuth.trim()) url += `?auth=${encodeURIComponent(state.firebaseAuth.trim())}`;
+    toast('Testing Firebase connection...', 'info');
     try {
-      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-      const latency = Date.now() - start;
-      if (res.ok) {
-        toast(`Firebase Ping OK (${latency} ms) - Connected!`, 'success');
-      } else {
-        toast(`Firebase returned HTTP ${res.status}`, 'error');
-      }
+      const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+      if (res.ok) toast('Firebase connection OK!', 'success');
+      else toast(`Firebase returned HTTP ${res.status}`, 'error');
     } catch (e) {
-      toast(`Firebase unreachable: ${e.message}`, 'error');
+      toast('Firebase unreachable: ' + e.message, 'error');
     }
   }
 
   async function testLocalConnection() {
-    const eHost = document.getElementById('cfgEspHost').value.trim().replace(/\/+$/, '');
-    toast(`Pinging Local ESP8266 at ${eHost}...`, 'info');
-    const start = Date.now();
+    if (!state.espHost) { toast('No ESP host configured', 'error'); return; }
+    toast('Testing local ESP connection...', 'info');
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
-      const res = await fetch(`${eHost}/api/status`, { signal: controller.signal });
-      clearTimeout(timeoutId);
-      const latency = Date.now() - start;
-      if (res.ok) {
-        toast(`ESP8266 Ping OK (${latency} ms) - Connected!`, 'success');
-      } else {
-        toast(`ESP8266 returned HTTP ${res.status}`, 'error');
-      }
+      const res = await fetch(`${state.espHost.replace(/\/+$/, '')}/api/status`, { signal: AbortSignal.timeout(5000) });
+      if (res.ok) toast('ESP8266 local connection OK!', 'success');
+      else toast(`ESP returned HTTP ${res.status}`, 'error');
     } catch (e) {
-      toast(`ESP8266 unreachable at ${eHost}`, 'error');
+      toast('ESP unreachable: ' + e.message, 'error');
     }
   }
 
   // ---------------------------------------------------------------------------
-  // FORGOT PASSWORD / ESP FLASH RECOVERY
+  // FORGOT PASSWORD MODAL
   // ---------------------------------------------------------------------------
   function openForgotPasswordModal() {
-    const modal = document.getElementById('forgotPasswordModal');
-    if (!modal) return;
-    const userSelect = document.getElementById('resetTargetUser');
-    const inputUser = document.getElementById('inputUsername');
-    if (userSelect && inputUser && inputUser.value.trim()) {
-      userSelect.value = inputUser.value.trim();
-    }
-    onResetUserChange();
-    modal.classList.remove('hidden');
+    const m = document.getElementById('forgotPasswordModal');
+    if (m) m.classList.remove('hidden');
   }
 
   function closeForgotPasswordModal() {
-    const modal = document.getElementById('forgotPasswordModal');
-    if (modal) modal.classList.add('hidden');
-    const authKey = document.getElementById('resetAuthKey');
-    const newPass = document.getElementById('resetNewPassword');
-    const confPass = document.getElementById('resetConfirmPassword');
-    if (authKey) authKey.value = '';
-    if (newPass) newPass.value = '';
-    if (confPass) confPass.value = '';
+    const m = document.getElementById('forgotPasswordModal');
+    if (m) m.classList.add('hidden');
   }
 
   function onResetUserChange() {
-    const target = document.getElementById('resetTargetUser').value;
-    const lbl = document.getElementById('lblResetAuthKey');
-    const help = document.getElementById('resetAuthKeyHelp');
-    if (target === 'Yash_Gajjar') {
-      if (lbl) lbl.textContent = 'Hardware Master Recovery PIN';
-      if (help) help.innerHTML = 'Super Admin password recovery requires Master PIN: <code>CYBER-8266-ROOT</code> or <code>cyber8266</code>';
-    } else {
-      if (lbl) lbl.textContent = 'Admin Password or Master PIN';
-      if (help) help.innerHTML = 'Enter Yash_Gajjar Admin Password or Hardware Master PIN <code>CYBER-8266-ROOT</code>';
-    }
+    const sel = document.getElementById('resetTargetUser');
+    const keyRow = document.getElementById('resetKeyRow');
+    if (!sel || !keyRow) return;
+    keyRow.style.display = sel.value ? 'block' : 'none';
   }
 
   async function submitForgotPassword() {
-    const targetUser = document.getElementById('resetTargetUser').value.trim();
-    const authKey = document.getElementById('resetAuthKey').value.trim();
-    const newPassword = document.getElementById('resetNewPassword').value;
-    const confirmPassword = document.getElementById('resetConfirmPassword').value;
+    if (!checkLocalWifiBeforeAction('Reset Password')) return;
+    const target = document.getElementById('resetTargetUser')?.value;
+    const key = document.getElementById('resetRecoveryKey')?.value?.trim();
+    const newPw = document.getElementById('resetNewPassword')?.value?.trim();
+    if (!target || !key || !newPw) { toast('All fields required', 'error'); return; }
+    if (newPw.length < 4) { toast('Password must be at least 4 characters', 'error'); return; }
 
-    if (!targetUser || !authKey || !newPassword) {
-      toast('Please fill in all recovery fields', 'error');
-      return;
-    }
-    if (newPassword.length < 6) {
-      toast('New password must be at least 6 characters', 'error');
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      toast('New passwords do not match!', 'error');
-      return;
-    }
-
-    const btn = document.getElementById('btnSubmitPasswordReset');
-    if (btn) btn.disabled = true;
-
+    const url = `${state.espHost.replace(/\/+$/, '')}/api/reset-password`;
     try {
-      if (state.connectionMode === 'local' || !state.firebaseHost) {
-        toast('Updating password on ESP8266 flash chip...', 'info');
-        const res = await fetch(`${state.espHost}/api/auth/reset_password`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ targetUser, authKey, newPassword })
-        });
-        const data = await res.json();
-        if (res.ok && data.success) {
-          toast(`Password for ${targetUser} successfully reset on ESP!`, 'success');
-          const u = state.users.find(x => x.username.toLowerCase() === targetUser.toLowerCase());
-          if (u) u.password = newPassword;
-          closeForgotPasswordModal();
-        } else {
-          toast(data.error || 'Password reset rejected by ESP chip', 'error');
-        }
-      } else {
-        toast('Broadcasting password reset to ESP via Firebase...', 'info');
-        await sendFirebaseCommand('RESET_PASSWORD', {
-          targetUser,
-          authKey,
-          newPassword
-        });
-        toast(`Reset command queued. Password for ${targetUser} will update immediately on ESP.`, 'success');
-        const u = state.users.find(x => x.username.toLowerCase() === targetUser.toLowerCase());
-        if (u) u.password = newPassword;
-        closeForgotPasswordModal();
-      }
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target, authKey: key, newPassword: newPw })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Reset failed');
+      toast('Password reset successful', 'success');
+      closeForgotPasswordModal();
     } catch (e) {
       toast('Reset failed: ' + e.message, 'error');
-    } finally {
-      if (btn) btn.disabled = false;
+    }
+  }
+
+
+  // ---------------------------------------------------------------------------
+  // SIMULATED ACTION (FOR DEMO / OFFLINE MODE)
+  // ---------------------------------------------------------------------------
+  function handleSimulatedAction(action) {
+    if (action === 'trigger') {
+      if (state.system.mode !== 'IDLE') {
+        toast('Cannot trigger: System is not IDLE', 'error'); return;
+      }
+      state.system.mode = 'RELAY_ON';
+      state.system.relayActive = true;
+      state.system.lockoutActive = false;
+      state.system.onRemainingSec = state.system.totalOnSec || state.config.onHours * 3600;
+      toast('Simulated: Relay ACTIVATED', 'success');
+    } else if (action === 'cancel') {
+      state.system.mode = 'LOCKOUT';
+      state.system.relayActive = false;
+      state.system.lockoutActive = true;
+      state.system.lockoutRemainingSec = state.system.totalLockoutSec || state.config.lockoutDays * 86400;
+      toast('Simulated: Relay cancelled → LOCKOUT', 'info');
+    } else if (action === 'reset_lockout') {
+      state.system.mode = 'IDLE';
+      state.system.lockoutActive = false;
+      state.system.lockoutRemainingSec = 0;
+      toast('Simulated: Lockout RESET → IDLE', 'success');
+    }
+    updateUI();
+  }
+
+  // ---------------------------------------------------------------------------
+  // CONNECTION ACKNOWLEDGE (3-BEEP CHIME) & WIRELESS LOGS
+  // ---------------------------------------------------------------------------
+  function renderAcknowledgeView() {
+    const badge = document.getElementById('ackVerifiedBadge');
+    const navBadge = document.getElementById('navAckBadge');
+    const title = document.getElementById('ackBannerStatusTitle');
+    const sub = document.getElementById('ackBannerStatusSub');
+
+    // Stage 1: Boot & Restart
+    const s1Desc = document.getElementById('ackStep1Desc');
+    const s1Detail = document.getElementById('ackStep1Detail');
+    if (s1Desc) s1Desc.textContent = `Boot Reason: ${state.ack.bootReason || 'Power On'}`;
+    if (s1Detail) s1Detail.textContent = `Uptime: ${formatSeconds(state.system.uptimeSeconds || 0)} // RAM: ${state.system.freeHeap || 28000}B`;
+
+    // Stage 2: SoftAP & Wi-Fi Network
+    const s2Desc = document.getElementById('ackStep2Desc');
+    const s2Detail = document.getElementById('ackStep2Detail');
+    if (s2Desc) s2Desc.textContent = `SoftAP: ${state.ack.softApSsid || 'CYBER-RELAY-HUB'} (${state.ack.softApIp || '192.168.4.1'})`;
+    if (s2Detail) {
+      if (state.ack.wifiConnected && state.ack.staIp && state.ack.staIp !== '0.0.0.0') {
+        s2Detail.textContent = `Station: Connected (${state.ack.staIp}) ${state.wifiRssi ? state.wifiRssi + 'dBm' : ''}`;
+      } else {
+        s2Detail.textContent = 'Station: Standalone AP Mode';
+      }
+    }
+
+    // Stage 3: Firebase Cloud Handshake
+    const s3Desc = document.getElementById('ackStep3Desc');
+    const s3Detail = document.getElementById('ackStep3Detail');
+    const isCloudSynced = state.connected && (state.connectionMode === 'cloud' || state.ack.verified);
+    if (s3Desc) s3Desc.textContent = isCloudSynced ? 'Realtime Stream Active' : (state.connected ? 'Local AP Direct Link' : 'Offline / Awaiting Connection');
+    if (s3Detail) s3Detail.textContent = state.ack.verified ? 'Handshake Verified (3 Beeps Sounded)' : 'Pending 3-Beep Chime Handshake';
+
+    if (badge) {
+      badge.textContent = state.ack.verified ? 'ACK VERIFIED (3-BEEP)' : (state.connected ? 'CONNECTED (READY)' : 'AWAITING LINK');
+      badge.className = 'state-badge ' + (state.ack.verified ? 'badge-active' : (state.connected ? 'badge-lockout' : 'badge-idle'));
+    }
+    if (navBadge) {
+      navBadge.textContent = state.ack.verified ? '3x ACK' : 'READY';
+    }
+    if (title && sub) {
+      if (state.ack.verified) {
+        title.textContent = 'Handshake Acknowledged & Verified (3 Beeps Sounded)';
+        sub.textContent = 'Device connected to Wi-Fi and confirmed realtime synchronization with cloud.';
+      } else {
+        title.textContent = 'Connection Handshake Ready';
+        sub.textContent = 'Press the button below to verify Wi-Fi + Firebase pipeline and sound the 3-beep buzzer.';
+      }
+    }
+
+    // Render Wireless & Device System Logs
+    renderSystemLogs();
+  }
+
+  function renderSystemLogs() {
+    const list = document.getElementById('systemLogsList');
+    if (!list) return;
+
+    if (!state.systemLogs || state.systemLogs.length === 0) {
+      list.innerHTML = '<div class="terminal-line" style="color:var(--text-muted); padding:8px;">No wireless hardware logs yet. Connect to device to pull system traces.</div>';
+      return;
+    }
+
+    list.innerHTML = state.systemLogs.map(l => {
+      let tagClass = '';
+      const tag = (l.tag || '').toUpperCase();
+      if (tag.includes('BOOT') || tag.includes('RESTART')) tagClass = 'tag-boot';
+      else if (tag.includes('WIFI') || tag.includes('AP')) tagClass = 'tag-wifi';
+      else if (tag.includes('ACK')) tagClass = 'tag-ack';
+      else if (tag.includes('CLOUD')) tagClass = 'tag-cloud';
+
+      return `
+        <div class="syslog-row">
+          <span class="syslog-uptime">+${formatSeconds(l.uptime || 0)}</span>
+          <span class="syslog-tag ${tagClass}">${escapeHtml(l.tag || 'SYS')}</span>
+          <span class="syslog-msg">${escapeHtml(l.msg || '')}</span>
+        </div>
+      `;
+    }).join('');
+    list.scrollTop = list.scrollHeight;
+  }
+
+  async function triggerAckHandshake() {
+    toast('Verifying Wi-Fi + Firebase connection & triggering 3-beep buzzer...', 'info');
+    vibrate([40, 60, 40, 60, 40]);
+
+    if (state.connectionMode === 'cloud') {
+      await sendFirebaseCommand('CHECK_ACK', {});
+      toast('ACK command dispatched via Firebase Cloud! Listen for 3 beeps.', 'success');
+      state.ack.verified = true;
+      renderAcknowledgeView();
+    } else {
+      const url = `${state.espHost.replace(/\/+$/, '')}/api/control`;
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'check_ack',
+            userRole: state.currentUser ? state.currentUser.role : ''
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed');
+        toast('3-Beep ACK Handshake Verified on ESP8266!', 'success');
+        state.ack.verified = true;
+        fetchStatus();
+      } catch (e) {
+        toast('Could not verify handshake: ' + e.message, 'error');
+      }
     }
   }
 
   // ---------------------------------------------------------------------------
-  // UI RENDERING & DATA VISUALIZATION
+  // UI UPDATE ENGINE
   // ---------------------------------------------------------------------------
   function updateUI() {
     updateConnectionStatus();
@@ -5105,6 +6314,10 @@ const App = (() => {
     updateAnalyticsDisplay();
     updateSidebarBadges();
     updateDiagnosticsDisplay();
+    renderRelayTabs();
+    renderSettingsRelayCards();
+    updateRelayChannelHeader();
+    renderAcknowledgeView();
   }
 
   function updateSidebarBadges() {
@@ -5124,7 +6337,6 @@ const App = (() => {
     if (cBadge) cBadge.textContent = state.connected ? 'Online' : 'Offline';
     if (pBadge) pBadge.textContent = state.pingMs !== null ? `${state.pingMs} ms` : '-- ms';
 
-    // Extend Timer Panel visibility (Admin only while relay is energized)
     const extendPanel = document.getElementById('adminExtendPanel');
     if (extendPanel) {
       const showExtend = (state.system.mode === 'RELAY_ON') && state.currentUser && (state.currentUser.role === 'admin');
@@ -5165,96 +6377,41 @@ const App = (() => {
         else pingPill.className = 'diag-pill ping-slow';
       }
     }
+    if (rssiVal) rssiVal.textContent = state.wifiRssi !== null ? `${state.wifiRssi} dBm` : '-- dBm';
 
-    if (rssiVal) {
-      rssiVal.textContent = `${state.wifiRssi || -52} dBm`;
-    }
-
-    if (!pill || !text) return;
-
-    if (state.connected) {
-      pill.className = 'status-pill online';
-      if (state.connectionMode === 'cloud') {
-        text.textContent = 'CLOUD ONLINE';
+    if (pill && text) {
+      if (state.connected) {
+        pill.className = 'conn-status-pill pill-connected';
+        text.textContent = state.connectionMode === 'cloud' ? 'Firebase Connected' : 'ESP8266 Connected';
       } else {
-        text.textContent = 'LOCAL ESP ONLINE';
+        pill.className = 'conn-status-pill pill-offline';
+        text.textContent = 'Offline';
       }
-    } else {
-      pill.className = 'status-pill offline';
-      text.textContent = state.connectionMode === 'cloud' ? 'CLOUD OFFLINE' : 'ESP OFFLINE';
+    }
+  }
+
+  function updateOperationalState() {
+    const badge = document.getElementById('modeBadge');
+    const modeText = document.getElementById('modeText');
+    if (badge) {
+      badge.className = 'mode-badge ' + (state.system.mode === 'RELAY_ON' ? 'badge-active' : (state.system.mode === 'LOCKOUT' ? 'badge-lockout' : 'badge-idle'));
+      badge.textContent = state.system.mode;
+    }
+    if (modeText) {
+      if (state.system.mode === 'RELAY_ON') modeText.textContent = 'Relay Energized';
+      else if (state.system.mode === 'LOCKOUT') modeText.textContent = 'Cooldown Lockout';
+      else modeText.textContent = 'System Ready';
     }
   }
 
   function updateUserProfile() {
-    const user = state.currentUser;
-    if (!user) return;
-
-    const nameEl = document.getElementById('currentUserName');
-    const roleEl = document.getElementById('currentUserRole');
-    const initEl = document.getElementById('userInitial');
-    const ringEl = document.getElementById('userAvatarRing');
-
-    const sbName = document.getElementById('sidebarUserName');
-    const sbRole = document.getElementById('sidebarUserRole');
-    const sbInit = document.getElementById('sidebarUserInitial');
-
-    if (nameEl) nameEl.textContent = user.username;
-    if (initEl) initEl.textContent = user.username.charAt(0).toUpperCase();
-
-    if (sbName) sbName.textContent = user.username;
-    if (sbInit) sbInit.textContent = user.username.charAt(0).toUpperCase();
-
-    let roleLabel = 'GUEST (ANALYTICS)';
-    let roleClass = 'role-tag role-guest';
-    let ringClass = 'avatar-ring ring-guest';
-
-    if (user.role === 'admin') {
-      roleLabel = 'SUPER ADMIN';
-      roleClass = 'role-tag role-admin';
-      ringClass = 'avatar-ring ring-admin';
-    } else if (user.role === 'guarded_operator') {
-      roleLabel = 'GUARDED (1-TIME)';
-      roleClass = 'role-tag role-guarded';
-      ringClass = 'avatar-ring ring-guarded';
-    }
-
-    if (roleEl) {
-      roleEl.textContent = roleLabel;
-      roleEl.className = roleClass;
-    }
-    if (ringEl) ringEl.className = ringClass;
-
-    if (sbRole) {
-      sbRole.textContent = roleLabel;
-      sbRole.className = roleClass;
-    }
-
-    // Role Notices
-    const guestBanner = document.getElementById('guestNoticeBanner');
-    const guardedBanner = document.getElementById('guardedNoticeBanner');
-    if (guestBanner) guestBanner.classList.toggle('hidden', user.role !== 'guest_analytics');
-    if (guardedBanner) guardedBanner.classList.toggle('hidden', user.role !== 'guarded_operator');
-  }
-
-  function updateOperationalState() {
-    const badge = document.getElementById('sysStateBadge');
-    const text = document.getElementById('sysStateText');
-    const bulb = document.getElementById('relayBulb');
-    if (!badge || !text) return;
-
-    if (state.system.mode === 'RELAY_ON') {
-      badge.className = 'state-badge badge-active';
-      text.textContent = 'RELAY ENERGIZED (8H RUN)';
-      if (bulb) bulb.className = 'relay-bulb-indicator bulb-on';
-    } else if (state.system.mode === 'LOCKOUT') {
-      badge.className = 'state-badge badge-lockout';
-      text.textContent = 'LOCKOUT PERIOD ACTIVE';
-      if (bulb) bulb.className = 'relay-bulb-indicator bulb-locked';
-    } else {
-      badge.className = 'state-badge badge-idle';
-      text.textContent = 'IDLE / READY';
-      if (bulb) bulb.className = 'relay-bulb-indicator bulb-idle';
-    }
+    const nameEl = document.getElementById('profileUsername');
+    const roleEl = document.getElementById('profileRole');
+    const avatarEl = document.getElementById('profileAvatar');
+    if (!state.currentUser) return;
+    if (nameEl) nameEl.textContent = state.currentUser.username;
+    if (roleEl) roleEl.textContent = state.currentUser.role;
+    if (avatarEl) avatarEl.textContent = (state.currentUser.username || 'U')[0].toUpperCase();
   }
 
   function updateRadialGauge() {
@@ -5262,25 +6419,24 @@ const App = (() => {
     const countLabel = document.getElementById('countdownLabel');
     const countSub = document.getElementById('countdownSubtext');
 
-    let total = 1;
-    let rem = 0;
-    let strokeColor = 'url(#cyanGlow)';
+    const r = getSelectedRelay();
+    const mode = r.mode || state.system.mode;
+    let total = 1, rem = 0, strokeColor = 'url(#cyanGlow)';
 
-    if (state.system.mode === 'RELAY_ON') {
-      total = state.system.totalOnSec || (state.config.onHours * 3600);
-      rem = state.system.onRemainingSec;
+    if (mode === 'RELAY_ON') {
+      total = r.totalOnSec || state.system.totalOnSec || (state.config.onHours * 3600) || 1;
+      rem = r.onRemainingSec !== undefined ? r.onRemainingSec : state.system.onRemainingSec;
       strokeColor = 'url(#cyanGlow)';
       if (countLabel) countLabel.textContent = 'ACTIVE DUTY COUNTDOWN';
       if (countSub) countSub.textContent = 'Relay energized. Touch ignored.';
-    } else if (state.system.mode === 'LOCKOUT') {
-      total = state.system.totalLockoutSec || (state.config.lockoutDays * 86400);
-      rem = state.system.lockoutRemainingSec;
+    } else if (mode === 'LOCKOUT') {
+      total = r.totalLockoutSec || state.system.totalLockoutSec || (state.config.lockoutDays * 86400) || 1;
+      rem = r.lockoutRemainingSec !== undefined ? r.lockoutRemainingSec : state.system.lockoutRemainingSec;
       strokeColor = 'url(#amberGlow)';
       if (countLabel) countLabel.textContent = 'COOLDOWN LOCKOUT COUNTDOWN';
       if (countSub) countSub.textContent = 'Cooldown active. Touch filter engaged.';
     } else {
-      total = 1;
-      rem = 1;
+      total = 1; rem = 1;
       strokeColor = 'url(#emeraldGlow)';
       if (countLabel) countLabel.textContent = 'READY FOR TRIGGER';
       if (countSub) countSub.textContent = 'Tap capacitive touch sensor to trigger cycle';
@@ -5288,6 +6444,7 @@ const App = (() => {
 
     if (progressCircle) {
       const ratio = Math.max(0, Math.min(1, rem / (total || 1)));
+      const GAUGE_CIRCUMFERENCE = 2 * Math.PI * 90;
       const offset = GAUGE_CIRCUMFERENCE * (1 - ratio);
       progressCircle.style.strokeDashoffset = offset;
       progressCircle.style.stroke = strokeColor;
@@ -5297,17 +6454,16 @@ const App = (() => {
   }
 
   function updateClock(totalSec) {
+    totalSec = Math.max(0, Math.floor(totalSec));
     const days = Math.floor(totalSec / 86400);
     const hrs = Math.floor((totalSec % 86400) / 3600);
     const mins = Math.floor((totalSec % 3600) / 60);
     const secs = totalSec % 60;
-
     const pad = (n) => String(n).padStart(2, '0');
     const cd = document.getElementById('clockDays');
     const ch = document.getElementById('clockHours');
     const cm = document.getElementById('clockMins');
     const cs = document.getElementById('clockSecs');
-
     if (cd) cd.textContent = pad(days);
     if (ch) ch.textContent = pad(hrs);
     if (cm) cm.textContent = pad(mins);
@@ -5315,7 +6471,6 @@ const App = (() => {
   }
 
   function updateHardwareTiles() {
-    // Relay Dot & Text
     const rDot = document.getElementById('relayStatusDot');
     const rText = document.getElementById('relayStatusText');
     if (rDot && rText) {
@@ -5328,7 +6483,6 @@ const App = (() => {
       }
     }
 
-    // Touch Dot & Text
     const tDot = document.getElementById('touchStatusDot');
     const tText = document.getElementById('touchStatusText');
     if (tDot && tText) {
@@ -5341,7 +6495,6 @@ const App = (() => {
       }
     }
 
-    // Lockout Dot & Text
     const lDot = document.getElementById('lockoutStatusDot');
     const lText = document.getElementById('lockoutStatusText');
     if (lDot && lText) {
@@ -5360,29 +6513,53 @@ const App = (() => {
     const btnCancel = document.getElementById('btnCancelCycle');
     const btnReset = document.getElementById('btnResetLockout');
     const trgText = document.getElementById('triggerBtnText');
+    const btnToggle = document.getElementById('btnDirectToggle');
+    const toggleText = document.getElementById('directToggleText');
 
     const role = state.currentUser ? state.currentUser.role : 'guest_analytics';
+    const r = getSelectedRelay();
+    const isRelayOn = r.relayActive || r.mode === 'RELAY_ON';
+    const isLockout = r.mode === 'LOCKOUT';
 
     if (btnTrigger) {
       if (role === 'guest_analytics') {
         btnTrigger.disabled = true;
+        btnTrigger.className = 'glass-button btn-accent';
         if (trgText) trgText.textContent = 'Controls Disabled (Guest Mode)';
+      } else if (isRelayOn) {
+        // Relay is ON: button says "Turn OFF Relay Now" and allows immediate shutdown
+        btnTrigger.disabled = false;
+        btnTrigger.className = 'glass-button btn-danger';
+        if (trgText) trgText.textContent = 'Turn OFF Relay Now';
+      } else if (isLockout) {
+        // Lockout countdown running: button is disabled
+        btnTrigger.disabled = true;
+        btnTrigger.className = 'glass-button btn-accent';
+        if (trgText) trgText.textContent = 'Cooldown Lockout Active';
       } else if (role === 'guarded_operator') {
-        btnTrigger.disabled = state.system.mode !== 'IDLE';
+        btnTrigger.disabled = false;
+        btnTrigger.className = 'glass-button btn-accent';
         if (trgText) trgText.textContent = 'Request 1-Time Trigger (Mahi)';
       } else {
-        btnTrigger.disabled = state.system.mode !== 'IDLE';
-        if (trgText) trgText.textContent = 'Trigger Relay Cycle Now';
+        // Countdown timer is off (IDLE): ON button is ENABLED
+        btnTrigger.disabled = false;
+        btnTrigger.className = 'glass-button btn-accent';
+        if (trgText) trgText.textContent = 'Turn Relay ON Now';
       }
     }
 
     if (btnCancel) {
-      btnCancel.disabled = (role === 'guest_analytics') || (state.system.mode !== 'RELAY_ON');
+      btnCancel.disabled = (role === 'guest_analytics') || !isRelayOn;
     }
 
     if (btnReset) {
-      // Strictly Yash_Gajjar admin only
-      btnReset.disabled = (role !== 'admin') || (state.system.mode !== 'LOCKOUT');
+      btnReset.disabled = (role !== 'admin') || !isLockout;
+    }
+
+    if (btnToggle && toggleText) {
+      btnToggle.className = 'glass-button btn-power-toggle' + (isRelayOn ? ' is-active' : '');
+      toggleText.textContent = isRelayOn ? 'Turn OFF Relay Now' : 'Turn Relay ON';
+      btnToggle.disabled = (role === 'guest_analytics') || (isLockout && role !== 'admin');
     }
   }
 
@@ -5399,7 +6576,6 @@ const App = (() => {
     if (onH) onH.textContent = state.analytics.totalOnHours.toFixed(1);
     if (offH) offH.textContent = state.analytics.totalOffHours.toFixed(1);
     if (cyc) cyc.textContent = state.analytics.totalCycles;
-
     if (ratioText) ratioText.textContent = `${state.analytics.dutyPercent}% ON`;
     if (barOn) barOn.style.width = `${state.analytics.dutyPercent}%`;
     if (barOff) barOff.style.width = `${Math.max(0, 100 - state.analytics.dutyPercent)}%`;
@@ -5415,97 +6591,16 @@ const App = (() => {
       .replace(/'/g, '&#039;');
   }
 
-  function renderUserTable() {
-    const tbody = document.getElementById('userTableBody');
-    if (!tbody) return;
-
-    const disabledList = JSON.parse(localStorage.getItem('cyberrelay_disabled_accounts') || '[]');
-    const isAdmin = state.currentUser && state.currentUser.role === 'admin';
-
-    tbody.innerHTML = '';
-    state.users.forEach(u => {
-      const tr = document.createElement('tr');
-      const isCurrent = state.currentUser && state.currentUser.username.toLowerCase() === u.username.toLowerCase();
-      const isDisabled = disabledList.includes(u.username) || u.status === 'disabled';
-
-      let badgeClass = 'role-guest-badge';
-      let tierLabel = 'Level 3: Guest Analytics';
-      if (u.role === 'admin') {
-        badgeClass = 'role-admin-badge';
-        tierLabel = 'Level 1: Super Admin';
-      } else if (u.role === 'guarded_operator') {
-        badgeClass = 'role-guarded-badge';
-        tierLabel = 'Level 2: Guarded (1-Time)';
-      }
-
-      let statusHtml = isDisabled
-        ? `<span class="user-status-pill status-disabled">● Suspended</span>`
-        : `<span class="user-status-pill status-active">● Active</span>`;
-
-      let adminActionHtml = '—';
-      if (isAdmin) {
-        if (isDisabled) {
-          adminActionHtml = `<button type="button" class="btn-status-action btn-enable-action" onclick="App.toggleUserStatus('${escapeHtml(u.username)}', 'active')">Enable Account</button>`;
-        } else {
-          adminActionHtml = `<button type="button" class="btn-status-action btn-disable-action" onclick="App.toggleUserStatus('${escapeHtml(u.username)}', 'disabled')">Disable</button>`;
-        }
-      }
-
-      tr.innerHTML = `
-        <td>
-          <strong>${escapeHtml(u.username)}</strong>
-          ${isCurrent ? '<span style="color:var(--accent-cyan); font-size:0.7rem; margin-left:4px;">(Current)</span>' : ''}
-        </td>
-        <td>
-          <span class="user-badge-role ${badgeClass}">${tierLabel}</span>
-        </td>
-        <td>
-          ${statusHtml}
-        </td>
-        <td>
-          ${adminActionHtml}
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    const userCount = document.getElementById('userCountText');
-    if (userCount) userCount.textContent = `${state.users.length} Enrolled`;
-  }
-
-  function startLocalUptime() {
-    setInterval(() => {
-      state.system.uptimeSeconds++;
-      const el = document.getElementById('espUptime');
-      if (el) {
-        const u = state.system.uptimeSeconds;
-        const h = Math.floor(u / 3600);
-        const m = Math.floor((u % 3600) / 60);
-        const s = u % 60;
-        const pad = (n) => String(n).padStart(2, '0');
-        el.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
-      }
-    }, 1000);
-  }
-
-  // ---------------------------------------------------------------------------
-  // TOAST & HAPTIC UTILITIES
-  // ---------------------------------------------------------------------------
   function toast(message, type = 'info') {
     const container = document.getElementById('toastContainer');
     if (!container) return;
-
     const el = document.createElement('div');
     el.className = `toast toast-${type}`;
     el.textContent = message;
     container.appendChild(el);
-
     if (window.AndroidNative && typeof window.AndroidNative.showToast === 'function') {
-      try {
-        window.AndroidNative.showToast(message);
-      } catch (ignored) {}
+      try { window.AndroidNative.showToast(message); } catch (ignored) { }
     }
-
     setTimeout(() => {
       el.style.opacity = '0';
       el.style.transform = 'translateY(-6px)';
@@ -5516,9 +6611,7 @@ const App = (() => {
 
   function vibrate(ms = 60) {
     if (window.AndroidNative && typeof window.AndroidNative.vibrateAlert === 'function') {
-      try {
-        window.AndroidNative.vibrateAlert(ms);
-      } catch (ignored) {}
+      try { window.AndroidNative.vibrateAlert(ms); } catch (ignored) { }
     } else if (navigator.vibrate) {
       navigator.vibrate(ms);
     }
@@ -5539,6 +6632,7 @@ const App = (() => {
     handleRegisterSubmit,
     logout,
     handleTriggerClick,
+    handleToggleClick,
     cancelCycle,
     resetLockout,
     extendActiveTimer,
@@ -5564,7 +6658,19 @@ const App = (() => {
     closeForgotPasswordModal,
     onResetUserChange,
     submitForgotPassword,
-    dismissConnNotice
+    dismissConnNotice,
+    // Multi-relay & notifications
+    selectRelayTab,
+    openAddRelayModal,
+    openEditRelayModal,
+    closeAddRelayModal,
+    handleRelayFormSubmit,
+    deleteRelay,
+    openNotificationsModal,
+    closeNotificationsModal,
+    clearAllNotifications,
+    testBuzzerSound,
+    triggerAckHandshake
   };
 })();
 
@@ -5575,5 +6681,5 @@ window.addEventListener('DOMContentLoaded', () => {
 
 </script>
 </body>
-</html>
-)rawliteral";
+
+</html>)rawliteral";

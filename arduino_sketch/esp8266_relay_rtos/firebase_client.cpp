@@ -30,8 +30,12 @@ void FirebaseClient::checkWiFiConnection() {
     if (!_wifiConnected) {
       _wifiConnected = true;
       Serial.printf("[FIREBASE] Connected to Internet Wi-Fi! Local IP: %s\n", WiFi.localIP().toString().c_str());
+      stateManager.addSystemLog("WIFI", (String("STA Connected! IP: ") + WiFi.localIP().toString()).c_str());
     }
   } else {
+    if (_wifiConnected) {
+      stateManager.addSystemLog("WIFI_DISC", "STA Wi-Fi disconnected");
+    }
     _wifiConnected = false;
   }
 }
@@ -109,11 +113,38 @@ void FirebaseClient::syncToFirebase() {
       doc["pendingRequest"]["active"] = false;
     }
 
+    // Handshake ACK & System Logs for Cloud View
+    JsonObject ackObj = doc.createNestedObject("ack");
+    ackObj["verified"] = stateManager.isAckVerified();
+    ackObj["bootReason"] = ESP.getResetReason();
+    ackObj["wifiConnected"] = (WiFi.status() == WL_CONNECTED);
+    ackObj["softApSsid"] = WIFI_AP_SSID;
+    ackObj["softApIp"] = WiFi.softAPIP().toString();
+    ackObj["staIp"] = (WiFi.status() == WL_CONNECTED) ? WiFi.localIP().toString() : "0.0.0.0";
+    ackObj["buzzerChimes"] = 3;
+
+    JsonArray logsArr = doc.createNestedArray("systemLogs");
+    int logCount = stateManager.getSystemLogCount();
+    for (int i = 0; i < logCount; i++) {
+      const SystemLogEntry* entry = stateManager.getSystemLog(i);
+      if (entry) {
+        JsonObject lObj = logsArr.createNestedObject();
+        lObj["uptime"] = entry->uptime;
+        lObj["tag"] = entry->tag;
+        lObj["msg"] = entry->msg;
+      }
+    }
+
     String payload;
     serializeJson(doc, payload);
 
     int httpCode = http.PUT(payload);
     if (httpCode == 200) {
+      if (!_cloudSynced && !stateManager.isAckVerified()) {
+        stateManager.setAckVerified(true);
+        stateManager.addSystemLog("ACK", "Cloud pipeline verified: AP + WiFi + Firebase OK -> 3-Beep Buzzer Sounded.");
+        stateManager.soundAckBuzzer();
+      }
       _cloudSynced = true;
     } else {
       _cloudSynced = false;
@@ -175,6 +206,10 @@ void FirebaseClient::pollFirebaseCommands() {
             const char* newPassword = doc["newPassword"] | "";
             String err;
             storageDB.resetUserPassword(target, authKey, newPassword, err);
+          } else if (strcmp(action, "CHECK_ACK") == 0 || strcmp(action, "SOUND_ACK") == 0) {
+            stateManager.soundAckBuzzer();
+            stateManager.setAckVerified(true);
+            stateManager.addSystemLog("ACK_CLOUD", "Remote cloud verified ACK handshake. 3-beep buzzer fired.");
           } else if (strcmp(action, "UPDATE_CONFIG") == 0) {
             float onHours = doc["onHours"] | -1.0f;
             float lockoutDays = doc["lockoutDays"] | -1.0f;

@@ -2950,3 +2950,323 @@ textarea,
   gap: 8px;
   margin-top: 4px;
 }
+
+
+/* -----------------------------------------------------------------------------
+ * CONNECTION ACKNOWLEDGE & WIRELESS LOGS
+ * -------------------------------------------------------------------------- */
+.ack-pipeline-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.ack-step-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.ack-step-card.is-active {
+  border-color: rgba(6, 182, 212, 0.4);
+  background: rgba(6, 182, 212, 0.05);
+}
+
+.ack-step-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ack-step-num {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--color-cyan);
+  font-weight: 700;
+}
+
+.ack-step-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+}
+
+.ack-step-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.ack-step-detail {
+  font-size: 0.72rem;
+  color: var(--color-emerald);
+  font-weight: 600;
+}
+
+.ack-action-banner {
+  background: rgba(6, 182, 212, 0.06);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.ack-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ack-banner-icon {
+  font-size: 1.6rem;
+}
+
+.ack-banner-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+}
+
+.ack-banner-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.system-logs-container {
+  background: #060911;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  max-height: 320px;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.syslog-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.syslog-uptime {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  min-width: 55px;
+}
+
+.syslog-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  min-width: 65px;
+  text-align: center;
+}
+
+.syslog-tag.tag-boot {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+.syslog-tag.tag-wifi {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+.syslog-tag.tag-ack {
+  background: rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+}
+
+.syslog-tag.tag-cloud {
+  background: rgba(6, 182, 212, 0.2);
+  color: #38bdf8;
+}
+
+.syslog-msg {
+  color: var(--text-primary);
+  word-break: break-all;
+  flex: 1;
+}
+
+
+/* -----------------------------------------------------------------------------
+ * CONNECTION ACKNOWLEDGE & WIRELESS LOGS
+ * -------------------------------------------------------------------------- */
+.ack-pipeline-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.ack-step-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.ack-step-card.is-active {
+  border-color: rgba(6, 182, 212, 0.4);
+  background: rgba(6, 182, 212, 0.05);
+}
+
+.ack-step-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ack-step-num {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--color-cyan);
+  font-weight: 700;
+}
+
+.ack-step-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+}
+
+.ack-step-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.ack-step-detail {
+  font-size: 0.72rem;
+  color: var(--color-emerald);
+  font-weight: 600;
+}
+
+.ack-action-banner {
+  background: rgba(6, 182, 212, 0.06);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.ack-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ack-banner-icon {
+  font-size: 1.6rem;
+}
+
+.ack-banner-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+}
+
+.ack-banner-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.system-logs-container {
+  background: #060911;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  max-height: 320px;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.syslog-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.syslog-uptime {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  min-width: 55px;
+}
+
+.syslog-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  min-width: 65px;
+  text-align: center;
+}
+
+.syslog-tag.tag-boot {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+.syslog-tag.tag-wifi {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+.syslog-tag.tag-ack {
+  background: rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+}
+
+.syslog-tag.tag-cloud {
+  background: rgba(6, 182, 212, 0.2);
+  color: #38bdf8;
+}
+
+.syslog-msg {
+  color: var(--text-primary);
+  word-break: break-all;
+  flex: 1;
+}
