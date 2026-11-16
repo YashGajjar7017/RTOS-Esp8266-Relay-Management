@@ -3,6 +3,7 @@ const path = require('path');
 
 const webAppDir = path.join(__dirname, '..', 'web_app');
 const targetHeader = path.join(__dirname, '..', 'firmware', 'include', 'web_assets.h');
+const targetHeaderArduino = path.join(__dirname, '..', 'arduino_sketch', 'esp8266_relay_rtos', 'web_assets.h');
 const targetDataHtml = path.join(__dirname, '..', 'firmware', 'data', 'index.html');
 
 console.log('Packaging Web App for ESP8266...');
@@ -36,6 +37,7 @@ static const char PAGE_INDEX[] PROGMEM = R"rawliteral(${safeHtml})rawliteral";
 `;
 
 fs.writeFileSync(targetHeader, headerContent, 'utf-8');
-console.log(`Saved embedded C++ header to ${targetHeader} (${(headerContent.length / 1024).toFixed(1)} KB)`);
+fs.writeFileSync(targetHeaderArduino, headerContent, 'utf-8');
+console.log(`Saved embedded C++ header to ${targetHeader} & ${targetHeaderArduino} (${(headerContent.length / 1024).toFixed(1)} KB)`);
 console.log('Web asset generation complete!');
 

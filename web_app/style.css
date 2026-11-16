@@ -3449,6 +3449,131 @@ textarea,
 .term-tag.tag-in { background: rgba(245, 158, 11, 0.25); color: #fbbf24; }
 .term-tag.tag-out { background: rgba(16, 185, 129, 0.25); color: #34d399; }
 .term-tag.tag-ack { background: rgba(234, 179, 8, 0.3); color: #fde047; }
+.term-tag.tag-cloud { background: rgba(249, 115, 22, 0.25); color: #fb923c; }
+
+/* ========================================================================= */
+/* CENTER RADIAL COUNTDOWN GAUGE & BULB ANIMATIONS                          */
+/* ========================================================================= */
+.countdown-radial-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 15px auto;
+  width: 280px;
+  max-width: 90vw;
+  height: 280px;
+}
+
+.radial-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+.radial-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-width: 14;
+}
+
+.radial-progress {
+  fill: none;
+  stroke: url(#cyanGlow);
+  stroke-width: 14;
+  stroke-linecap: round;
+  stroke-dasharray: 691.15;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.8s ease, stroke 0.5s ease;
+  filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.5));
+}
+
+.radial-center-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px;
+  pointer-events: none;
+}
+
+.digital-clock {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  background: rgba(4, 8, 18, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  margin-top: 4px;
+}
+
+.bulb-charging-active {
+  background: rgba(245, 158, 11, 0.25) !important;
+  color: #fbbf24 !important;
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.6) !important;
+  animation: chargingBulbPulse 1.8s infinite ease-in-out;
+}
+
+.bulb-cooldown {
+  background: rgba(59, 130, 246, 0.15) !important;
+  color: #60a5fa !important;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3) !important;
+  animation: cooldownBreathe 3s infinite ease-in-out;
+}
+
+.bulb-ready {
+  background: rgba(16, 185, 129, 0.2) !important;
+  color: #34d399 !important;
+  box-shadow: 0 0 25px rgba(52, 211, 153, 0.5) !important;
+  animation: readyPulse 2s infinite ease-in-out;
+}
+
+@keyframes chargingBulbPulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.4)); }
+  50% { transform: scale(1.08); filter: drop-shadow(0 0 24px rgba(245, 158, 11, 0.9)); }
+}
+
+@keyframes cooldownBreathe {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+@keyframes readyPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 15px rgba(52, 211, 153, 0.4); }
+  50% { transform: scale(1.06); box-shadow: 0 0 30px rgba(52, 211, 153, 0.85); }
+}
+
+.btn-ready-pulse {
+  animation: btnGlowPulse 2.2s infinite ease-in-out;
+  border-color: rgba(52, 211, 153, 0.6) !important;
+  color: #34d399 !important;
+}
+
+@keyframes btnGlowPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(52, 211, 153, 0.3); }
+  50% { box-shadow: 0 0 22px rgba(52, 211, 153, 0.7); }
+}
+
+.btn-locked {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+  filter: grayscale(0.6);
+}
+
 
 
 /* -----------------------------------------------------------------------------
@@ -3628,3 +3753,128 @@ textarea,
 .term-tag.tag-in { background: rgba(245, 158, 11, 0.25); color: #fbbf24; }
 .term-tag.tag-out { background: rgba(16, 185, 129, 0.25); color: #34d399; }
 .term-tag.tag-ack { background: rgba(234, 179, 8, 0.3); color: #fde047; }
+.term-tag.tag-cloud { background: rgba(249, 115, 22, 0.25); color: #fb923c; }
+
+/* ========================================================================= */
+/* CENTER RADIAL COUNTDOWN GAUGE & BULB ANIMATIONS                          */
+/* ========================================================================= */
+.countdown-radial-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 15px auto;
+  width: 280px;
+  max-width: 90vw;
+  height: 280px;
+}
+
+.radial-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+.radial-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-width: 14;
+}
+
+.radial-progress {
+  fill: none;
+  stroke: url(#cyanGlow);
+  stroke-width: 14;
+  stroke-linecap: round;
+  stroke-dasharray: 691.15;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.8s ease, stroke 0.5s ease;
+  filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.5));
+}
+
+.radial-center-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px;
+  pointer-events: none;
+}
+
+.digital-clock {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  background: rgba(4, 8, 18, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  margin-top: 4px;
+}
+
+.bulb-charging-active {
+  background: rgba(245, 158, 11, 0.25) !important;
+  color: #fbbf24 !important;
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.6) !important;
+  animation: chargingBulbPulse 1.8s infinite ease-in-out;
+}
+
+.bulb-cooldown {
+  background: rgba(59, 130, 246, 0.15) !important;
+  color: #60a5fa !important;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3) !important;
+  animation: cooldownBreathe 3s infinite ease-in-out;
+}
+
+.bulb-ready {
+  background: rgba(16, 185, 129, 0.2) !important;
+  color: #34d399 !important;
+  box-shadow: 0 0 25px rgba(52, 211, 153, 0.5) !important;
+  animation: readyPulse 2s infinite ease-in-out;
+}
+
+@keyframes chargingBulbPulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.4)); }
+  50% { transform: scale(1.08); filter: drop-shadow(0 0 24px rgba(245, 158, 11, 0.9)); }
+}
+
+@keyframes cooldownBreathe {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+@keyframes readyPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 15px rgba(52, 211, 153, 0.4); }
+  50% { transform: scale(1.06); box-shadow: 0 0 30px rgba(52, 211, 153, 0.85); }
+}
+
+.btn-ready-pulse {
+  animation: btnGlowPulse 2.2s infinite ease-in-out;
+  border-color: rgba(52, 211, 153, 0.6) !important;
+  color: #34d399 !important;
+}
+
+@keyframes btnGlowPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(52, 211, 153, 0.3); }
+  50% { box-shadow: 0 0 22px rgba(52, 211, 153, 0.7); }
+}
+
+.btn-locked {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+  filter: grayscale(0.6);
+}
+

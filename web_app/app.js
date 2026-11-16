@@ -692,9 +692,9 @@ const App = (() => {
     const filtered = state.console.logs.filter(l => {
       if (filter === 'all') return true;
       if (filter === 'cmd') return l.tag === 'CMD' || l.tag === 'IN' || l.tag === 'OUT';
-      if (filter === 'tel') return l.tag === 'TEL' || l.tag === 'SYNC';
-      if (filter === 'hw') return l.tag === 'HW' || l.tag === 'ACK' || l.tag === 'BOOT' || l.tag === 'WIFI';
-      if (filter === 'err') return l.tag === 'ERR';
+      if (filter === 'tel') return l.tag === 'TEL' || l.tag === 'SYNC' || l.tag === 'TIMER';
+      if (filter === 'hw') return l.tag === 'HW' || l.tag === 'ACK' || l.tag === 'BOOT' || l.tag === 'WIFI' || l.tag === 'RELAY' || l.tag === 'ALARM';
+      if (filter === 'err') return l.tag === 'ERR' || l.tag.includes('ERR');
       return true;
     });
 
@@ -702,12 +702,15 @@ const App = (() => {
       let tagClass = 'tag-poll';
       const t = l.tag;
       if (t === 'CMD') tagClass = 'tag-cmd';
-      else if (t === 'TEL' || t === 'SYNC') tagClass = 'tag-tel';
+      else if (t === 'TEL' || t === 'SYNC' || t === 'TIMER') tagClass = 'tag-tel';
       else if (t === 'HW' || t === 'BOOT' || t === 'WIFI') tagClass = 'tag-hw';
+      else if (t === 'FIREBASE') tagClass = 'tag-cloud';
+      else if (t === 'RELAY') tagClass = 'tag-poll';
+      else if (t === 'ALARM') tagClass = 'tag-err';
       else if (t === 'ACK') tagClass = 'tag-ack';
       else if (t === 'IN') tagClass = 'tag-in';
       else if (t === 'OUT') tagClass = 'tag-out';
-      else if (t === 'ERR') tagClass = 'tag-err';
+      else if (t === 'ERR' || t.includes('ERR')) tagClass = 'tag-err';
 
       return `
         <div class="terminal-line">
@@ -1078,9 +1081,17 @@ const App = (() => {
 
     if (data.systemLogs && Array.isArray(data.systemLogs)) {
       state.systemLogs = data.systemLogs;
-      data.systemLogs.slice(-2).forEach(sl => {
-        if (!state.console.logs.some(cl => cl.message.includes(sl.msg))) {
-          logConsole('HW', `[ESP8266] ${sl.tag}: ${sl.msg}`);
+      data.systemLogs.forEach(sl => {
+        const fullMsg = `[ESP8266] ${sl.tag}: ${sl.msg}`;
+        if (!state.console.logs.some(cl => cl.message === fullMsg)) {
+          let cat = 'HW';
+          const t = (sl.tag || '').toUpperCase();
+          if (t.includes('WIFI') || t.includes('AP')) cat = 'WIFI';
+          else if (t.includes('FIREBASE') || t.includes('CLOUD')) cat = 'FIREBASE';
+          else if (t.includes('ALARM') || t.includes('BUZZER')) cat = 'ALARM';
+          else if (t.includes('RELAY')) cat = 'RELAY';
+          else if (t.includes('TIMER')) cat = 'TIMER';
+          logConsole(cat, fullMsg);
         }
       });
     }
@@ -1788,16 +1799,30 @@ const App = (() => {
   }
 
   async function testCloudConnection() {
-    let host = state.firebaseHost.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
+    let host = (document.getElementById('cfgFirebaseHost')?.value || state.firebaseHost || '').trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
+    if (!host) host = 'cyber-relay-rtos-default-rtdb-default-rtdb.firebaseio.com';
+    let auth = (document.getElementById('cfgFirebaseAuth')?.value || state.firebaseAuth || '').trim();
     let url = `https://${host}/esp8266_relay/status.json`;
-    if (state.firebaseAuth && state.firebaseAuth.trim()) url += `?auth=${encodeURIComponent(state.firebaseAuth.trim())}`;
+    if (auth) url += `?auth=${encodeURIComponent(auth)}`;
     toast('Testing Firebase connection...', 'info');
     try {
       const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
-      if (res.ok) toast('Firebase connection OK!', 'success');
-      else toast(`Firebase returned HTTP ${res.status}`, 'error');
+      if (res.ok) {
+        toast('Firebase connection SUCCESSFUL! (HTTP 200 OK)', 'success');
+        logConsole('FIREBASE', `Test Ping to https://${host} succeeded (HTTP 200)`);
+      } else if (res.status === 404) {
+        toast('HTTP 404: Database not created yet in Firebase Console!', 'error');
+        logConsole('ERR', `Test Ping to https://${host} failed: 404 Not Found. Please click "Create Database" in Firebase Console!`);
+      } else if (res.status === 401 || res.status === 403) {
+        toast('HTTP 401/403: Permission Denied! Set Security Rules to Test Mode.', 'error');
+        logConsole('ERR', `Test Ping to https://${host} failed: ${res.status} Permission Denied (Update rules to: .read:true, .write:true)`);
+      } else {
+        toast(`Firebase returned HTTP ${res.status}`, 'error');
+        logConsole('ERR', `Test Ping returned HTTP ${res.status}`);
+      }
     } catch (e) {
       toast('Firebase unreachable: ' + e.message, 'error');
+      logConsole('ERR', 'Firebase network/fetch error: ' + e.message);
     }
   }
 
@@ -2131,39 +2156,54 @@ const App = (() => {
     const progressCircle = document.getElementById('radialProgress');
     const countLabel = document.getElementById('countdownLabel');
     const countSub = document.getElementById('countdownSubtext');
+    const bulbEl = document.getElementById('relayBulb');
 
     const r = getSelectedRelay();
     const mode = r.mode || state.system.mode;
     let total = 1, rem = 0, strokeColor = 'url(#cyanGlow)';
 
+    if (bulbEl) {
+      bulbEl.classList.remove('bulb-charging-active', 'bulb-cooldown', 'bulb-ready', 'bulb-on');
+    }
+
     if (mode === 'RELAY_ON') {
       total = r.totalOnSec || state.system.totalOnSec || (state.config.onHours * 3600) || 1;
       rem = r.onRemainingSec !== undefined ? r.onRemainingSec : state.system.onRemainingSec;
       strokeColor = 'url(#cyanGlow)';
-      if (countLabel) countLabel.textContent = 'ACTIVE DUTY COUNTDOWN';
-      if (countSub) countSub.textContent = 'Relay energized. Touch ignored.';
+      if (countLabel) countLabel.textContent = 'CHARGING ACTIVE (8.0h)';
+      if (countSub) countSub.textContent = 'Relay energized. Charging duty countdown in progress.';
+      if (bulbEl) bulbEl.classList.add('bulb-charging-active', 'bulb-on');
     } else if (mode === 'LOCKOUT') {
       total = r.totalLockoutSec || state.system.totalLockoutSec || (state.config.lockoutDays * 86400) || 1;
       rem = r.lockoutRemainingSec !== undefined ? r.lockoutRemainingSec : state.system.lockoutRemainingSec;
       strokeColor = 'url(#amberGlow)';
-      if (countLabel) countLabel.textContent = 'COOLDOWN LOCKOUT COUNTDOWN';
-      if (countSub) countSub.textContent = 'Cooldown active. Touch filter engaged.';
+      if (countLabel) countLabel.textContent = 'COOLDOWN / RESTING (7.0d)';
+      if (countSub) countSub.textContent = 'Charger resting. Charging button locked until timer reaches zero.';
+      if (bulbEl) bulbEl.classList.add('bulb-cooldown');
     } else {
-      total = 1; rem = 1;
+      total = (r.onHours || state.config.onHours || 8.0) * 3600;
+      rem = 0;
       strokeColor = 'url(#emeraldGlow)';
-      if (countLabel) countLabel.textContent = 'READY FOR TRIGGER';
-      if (countSub) countSub.textContent = 'Tap capacitive touch sensor to trigger cycle';
+      if (countLabel) countLabel.textContent = 'CHARGER READY';
+      if (countSub) countSub.textContent = 'Cooldown complete! Tap button below to start 8.0h charging.';
+      if (bulbEl) bulbEl.classList.add('bulb-ready');
     }
 
     if (progressCircle) {
-      const ratio = Math.max(0, Math.min(1, rem / (total || 1)));
-      const GAUGE_CIRCUMFERENCE = 2 * Math.PI * 90;
-      const offset = GAUGE_CIRCUMFERENCE * (1 - ratio);
+      const GAUGE_CIRCUMFERENCE = 2 * Math.PI * 110; // Exactly 691.15 px for r=110
+      const ratio = total > 0 ? Math.max(0, Math.min(1, rem / total)) : 0;
+      const offset = (mode === 'IDLE') ? 0 : (GAUGE_CIRCUMFERENCE * (1 - ratio));
       progressCircle.style.strokeDashoffset = offset;
       progressCircle.style.stroke = strokeColor;
     }
 
-    updateClock(rem);
+    if (mode === 'IDLE') {
+      // In ready mode, show the configured charge duration ready to start (e.g. 00d : 08h : 00m : 00s)
+      const chargeSec = (r.onHours || state.config.onHours || 8.0) * 3600;
+      updateClock(chargeSec);
+    } else {
+      updateClock(rem);
+    }
   }
 
   function updateClock(totalSec) {
@@ -2201,7 +2241,7 @@ const App = (() => {
     if (tDot && tText) {
       if (state.system.touchActive && !state.system.lockoutActive) {
         tDot.className = 'status-dot dot-active';
-        tText.textContent = 'ENABLED';
+        tText.textContent = 'READY';
       } else {
         tDot.className = 'status-dot dot-disabled';
         tText.textContent = 'FILTERED (OFF)';
@@ -2213,7 +2253,7 @@ const App = (() => {
     if (lDot && lText) {
       if (state.system.lockoutActive) {
         lDot.className = 'status-dot dot-locked';
-        lText.textContent = 'LOCKED';
+        lText.textContent = 'COOLDOWN';
       } else {
         lDot.className = 'status-dot dot-disabled';
         lText.textContent = 'UNLOCKED';
@@ -2233,31 +2273,33 @@ const App = (() => {
     const r = getSelectedRelay();
     const isRelayOn = r.relayActive || r.mode === 'RELAY_ON';
     const isLockout = r.mode === 'LOCKOUT';
+    const isReady = (r.mode === 'IDLE');
 
+    // Primary Charging Button
     if (btnTrigger) {
       if (role === 'guest_analytics') {
         btnTrigger.disabled = true;
-        btnTrigger.className = 'glass-button btn-accent';
+        btnTrigger.className = 'glass-button btn-accent btn-locked';
         if (trgText) trgText.textContent = 'Controls Disabled (Guest Mode)';
       } else if (isRelayOn) {
-        // Relay is ON: button says "Turn OFF Relay Now" and allows immediate shutdown
+        // Charging duty active: button allows emergency/immediate shutdown
         btnTrigger.disabled = false;
         btnTrigger.className = 'glass-button btn-danger';
-        if (trgText) trgText.textContent = 'Turn OFF Relay Now';
+        if (trgText) trgText.textContent = '🛑 Stop Charging / Turn Relay OFF Now';
       } else if (isLockout) {
-        // Lockout countdown running: button is disabled
+        // 7-day cooldown running: button is strictly DISABLED
         btnTrigger.disabled = true;
-        btnTrigger.className = 'glass-button btn-accent';
-        if (trgText) trgText.textContent = 'Cooldown Lockout Active';
+        btnTrigger.className = 'glass-button btn-accent btn-locked';
+        if (trgText) trgText.textContent = '🔒 Charging Locked (Cooldown in Progress)';
       } else if (role === 'guarded_operator') {
         btnTrigger.disabled = false;
-        btnTrigger.className = 'glass-button btn-accent';
-        if (trgText) trgText.textContent = 'Request 1-Time Trigger (Mahi)';
+        btnTrigger.className = 'glass-button btn-accent btn-ready-pulse';
+        if (trgText) trgText.textContent = '⚡ Request 1-Time Charging (Mahi)';
       } else {
-        // Countdown timer is off (IDLE): ON button is ENABLED
+        // Cooldown finished (READY): button is ACTIVE & ENABLED!
         btnTrigger.disabled = false;
-        btnTrigger.className = 'glass-button btn-accent';
-        if (trgText) trgText.textContent = 'Turn Relay ON Now';
+        btnTrigger.className = 'glass-button btn-accent btn-ready-pulse';
+        if (trgText) trgText.textContent = '⚡ Start 8.0h Charging Cycle Now';
       }
     }
 
@@ -2267,12 +2309,23 @@ const App = (() => {
 
     if (btnReset) {
       btnReset.disabled = (role !== 'admin') || !isLockout;
+      btnReset.title = isLockout ? "Admin: Skip 7-Day Cooldown" : "Lockout not active";
     }
 
     if (btnToggle && toggleText) {
-      btnToggle.className = 'glass-button btn-power-toggle' + (isRelayOn ? ' is-active' : '');
-      toggleText.textContent = isRelayOn ? 'Turn OFF Relay Now' : 'Turn Relay ON';
-      btnToggle.disabled = (role === 'guest_analytics') || (isLockout && role !== 'admin');
+      if (isRelayOn) {
+        btnToggle.className = 'glass-button btn-power-toggle is-active btn-danger';
+        toggleText.textContent = 'Turn Relay OFF';
+        btnToggle.disabled = (role === 'guest_analytics');
+      } else if (isLockout) {
+        btnToggle.className = 'glass-button btn-power-toggle btn-locked';
+        toggleText.textContent = 'Charging Locked (Cooldown)';
+        btnToggle.disabled = (role !== 'admin');
+      } else {
+        btnToggle.className = 'glass-button btn-power-toggle btn-ready-pulse';
+        toggleText.textContent = 'Start Charging (Relay ON)';
+        btnToggle.disabled = (role === 'guest_analytics');
+      }
     }
   }
 

@@ -17,7 +17,7 @@ StateManager::StateManager() :
 {
   memset(_relays, 0, sizeof(_relays));
 
-  // Initialize Primary Relay 1
+  // Initialize Primary Relay 1 in Cooldown / Lockout sequence mode
   _relays[0].id = 1;
   strncpy(_relays[0].name, "Relay 1 (Main)", sizeof(_relays[0].name) - 1);
   _relays[0].pin = PIN_RELAY;
@@ -25,11 +25,11 @@ StateManager::StateManager() :
   _relays[0].onHours = DEFAULT_ON_HOURS;
   _relays[0].lockoutDays = DEFAULT_LOCKOUT_DAYS;
   _relays[0].enabled = true;
-  _relays[0].mode = MODE_IDLE;
+  _relays[0].mode = MODE_LOCKOUT;
   _relays[0].onRemainingSec = 0;
-  _relays[0].lockoutRemainingSec = 0;
   _relays[0].totalOnSec = (uint32_t)(DEFAULT_ON_HOURS * 3600.0f);
   _relays[0].totalLockoutSec = (uint32_t)(DEFAULT_LOCKOUT_DAYS * 86400.0f);
+  _relays[0].lockoutRemainingSec = _relays[0].totalLockoutSec;
   _relays[0].relayActive = false;
 
   for (int i = 1; i < MAX_RELAYS; i++) {
@@ -39,23 +39,19 @@ StateManager::StateManager() :
   }
 }
 
-void StateManager::soundBuzzer(bool turningOn) {
+void StateManager::soundHazardAlarm(bool starting) {
   pinMode(PIN_BUZZER, OUTPUT);
-  if (turningOn) {
-    // Two short energetic beeps when relay is activated ON
+  // Big distinctive hazard / fire alarm 3-beep blast (urgent, loud warning)
+  for (int i = 0; i < 3; i++) {
     digitalWrite(PIN_BUZZER, HIGH);
-    delay(75);
+    delay(starting ? 160 : 200);
     digitalWrite(PIN_BUZZER, LOW);
-    delay(50);
-    digitalWrite(PIN_BUZZER, HIGH);
-    delay(75);
-    digitalWrite(PIN_BUZZER, LOW);
-  } else {
-    // Single longer lower-tone beep when relay is turned OFF
-    digitalWrite(PIN_BUZZER, HIGH);
-    delay(200);
-    digitalWrite(PIN_BUZZER, LOW);
+    if (i < 2) delay(100);
   }
+}
+
+void StateManager::soundBuzzer(bool turningOn) {
+  soundHazardAlarm(turningOn);
 }
 
 void StateManager::soundAckBuzzer() {
@@ -163,7 +159,8 @@ void StateManager::applyRelayHardware(int index, bool active) {
     _relays[index].id, _relays[index].name, _relays[index].pin, active ? "ENERGIZED (ON)" : "OFF");
 
   if (prevState != active) {
-    soundBuzzer(active);
+    soundHazardAlarm(active);
+    addSystemLog("ALARM", active ? "Fire/Hazard Alarm 3x: Relay STARTED" : "Fire/Hazard Alarm 3x: Relay STOPPED");
   }
 }
 
@@ -622,6 +619,8 @@ String StateManager::getStatusJson(const char* currentUsername, const char* user
   doc["mode"] = getRelayModeString(1);
   doc["relayActive"] = _relays[0].relayActive;
   doc["touchActive"] = isTouchAllowed();
+  doc["chargingAllowed"] = isChargingAllowed();
+  doc["sequencePhase"] = (getMode() == MODE_RELAY_ON) ? "CHARGING" : ((getMode() == MODE_LOCKOUT) ? "COOLDOWN" : "READY");
   doc["lockoutActive"] = isLockoutActive();
   doc["onRemainingSec"] = _relays[0].onRemainingSec;
   doc["totalOnSec"] = _relays[0].totalOnSec;

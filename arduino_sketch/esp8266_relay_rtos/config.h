@@ -36,12 +36,12 @@
 // -------------------------------------------------------------------------
 // 2. TIMING CALIBRATION DEFAULTS
 // -------------------------------------------------------------------------
-#define DEFAULT_ON_HOURS          8.0f     // Default: 8.0 hours (configurable 7 to 8h)
-#define MIN_ON_HOURS              0.5f     // Minimum 30 mins
-#define MAX_ON_HOURS              24.0f    // Maximum 24 hours
+#define DEFAULT_ON_HOURS          8.0f     // Default: 8.0 hours charging countdown
+#define MIN_ON_HOURS              0.1f     // Minimum 6 mins (for testing/customizing)
+#define MAX_ON_HOURS              48.0f    // Maximum 48 hours
 
-#define DEFAULT_LOCKOUT_DAYS      6.0f     // Default: 6.0 days (configurable 5 to 7d)
-#define MIN_LOCKOUT_DAYS          0.5f     // Minimum 12 hours
+#define DEFAULT_LOCKOUT_DAYS      7.0f     // Default: 7.0 days cooldown timer
+#define MIN_LOCKOUT_DAYS          0.01f    // Minimum (~15 mins for fast testing)
 #define MAX_LOCKOUT_DAYS          30.0f    // Maximum 30 days
 
 #define PERSIST_INTERVAL_MS       30000    // Commit state to Flash every 30s

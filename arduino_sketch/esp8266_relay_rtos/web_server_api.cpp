@@ -47,9 +47,32 @@ void WebServerAPI::setupRoutes() {
   _server.on("/api/auth/approve_grant", HTTP_OPTIONS, sendCORS);
   _server.on("/api/auth/reject_grant", HTTP_OPTIONS, sendCORS);
   _server.on("/api/analytics", HTTP_OPTIONS, sendCORS);
+  _server.on("/api/logs", HTTP_OPTIONS, sendCORS);
 
   // Main UI route
   _server.on("/", HTTP_GET, std::bind(&WebServerAPI::handleRoot, this));
+
+  // Live Wireless & Activity Logs endpoint
+  _server.on("/api/logs", HTTP_GET, [this]() {
+    StaticJsonDocument<2048> doc;
+    doc["success"] = true;
+    doc["uptime"] = stateManager.getUptime();
+    doc["freeHeap"] = ESP.getFreeHeap();
+    JsonArray arr = doc.createNestedArray("logs");
+    int count = stateManager.getSystemLogCount();
+    for (int i = 0; i < count; i++) {
+      const SystemLogEntry* entry = stateManager.getSystemLog(i);
+      if (entry) {
+        JsonObject item = arr.createNestedObject();
+        item["uptime"] = entry->uptime;
+        item["tag"] = entry->tag;
+        item["msg"] = entry->msg;
+      }
+    }
+    String out;
+    serializeJson(doc, out);
+    sendJsonResponse(200, out);
+  });
 
   // Ping & Diagnostic route
   _server.on("/api/ping", HTTP_GET, [this]() {

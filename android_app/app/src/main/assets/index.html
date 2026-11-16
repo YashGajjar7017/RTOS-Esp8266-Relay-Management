@@ -1247,9 +1247,28 @@
         <form onsubmit="event.preventDefault(); App.saveCloudSettings();">
           <div class="form-group">
             <label for="cfgFirebaseHost">Firebase Realtime Database Host URL</label>
-            <input type="text" id="cfgFirebaseHost" placeholder="e.g. cyber-relay-rtos-default-rtdb.firebaseio.com"
+            <input type="text" id="cfgFirebaseHost" placeholder="e.g. cyber-relay-rtos-default-rtdb-default-rtdb.firebaseio.com"
               required>
-            <span class="field-hint">Your Firebase project database domain without https://</span>
+            <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+              <span class="quick-label" style="align-self: center; font-size: 0.65rem;">Presets:</span>
+              <button type="button" class="quick-pill" onclick="document.getElementById('cfgFirebaseHost').value='cyber-relay-rtos-default-rtdb-default-rtdb.firebaseio.com'">-default-rtdb.firebaseio.com</button>
+              <button type="button" class="quick-pill" onclick="document.getElementById('cfgFirebaseHost').value='cyber-relay-rtos-default-rtdb.firebaseio.com'">.firebaseio.com</button>
+              <button type="button" class="quick-pill" onclick="document.getElementById('cfgFirebaseHost').value='cyber-relay-rtos-default-rtdb.asia-southeast1.firebasedatabase.app'">.asia-southeast1</button>
+            </div>
+            <span class="field-hint">Your Firebase database domain without https://</span>
+          </div>
+
+          <!-- Firebase Setup Instructions Box -->
+          <div class="console-key-banner" style="background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); margin-top: 8px; margin-bottom: 12px;">
+            <div class="key-banner-icon" style="background: rgba(245, 158, 11, 0.2);">💡</div>
+            <div class="key-banner-content">
+              <div class="key-banner-title" style="color: #fbbf24;">Firebase RTDB Setup Checklist</div>
+              <div class="key-banner-sub" style="color: #e2e8f0; font-size: 0.72rem; line-height: 1.4;">
+                1. Visit: <a href="https://console.firebase.google.com/project/cyber-relay-rtos-default-rtdb/database" target="_blank" style="color:var(--accent-cyan); text-decoration: underline;">Firebase Console -> Realtime Database</a><br>
+                2. Click <strong>"Create Database"</strong> (choose US or Asia location).<br>
+                3. Set Security Rules to <strong>Test Mode</strong> (<code>{ ".read": true, ".write": true }</code>) so the ESP8266 and App can communicate without authorization errors.
+              </div>
+            </div>
           </div>
 
           <div class="form-group">

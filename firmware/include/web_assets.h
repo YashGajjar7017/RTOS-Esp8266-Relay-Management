@@ -3467,6 +3467,435 @@ textarea,
 .term-tag.tag-in { background: rgba(245, 158, 11, 0.25); color: #fbbf24; }
 .term-tag.tag-out { background: rgba(16, 185, 129, 0.25); color: #34d399; }
 .term-tag.tag-ack { background: rgba(234, 179, 8, 0.3); color: #fde047; }
+.term-tag.tag-cloud { background: rgba(249, 115, 22, 0.25); color: #fb923c; }
+
+/* ========================================================================= */
+/* CENTER RADIAL COUNTDOWN GAUGE & BULB ANIMATIONS                          */
+/* ========================================================================= */
+.countdown-radial-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 15px auto;
+  width: 280px;
+  max-width: 90vw;
+  height: 280px;
+}
+
+.radial-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+.radial-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-width: 14;
+}
+
+.radial-progress {
+  fill: none;
+  stroke: url(#cyanGlow);
+  stroke-width: 14;
+  stroke-linecap: round;
+  stroke-dasharray: 691.15;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.8s ease, stroke 0.5s ease;
+  filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.5));
+}
+
+.radial-center-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px;
+  pointer-events: none;
+}
+
+.digital-clock {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  background: rgba(4, 8, 18, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  margin-top: 4px;
+}
+
+.bulb-charging-active {
+  background: rgba(245, 158, 11, 0.25) !important;
+  color: #fbbf24 !important;
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.6) !important;
+  animation: chargingBulbPulse 1.8s infinite ease-in-out;
+}
+
+.bulb-cooldown {
+  background: rgba(59, 130, 246, 0.15) !important;
+  color: #60a5fa !important;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3) !important;
+  animation: cooldownBreathe 3s infinite ease-in-out;
+}
+
+.bulb-ready {
+  background: rgba(16, 185, 129, 0.2) !important;
+  color: #34d399 !important;
+  box-shadow: 0 0 25px rgba(52, 211, 153, 0.5) !important;
+  animation: readyPulse 2s infinite ease-in-out;
+}
+
+@keyframes chargingBulbPulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.4)); }
+  50% { transform: scale(1.08); filter: drop-shadow(0 0 24px rgba(245, 158, 11, 0.9)); }
+}
+
+@keyframes cooldownBreathe {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+@keyframes readyPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 15px rgba(52, 211, 153, 0.4); }
+  50% { transform: scale(1.06); box-shadow: 0 0 30px rgba(52, 211, 153, 0.85); }
+}
+
+.btn-ready-pulse {
+  animation: btnGlowPulse 2.2s infinite ease-in-out;
+  border-color: rgba(52, 211, 153, 0.6) !important;
+  color: #34d399 !important;
+}
+
+@keyframes btnGlowPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(52, 211, 153, 0.3); }
+  50% { box-shadow: 0 0 22px rgba(52, 211, 153, 0.7); }
+}
+
+.btn-locked {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+  filter: grayscale(0.6);
+}
+
+
+
+/* -----------------------------------------------------------------------------
+ * INTERACTIVE LIVE CONSOLE
+ * -------------------------------------------------------------------------- */
+.live-stream-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+}
+
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  background-color: #34d399;
+  border-radius: 50%;
+  animation: pulseDotAnim 1.6s infinite ease-in-out;
+}
+
+@keyframes pulseDotAnim {
+  0% { transform: scale(0.9); opacity: 0.5; box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7); }
+  50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 0 5px rgba(52, 211, 153, 0); }
+  100% { transform: scale(0.9); opacity: 0.5; box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+}
+
+.console-key-banner {
+  background: rgba(6, 182, 212, 0.06);
+  border: 1px solid rgba(6, 182, 212, 0.22);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.key-banner-icon { font-size: 1.4rem; }
+.key-banner-content { flex: 1; font-size: 0.8rem; }
+.key-banner-title { color: var(--text-primary); }
+.key-banner-sub { color: var(--text-muted); font-size: 0.72rem; font-family: var(--font-mono); margin-top: 2px; }
+.key-banner-sub code { color: var(--color-cyan); }
+
+.console-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.console-filters {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.console-filter-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-glass);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.console-filter-btn.active, .console-filter-btn:hover {
+  background: rgba(6, 182, 212, 0.2);
+  color: var(--color-cyan);
+  border-color: rgba(6, 182, 212, 0.45);
+}
+
+.console-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.console-quick-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.quick-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.quick-pill {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.quick-pill:hover {
+  background: rgba(6, 182, 212, 0.15);
+  color: var(--color-cyan);
+  border-color: rgba(6, 182, 212, 0.35);
+}
+
+.live-terminal-window {
+  background: #04060d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  height: 420px;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  line-height: 1.6;
+  color: #e2e8f0;
+  margin-top: 10px;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.85);
+}
+
+.terminal-prompt-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  background: #080c18;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+}
+
+.prompt-sym {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: var(--color-cyan);
+  white-space: nowrap;
+}
+
+.prompt-input {
+  flex: 1;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  padding: 4px 6px;
+}
+
+.prompt-input::placeholder {
+  color: var(--text-muted);
+}
+
+.term-tag.tag-tel { background: rgba(59, 130, 246, 0.25); color: #60a5fa; }
+.term-tag.tag-hw { background: rgba(168, 85, 247, 0.25); color: #c084fc; }
+.term-tag.tag-in { background: rgba(245, 158, 11, 0.25); color: #fbbf24; }
+.term-tag.tag-out { background: rgba(16, 185, 129, 0.25); color: #34d399; }
+.term-tag.tag-ack { background: rgba(234, 179, 8, 0.3); color: #fde047; }
+.term-tag.tag-cloud { background: rgba(249, 115, 22, 0.25); color: #fb923c; }
+
+/* ========================================================================= */
+/* CENTER RADIAL COUNTDOWN GAUGE & BULB ANIMATIONS                          */
+/* ========================================================================= */
+.countdown-radial-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 15px auto;
+  width: 280px;
+  max-width: 90vw;
+  height: 280px;
+}
+
+.radial-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+.radial-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-width: 14;
+}
+
+.radial-progress {
+  fill: none;
+  stroke: url(#cyanGlow);
+  stroke-width: 14;
+  stroke-linecap: round;
+  stroke-dasharray: 691.15;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.8s ease, stroke 0.5s ease;
+  filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.5));
+}
+
+.radial-center-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px;
+  pointer-events: none;
+}
+
+.digital-clock {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  background: rgba(4, 8, 18, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  margin-top: 4px;
+}
+
+.bulb-charging-active {
+  background: rgba(245, 158, 11, 0.25) !important;
+  color: #fbbf24 !important;
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.6) !important;
+  animation: chargingBulbPulse 1.8s infinite ease-in-out;
+}
+
+.bulb-cooldown {
+  background: rgba(59, 130, 246, 0.15) !important;
+  color: #60a5fa !important;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3) !important;
+  animation: cooldownBreathe 3s infinite ease-in-out;
+}
+
+.bulb-ready {
+  background: rgba(16, 185, 129, 0.2) !important;
+  color: #34d399 !important;
+  box-shadow: 0 0 25px rgba(52, 211, 153, 0.5) !important;
+  animation: readyPulse 2s infinite ease-in-out;
+}
+
+@keyframes chargingBulbPulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.4)); }
+  50% { transform: scale(1.08); filter: drop-shadow(0 0 24px rgba(245, 158, 11, 0.9)); }
+}
+
+@keyframes cooldownBreathe {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+@keyframes readyPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 15px rgba(52, 211, 153, 0.4); }
+  50% { transform: scale(1.06); box-shadow: 0 0 30px rgba(52, 211, 153, 0.85); }
+}
+
+.btn-ready-pulse {
+  animation: btnGlowPulse 2.2s infinite ease-in-out;
+  border-color: rgba(52, 211, 153, 0.6) !important;
+  color: #34d399 !important;
+}
+
+@keyframes btnGlowPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(52, 211, 153, 0.3); }
+  50% { box-shadow: 0 0 22px rgba(52, 211, 153, 0.7); }
+}
+
+.btn-locked {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+  filter: grayscale(0.6);
+}
+
 
 </style>
 </head>
@@ -4709,9 +5138,28 @@ textarea,
         <form onsubmit="event.preventDefault(); App.saveCloudSettings();">
           <div class="form-group">
             <label for="cfgFirebaseHost">Firebase Realtime Database Host URL</label>
-            <input type="text" id="cfgFirebaseHost" placeholder="e.g. cyber-relay-rtos-default-rtdb.firebaseio.com"
+            <input type="text" id="cfgFirebaseHost" placeholder="e.g. cyber-relay-rtos-default-rtdb-default-rtdb.firebaseio.com"
               required>
-            <span class="field-hint">Your Firebase project database domain without https://</span>
+            <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+              <span class="quick-label" style="align-self: center; font-size: 0.65rem;">Presets:</span>
+              <button type="button" class="quick-pill" onclick="document.getElementById('cfgFirebaseHost').value='cyber-relay-rtos-default-rtdb-default-rtdb.firebaseio.com'">-default-rtdb.firebaseio.com</button>
+              <button type="button" class="quick-pill" onclick="document.getElementById('cfgFirebaseHost').value='cyber-relay-rtos-default-rtdb.firebaseio.com'">.firebaseio.com</button>
+              <button type="button" class="quick-pill" onclick="document.getElementById('cfgFirebaseHost').value='cyber-relay-rtos-default-rtdb.asia-southeast1.firebasedatabase.app'">.asia-southeast1</button>
+            </div>
+            <span class="field-hint">Your Firebase database domain without https://</span>
+          </div>
+
+          <!-- Firebase Setup Instructions Box -->
+          <div class="console-key-banner" style="background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); margin-top: 8px; margin-bottom: 12px;">
+            <div class="key-banner-icon" style="background: rgba(245, 158, 11, 0.2);">💡</div>
+            <div class="key-banner-content">
+              <div class="key-banner-title" style="color: #fbbf24;">Firebase RTDB Setup Checklist</div>
+              <div class="key-banner-sub" style="color: #e2e8f0; font-size: 0.72rem; line-height: 1.4;">
+                1. Visit: <a href="https://console.firebase.google.com/project/cyber-relay-rtos-default-rtdb/database" target="_blank" style="color:var(--accent-cyan); text-decoration: underline;">Firebase Console -> Realtime Database</a><br>
+                2. Click <strong>"Create Database"</strong> (choose US or Asia location).<br>
+                3. Set Security Rules to <strong>Test Mode</strong> (<code>{ ".read": true, ".write": true }</code>) so the ESP8266 and App can communicate without authorization errors.
+              </div>
+            </div>
           </div>
 
           <div class="form-group">
@@ -5683,9 +6131,9 @@ const App = (() => {
     const filtered = state.console.logs.filter(l => {
       if (filter === 'all') return true;
       if (filter === 'cmd') return l.tag === 'CMD' || l.tag === 'IN' || l.tag === 'OUT';
-      if (filter === 'tel') return l.tag === 'TEL' || l.tag === 'SYNC';
-      if (filter === 'hw') return l.tag === 'HW' || l.tag === 'ACK' || l.tag === 'BOOT' || l.tag === 'WIFI';
-      if (filter === 'err') return l.tag === 'ERR';
+      if (filter === 'tel') return l.tag === 'TEL' || l.tag === 'SYNC' || l.tag === 'TIMER';
+      if (filter === 'hw') return l.tag === 'HW' || l.tag === 'ACK' || l.tag === 'BOOT' || l.tag === 'WIFI' || l.tag === 'RELAY' || l.tag === 'ALARM';
+      if (filter === 'err') return l.tag === 'ERR' || l.tag.includes('ERR');
       return true;
     });
 
@@ -5693,12 +6141,15 @@ const App = (() => {
       let tagClass = 'tag-poll';
       const t = l.tag;
       if (t === 'CMD') tagClass = 'tag-cmd';
-      else if (t === 'TEL' || t === 'SYNC') tagClass = 'tag-tel';
+      else if (t === 'TEL' || t === 'SYNC' || t === 'TIMER') tagClass = 'tag-tel';
       else if (t === 'HW' || t === 'BOOT' || t === 'WIFI') tagClass = 'tag-hw';
+      else if (t === 'FIREBASE') tagClass = 'tag-cloud';
+      else if (t === 'RELAY') tagClass = 'tag-poll';
+      else if (t === 'ALARM') tagClass = 'tag-err';
       else if (t === 'ACK') tagClass = 'tag-ack';
       else if (t === 'IN') tagClass = 'tag-in';
       else if (t === 'OUT') tagClass = 'tag-out';
-      else if (t === 'ERR') tagClass = 'tag-err';
+      else if (t === 'ERR' || t.includes('ERR')) tagClass = 'tag-err';
 
       return `
         <div class="terminal-line">
@@ -6069,9 +6520,17 @@ const App = (() => {
 
     if (data.systemLogs && Array.isArray(data.systemLogs)) {
       state.systemLogs = data.systemLogs;
-      data.systemLogs.slice(-2).forEach(sl => {
-        if (!state.console.logs.some(cl => cl.message.includes(sl.msg))) {
-          logConsole('HW', `[ESP8266] ${sl.tag}: ${sl.msg}`);
+      data.systemLogs.forEach(sl => {
+        const fullMsg = `[ESP8266] ${sl.tag}: ${sl.msg}`;
+        if (!state.console.logs.some(cl => cl.message === fullMsg)) {
+          let cat = 'HW';
+          const t = (sl.tag || '').toUpperCase();
+          if (t.includes('WIFI') || t.includes('AP')) cat = 'WIFI';
+          else if (t.includes('FIREBASE') || t.includes('CLOUD')) cat = 'FIREBASE';
+          else if (t.includes('ALARM') || t.includes('BUZZER')) cat = 'ALARM';
+          else if (t.includes('RELAY')) cat = 'RELAY';
+          else if (t.includes('TIMER')) cat = 'TIMER';
+          logConsole(cat, fullMsg);
         }
       });
     }
@@ -6779,16 +7238,30 @@ const App = (() => {
   }
 
   async function testCloudConnection() {
-    let host = state.firebaseHost.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
+    let host = (document.getElementById('cfgFirebaseHost')?.value || state.firebaseHost || '').trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
+    if (!host) host = 'cyber-relay-rtos-default-rtdb-default-rtdb.firebaseio.com';
+    let auth = (document.getElementById('cfgFirebaseAuth')?.value || state.firebaseAuth || '').trim();
     let url = `https://${host}/esp8266_relay/status.json`;
-    if (state.firebaseAuth && state.firebaseAuth.trim()) url += `?auth=${encodeURIComponent(state.firebaseAuth.trim())}`;
+    if (auth) url += `?auth=${encodeURIComponent(auth)}`;
     toast('Testing Firebase connection...', 'info');
     try {
       const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
-      if (res.ok) toast('Firebase connection OK!', 'success');
-      else toast(`Firebase returned HTTP ${res.status}`, 'error');
+      if (res.ok) {
+        toast('Firebase connection SUCCESSFUL! (HTTP 200 OK)', 'success');
+        logConsole('FIREBASE', `Test Ping to https://${host} succeeded (HTTP 200)`);
+      } else if (res.status === 404) {
+        toast('HTTP 404: Database not created yet in Firebase Console!', 'error');
+        logConsole('ERR', `Test Ping to https://${host} failed: 404 Not Found. Please click "Create Database" in Firebase Console!`);
+      } else if (res.status === 401 || res.status === 403) {
+        toast('HTTP 401/403: Permission Denied! Set Security Rules to Test Mode.', 'error');
+        logConsole('ERR', `Test Ping to https://${host} failed: ${res.status} Permission Denied (Update rules to: .read:true, .write:true)`);
+      } else {
+        toast(`Firebase returned HTTP ${res.status}`, 'error');
+        logConsole('ERR', `Test Ping returned HTTP ${res.status}`);
+      }
     } catch (e) {
       toast('Firebase unreachable: ' + e.message, 'error');
+      logConsole('ERR', 'Firebase network/fetch error: ' + e.message);
     }
   }
 
@@ -7122,39 +7595,54 @@ const App = (() => {
     const progressCircle = document.getElementById('radialProgress');
     const countLabel = document.getElementById('countdownLabel');
     const countSub = document.getElementById('countdownSubtext');
+    const bulbEl = document.getElementById('relayBulb');
 
     const r = getSelectedRelay();
     const mode = r.mode || state.system.mode;
     let total = 1, rem = 0, strokeColor = 'url(#cyanGlow)';
 
+    if (bulbEl) {
+      bulbEl.classList.remove('bulb-charging-active', 'bulb-cooldown', 'bulb-ready', 'bulb-on');
+    }
+
     if (mode === 'RELAY_ON') {
       total = r.totalOnSec || state.system.totalOnSec || (state.config.onHours * 3600) || 1;
       rem = r.onRemainingSec !== undefined ? r.onRemainingSec : state.system.onRemainingSec;
       strokeColor = 'url(#cyanGlow)';
-      if (countLabel) countLabel.textContent = 'ACTIVE DUTY COUNTDOWN';
-      if (countSub) countSub.textContent = 'Relay energized. Touch ignored.';
+      if (countLabel) countLabel.textContent = 'CHARGING ACTIVE (8.0h)';
+      if (countSub) countSub.textContent = 'Relay energized. Charging duty countdown in progress.';
+      if (bulbEl) bulbEl.classList.add('bulb-charging-active', 'bulb-on');
     } else if (mode === 'LOCKOUT') {
       total = r.totalLockoutSec || state.system.totalLockoutSec || (state.config.lockoutDays * 86400) || 1;
       rem = r.lockoutRemainingSec !== undefined ? r.lockoutRemainingSec : state.system.lockoutRemainingSec;
       strokeColor = 'url(#amberGlow)';
-      if (countLabel) countLabel.textContent = 'COOLDOWN LOCKOUT COUNTDOWN';
-      if (countSub) countSub.textContent = 'Cooldown active. Touch filter engaged.';
+      if (countLabel) countLabel.textContent = 'COOLDOWN / RESTING (7.0d)';
+      if (countSub) countSub.textContent = 'Charger resting. Charging button locked until timer reaches zero.';
+      if (bulbEl) bulbEl.classList.add('bulb-cooldown');
     } else {
-      total = 1; rem = 1;
+      total = (r.onHours || state.config.onHours || 8.0) * 3600;
+      rem = 0;
       strokeColor = 'url(#emeraldGlow)';
-      if (countLabel) countLabel.textContent = 'READY FOR TRIGGER';
-      if (countSub) countSub.textContent = 'Tap capacitive touch sensor to trigger cycle';
+      if (countLabel) countLabel.textContent = 'CHARGER READY';
+      if (countSub) countSub.textContent = 'Cooldown complete! Tap button below to start 8.0h charging.';
+      if (bulbEl) bulbEl.classList.add('bulb-ready');
     }
 
     if (progressCircle) {
-      const ratio = Math.max(0, Math.min(1, rem / (total || 1)));
-      const GAUGE_CIRCUMFERENCE = 2 * Math.PI * 90;
-      const offset = GAUGE_CIRCUMFERENCE * (1 - ratio);
+      const GAUGE_CIRCUMFERENCE = 2 * Math.PI * 110; // Exactly 691.15 px for r=110
+      const ratio = total > 0 ? Math.max(0, Math.min(1, rem / total)) : 0;
+      const offset = (mode === 'IDLE') ? 0 : (GAUGE_CIRCUMFERENCE * (1 - ratio));
       progressCircle.style.strokeDashoffset = offset;
       progressCircle.style.stroke = strokeColor;
     }
 
-    updateClock(rem);
+    if (mode === 'IDLE') {
+      // In ready mode, show the configured charge duration ready to start (e.g. 00d : 08h : 00m : 00s)
+      const chargeSec = (r.onHours || state.config.onHours || 8.0) * 3600;
+      updateClock(chargeSec);
+    } else {
+      updateClock(rem);
+    }
   }
 
   function updateClock(totalSec) {
@@ -7192,7 +7680,7 @@ const App = (() => {
     if (tDot && tText) {
       if (state.system.touchActive && !state.system.lockoutActive) {
         tDot.className = 'status-dot dot-active';
-        tText.textContent = 'ENABLED';
+        tText.textContent = 'READY';
       } else {
         tDot.className = 'status-dot dot-disabled';
         tText.textContent = 'FILTERED (OFF)';
@@ -7204,7 +7692,7 @@ const App = (() => {
     if (lDot && lText) {
       if (state.system.lockoutActive) {
         lDot.className = 'status-dot dot-locked';
-        lText.textContent = 'LOCKED';
+        lText.textContent = 'COOLDOWN';
       } else {
         lDot.className = 'status-dot dot-disabled';
         lText.textContent = 'UNLOCKED';
@@ -7224,31 +7712,33 @@ const App = (() => {
     const r = getSelectedRelay();
     const isRelayOn = r.relayActive || r.mode === 'RELAY_ON';
     const isLockout = r.mode === 'LOCKOUT';
+    const isReady = (r.mode === 'IDLE');
 
+    // Primary Charging Button
     if (btnTrigger) {
       if (role === 'guest_analytics') {
         btnTrigger.disabled = true;
-        btnTrigger.className = 'glass-button btn-accent';
+        btnTrigger.className = 'glass-button btn-accent btn-locked';
         if (trgText) trgText.textContent = 'Controls Disabled (Guest Mode)';
       } else if (isRelayOn) {
-        // Relay is ON: button says "Turn OFF Relay Now" and allows immediate shutdown
+        // Charging duty active: button allows emergency/immediate shutdown
         btnTrigger.disabled = false;
         btnTrigger.className = 'glass-button btn-danger';
-        if (trgText) trgText.textContent = 'Turn OFF Relay Now';
+        if (trgText) trgText.textContent = '🛑 Stop Charging / Turn Relay OFF Now';
       } else if (isLockout) {
-        // Lockout countdown running: button is disabled
+        // 7-day cooldown running: button is strictly DISABLED
         btnTrigger.disabled = true;
-        btnTrigger.className = 'glass-button btn-accent';
-        if (trgText) trgText.textContent = 'Cooldown Lockout Active';
+        btnTrigger.className = 'glass-button btn-accent btn-locked';
+        if (trgText) trgText.textContent = '🔒 Charging Locked (Cooldown in Progress)';
       } else if (role === 'guarded_operator') {
         btnTrigger.disabled = false;
-        btnTrigger.className = 'glass-button btn-accent';
-        if (trgText) trgText.textContent = 'Request 1-Time Trigger (Mahi)';
+        btnTrigger.className = 'glass-button btn-accent btn-ready-pulse';
+        if (trgText) trgText.textContent = '⚡ Request 1-Time Charging (Mahi)';
       } else {
-        // Countdown timer is off (IDLE): ON button is ENABLED
+        // Cooldown finished (READY): button is ACTIVE & ENABLED!
         btnTrigger.disabled = false;
-        btnTrigger.className = 'glass-button btn-accent';
-        if (trgText) trgText.textContent = 'Turn Relay ON Now';
+        btnTrigger.className = 'glass-button btn-accent btn-ready-pulse';
+        if (trgText) trgText.textContent = '⚡ Start 8.0h Charging Cycle Now';
       }
     }
 
@@ -7258,12 +7748,23 @@ const App = (() => {
 
     if (btnReset) {
       btnReset.disabled = (role !== 'admin') || !isLockout;
+      btnReset.title = isLockout ? "Admin: Skip 7-Day Cooldown" : "Lockout not active";
     }
 
     if (btnToggle && toggleText) {
-      btnToggle.className = 'glass-button btn-power-toggle' + (isRelayOn ? ' is-active' : '');
-      toggleText.textContent = isRelayOn ? 'Turn OFF Relay Now' : 'Turn Relay ON';
-      btnToggle.disabled = (role === 'guest_analytics') || (isLockout && role !== 'admin');
+      if (isRelayOn) {
+        btnToggle.className = 'glass-button btn-power-toggle is-active btn-danger';
+        toggleText.textContent = 'Turn Relay OFF';
+        btnToggle.disabled = (role === 'guest_analytics');
+      } else if (isLockout) {
+        btnToggle.className = 'glass-button btn-power-toggle btn-locked';
+        toggleText.textContent = 'Charging Locked (Cooldown)';
+        btnToggle.disabled = (role !== 'admin');
+      } else {
+        btnToggle.className = 'glass-button btn-power-toggle btn-ready-pulse';
+        toggleText.textContent = 'Start Charging (Relay ON)';
+        btnToggle.disabled = (role === 'guest_analytics');
+      }
     }
   }
 

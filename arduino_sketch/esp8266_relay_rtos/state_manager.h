@@ -36,7 +36,7 @@ struct SystemLogEntry {
   char msg[64];
 };
 
-#define MAX_SYSTEM_LOGS 16
+#define MAX_SYSTEM_LOGS 48
 
 class StateManager {
 public:
@@ -70,7 +70,8 @@ public:
 
   // Hardware Buzzer Feedback on NodeMCU D8 (GPIO15)
   void soundBuzzer(bool turningOn);
-  void soundAckBuzzer(); // 3-beep audio acknowledge confirmation
+  void soundHazardAlarm(bool starting); // Big 3-beep fire/hazard alarm on relay start or stop
+  void soundAckBuzzer();                // 3-beep audio acknowledge confirmation
 
   // System & Wireless Log
   void addSystemLog(const char* tag, const char* msg);
@@ -88,6 +89,7 @@ public:
   const char* getRelayModeString(uint8_t relayId) const;
   bool isRelayActive() const { return _relays[0].relayActive; }
   bool isTouchAllowed() const { return _relays[0].mode == MODE_IDLE; }
+  bool isChargingAllowed() const { return _relays[0].mode == MODE_IDLE; }
   bool isLockoutActive() const { return _relays[0].mode == MODE_LOCKOUT; }
   
   uint32_t getOnRemainingSec() const { return _relays[0].onRemainingSec; }

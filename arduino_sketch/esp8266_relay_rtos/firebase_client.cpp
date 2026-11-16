@@ -79,6 +79,8 @@ void FirebaseClient::syncToFirebase() {
 
     StaticJsonDocument<1024> doc;
     doc["mode"] = stateManager.getModeString();
+    doc["sequencePhase"] = (stateManager.getMode() == MODE_RELAY_ON) ? "CHARGING" : ((stateManager.getMode() == MODE_LOCKOUT) ? "COOLDOWN" : "READY");
+    doc["chargingAllowed"] = stateManager.isChargingAllowed();
     doc["relayActive"] = stateManager.isRelayActive();
     doc["touchActive"] = stateManager.isTouchAllowed();
     doc["lockoutActive"] = stateManager.isLockoutActive();
@@ -145,9 +147,25 @@ void FirebaseClient::syncToFirebase() {
         stateManager.addSystemLog("ACK", "Cloud pipeline verified: AP + WiFi + Firebase OK -> 3-Beep Buzzer Sounded.");
         stateManager.soundAckBuzzer();
       }
+      if (!_cloudSynced) {
+        stateManager.addSystemLog("FIREBASE_OK", "Cloud Synced OK (HTTP 200)");
+      }
       _cloudSynced = true;
     } else {
       _cloudSynced = false;
+      static int lastLoggedCode = 0;
+      if (httpCode != lastLoggedCode) {
+        lastLoggedCode = httpCode;
+        if (httpCode == 404) {
+          stateManager.addSystemLog("FIREBASE_ERR", "404 Not Found: Database not created in Firebase Console yet!");
+        } else if (httpCode == 401 || httpCode == 403) {
+          stateManager.addSystemLog("FIREBASE_ERR", "401/403 Denied: Check RTDB Security Rules / Secret");
+        } else if (httpCode < 0) {
+          stateManager.addSystemLog("FIREBASE_ERR", (String("TLS/Net err: ") + http.errorToString(httpCode)).c_str());
+        } else {
+          stateManager.addSystemLog("FIREBASE_ERR", (String("HTTP error ") + httpCode).c_str());
+        }
+      }
     }
     http.end();
   }
